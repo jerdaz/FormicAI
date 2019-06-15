@@ -1,9 +1,9 @@
 'use strict'
 
 function main() {
-    var rooms = Game.rooms;
+    let rooms = Game.rooms;
 
-    var bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
+    let bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
     strategy();
     command(bases);
 }
@@ -13,8 +13,8 @@ function strategy() {
 }
 
 function command(bases) {
-    var baseOps = require('baseOps');
-    for (var room in bases) baseOps(room);
+    let baseOps = require('baseOps');
+    for (let room in bases) baseOps(room);
 }
 
 module.exports = function () {main()};

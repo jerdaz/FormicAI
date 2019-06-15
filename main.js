@@ -10,7 +10,7 @@ function strategy() {
 }
 
 function command() {
-    var shardOps = require('shardOps');
+    let shardOps = require('shardOps');
     shardOps();
 }
 

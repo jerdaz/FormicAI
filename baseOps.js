@@ -9,9 +9,9 @@ function strategy() {
 }
 
 function command(room) {
-    var spawnOps = require ('spawnOps');
-    var spawns = room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
-    for (var spawn in spawns) spawnOps(spawn);
+    let spawnOps = require ('spawnOps');
+    let spawns = room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
+    for (let spawn in spawns) spawnOps(spawn);
 }
 
 module.exports = main
