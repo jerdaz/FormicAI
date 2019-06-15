@@ -11,7 +11,10 @@ function main() {
 
     function getBases(rooms) {
         let bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
-        for (let base of bases) base.creeps = [];
+        for (let baseName in bases) {
+            let base = rooms[baseName];
+            base.creeps = [];
+        }
         for (let creepName in creeps) {
             let creep = creeps[creepName];
             let roomName = creep.name.split('_')[0];
