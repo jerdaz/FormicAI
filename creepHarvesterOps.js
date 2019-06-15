@@ -7,7 +7,7 @@ function main(creep) {
 }
 
 function strategy(creep) {
-    if (creep.command == undefined) creepOps.harvest(creep
+    if (creep.memory.command == undefined) creepOps.harvest(creep
                                     , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
                                     , creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_SPAWN}} )
                                     );
