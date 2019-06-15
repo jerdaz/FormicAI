@@ -7,7 +7,7 @@ function main(creep) {
 function strategy(creep) {
     switch (creep.command) {
         case 'harvest':
-            if (creep.state != 'harvesting' && _.sum(creep.carry) == 0) creep.state = 'harvesting';
+            if (_.sum(creep.carry) == 0) creep.state = 'harvesting';
             if (_.sum(creep.carry) == creep.carryCapacity) creep.state = 'dropping';
             break;
     }
@@ -29,6 +29,7 @@ function command(creep) {
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     creep.command = 'harvest';
+    creep.state = 'harvesting';
     creep.source = source;
     creep.dest = dest;
 };
