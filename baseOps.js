@@ -1,15 +1,17 @@
 'use strict'
-function main(base) {
+function main(room) {
     strategy();
-    command();
+    command(room);
 }
 
 function strategy() {
 
 }
 
-function command() {
-
+function command(room) {
+    var spawnOps = require ('spawnOps');
+    var spawns = room.find(FIND_MYSTRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
+    for (var spawn in spawns) spawnOps(spawn);
 }
 
 module.exports = main

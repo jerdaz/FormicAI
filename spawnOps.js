@@ -1,15 +1,15 @@
 'use strict'
-function main() {
+function main(spawn) {
     strategy();
-    command();
+    command(spawn);
 }
 
 function strategy() {
 
 }
 
-function command() {
-    
+function command(spawn) {
+    spawn.spawnCreep([WORK,MOVE,CARRY]);
 }
 
-module.exports = function () {main()};
+module.exports = main;
