@@ -16,11 +16,11 @@ function strategy(creep) {
 function command(creep) {
     switch (creep.state) {
         case 'harvesting':
-            creep.move(creep.source, {range:1});
+            creep.moveTo(creep.source, {range:1});
             creep.harvest(creep.source);
             break;
         case 'dropping':
-            creep.move(creep.dest, {range:1});
+            creep.moveTo(creep.dest, {range:1});
             creep.transfer(creep.dest, RESOURCE_ENERGY);
             break;
     }
