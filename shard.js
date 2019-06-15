@@ -1,4 +1,7 @@
+var legacy = require('legacy.main');
+
 function main() {
+    legacy.loop();
     strategy();
     command();
 }
@@ -11,6 +14,4 @@ function command() {
 
 }
 
-module.exports.loop = function () {
-    main();
-}
+module.exports = main;
