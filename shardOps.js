@@ -18,6 +18,7 @@ function main() {
             let base = bases[roomName];
             if (base) base.creeps.concat(creep);
         }
+        return bases;
     }
 }
 
