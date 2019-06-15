@@ -9,6 +9,7 @@ function strategy() {
 }
 
 function command(creep) {
+    
 }
 
 module.exports = main;

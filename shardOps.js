@@ -2,10 +2,22 @@
 
 function main() {
     let rooms = Game.rooms;
+    let creeps = Game.creeps;
 
-    let bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
+    let bases = getBases(rooms);
+
     strategy();
     command(bases);
+
+    function getBases(rooms) {
+        let bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
+        for (base of bases) base.creeps = [];
+        for (creep of creeps) {
+            let roomName = creep.name.split('_')[0];
+            let base = bases[roomName];
+            if (base) base.creeps.concat(creep);
+        }
+    }
 }
 
 function strategy() {
@@ -14,7 +26,7 @@ function strategy() {
 
 function command(bases) {
     let baseOps = require('baseOps');
-    for (let room of bases) baseOps(room);
+    for (let base of bases) baseOps(base);
 }
 
 module.exports = function () {main()};

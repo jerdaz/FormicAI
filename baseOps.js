@@ -1,17 +1,29 @@
 'use strict'
-function main(room) {
+function main(base) {
     strategy();
-    command(room);
+    command(base);
 }
 
 function strategy() {
 
 }
 
-function command(room) {
+function command(base) {
+    let creeps = base.creeps;
+    for (let creep of creeps) {
+        let role = creep.name.split('_')[1];
+        switch (role) {
+            case harvester:
+            let creepHarvesterOps = require('creepHarvesterOps');
+            creepHarvesterOps(creep);
+            break;
+        }
+    }
+
     let spawnOps = require ('structSpawnOps');
-    let spawns = room.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
+    let spawns = base.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
     for (let spawn of spawns) spawnOps(spawn);
+
 }
 
 module.exports = main
