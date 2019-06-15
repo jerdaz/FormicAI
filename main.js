@@ -1,4 +1,4 @@
-var shard = require('shard.js');
+var shard = require('shard');
 
 function main() {
     strategy();
