@@ -1,8 +1,8 @@
 'use strict'
-import { loop } from 'legacy.main';
+var legacy = require('legacy.main');
 
 function main() {
-    loop();
+    legacy.loop();
     var rooms = Game.rooms;
 
     var bases = getBases(rooms);
