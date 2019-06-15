@@ -16,12 +16,12 @@ function strategy(creep) {
 function command(creep) {
     switch (creep.state) {
         case 'harvesting':
-            let source = Game.getObjectById(creep.memory.source.id);
+            let source = Game.getObjectById(creep.memory.source_id);
             creep.moveTo(source, {range:1});
             creep.harvest(source);
             break;
         case 'dropping':
-            let dest = Game.getObjectById(creep.memory.dest.id);
+            let dest = Game.getObjectById(creep.memory.dest_id);
             creep.moveTo(dest, {range:1});
             creep.transfer(dest, RESOURCE_ENERGY);
             break;
