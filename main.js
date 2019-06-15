@@ -14,6 +14,5 @@ function command() {
     shardOps.main();
 }
 
-module.exports.loop = function () {
-    shard();
-}
+module.exports.loop = main();
+
