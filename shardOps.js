@@ -11,7 +11,7 @@ function main() {
         for (let roomName in rooms) {
             let room = rooms[roomName];
             if (room.controller && room.controller.my) {
-                base.push(room)
+                bases.push(room)
                 room.creeps = [];
             }
         }
