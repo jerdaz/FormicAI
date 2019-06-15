@@ -16,12 +16,12 @@ function strategy(creep) {
 function command(creep) {
     switch (creep.state) {
         case 'harvesting':
-            creep.move(source, {range:1});
-            creep.harvest(source);
+            creep.move(creep.source, {range:1});
+            creep.harvest(creep.source);
             break;
         case 'dropping':
-            creep.move(dest, {range:1});
-            creep.transfer(dest, RESOURCE_ENERGY);
+            creep.move(creep.dest, {range:1});
+            creep.transfer(creep.dest, RESOURCE_ENERGY);
             break;
     }
 }
@@ -29,6 +29,6 @@ function command(creep) {
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     creep.command = 'harvest';
-    creep.source = source.id;
-    creep.dest = dest.id;
+    creep.source = source;
+    creep.dest = dest;
 };
