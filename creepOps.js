@@ -7,8 +7,8 @@ function main(creep) {
 function strategy(creep) {
     switch (creep.memory.command) {
         case 'harvest':
-            if (_.sum(creep.carry) == 0) creep.state = 'harvesting';
-            if (_.sum(creep.carry) == creep.carryCapacity) creep.state = 'dropping';
+            if (_.sum(creep.carry) == 0) creep.memory.state = 'harvesting';
+            if (_.sum(creep.carry) == creep.carryCapacity) creep.memory.state = 'dropping';
             break;
     }
 }
