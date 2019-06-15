@@ -4,7 +4,7 @@ function main(creep) {
     command(creep);
 }
 
-function strategy() {
+function strategy(creep) {
     switch (creep.command) {
         case 'harvest':
             if (creep.state != 'harvesting' && _.sum(creep.carry) == 0) creep.state = 'harvesting';
