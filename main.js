@@ -11,7 +11,7 @@ function strategy() {
 
 function command() {
     var shardOps = require('shardOps');
-    shardOps.main();
+    shardOps();
 }
 
 module.exports.loop = main();
