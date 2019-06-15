@@ -15,7 +15,7 @@ function main() {
         for (let creepName in creeps) {
             let creep = creeps[creepName];
             let roomName = creep.name.split('_')[0];
-            let base = bases[roomName];
+            let base = rooms[roomName];
             if (base) base.creeps.concat(creep);
         }
         return bases;
