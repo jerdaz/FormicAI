@@ -4,12 +4,12 @@ function main() {
     let rooms = Game.rooms;
     let creeps = Game.creeps;
 
-    let bases = getBases(rooms);
+    let bases = getBases(rooms, creeps);
 
     strategy();
     command(bases);
 
-    function getBases(rooms) {
+    function getBases(rooms, creeps) {
         let bases = [];
         for (let roomName in rooms) {
             let room = rooms[roomName];
