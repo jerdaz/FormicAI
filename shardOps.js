@@ -2,7 +2,10 @@
 
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
-    Global.memory = {rooms = [], creeps = []}
+    Memory.creeps = {};
+    Memory.spawns = {};
+    Memory.rooms = {};
+    Memory.flags = {};
 
     strategy();
     command(bases);
