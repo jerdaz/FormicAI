@@ -1,4 +1,0 @@
-# JDazAI
-JDazAI
-
-Test!
