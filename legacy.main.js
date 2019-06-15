@@ -2682,8 +2682,8 @@ var screepsProfiler = {
   registerFN: profileFunction,
   registerClass: profileObjectFunctions,
 };
-//var screepsProfiler_1 = screepsProfiler.wrap;
-//var screepsProfiler_2 = screepsProfiler.enable;
+var screepsProfiler_1 = screepsProfiler.wrap;
+var screepsProfiler_2 = screepsProfiler.enable;
 
 Structure.prototype.reservedEnergy = 0;
 Structure.prototype.initTick = function () {
@@ -6818,7 +6818,7 @@ class Base {
     }
 }
 
-screepsProfiler_2();
+//screepsProfiler_2();
 //declare var Memory: Memory;
 const cpuWindow = 300;
 const FULLROOMDIVIDER = 2;
