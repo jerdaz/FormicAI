@@ -19,7 +19,7 @@ function main() {
             let creep = creeps[creepName];
             let roomName = creep.name.split('_')[0];
             let base = rooms[roomName];
-            if (base) base.creeps.concat(creep);
+            if (base) base.creeps.push(creep);
         }
         return bases;
     }
