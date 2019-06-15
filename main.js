@@ -14,5 +14,5 @@ function command() {
 }
 
 module.exports.loop = function () {
-    main();
+    shard();
 }

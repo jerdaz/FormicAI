@@ -14,4 +14,4 @@ function command() {
 
 }
 
-module.exports = main;
+module.exports = function () {main()};
