@@ -26,9 +26,9 @@ function command(creep) {
     }
 }
 
-module.exports = main;
+module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     creep.command = 'harvest';
     creep.source = source.id;
     creep.dest = dest.id;
-}
+};

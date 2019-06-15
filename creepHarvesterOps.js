@@ -14,7 +14,7 @@ function strategy(creep) {
 }
 
 function command(creep) {
-    creepOps(creep);
+    creepOps.main(creep);
 }
 
 module.exports = main;
