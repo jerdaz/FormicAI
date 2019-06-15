@@ -30,8 +30,10 @@ function command(creep) {
 
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
-    creep.memory.command = 'harvest';
-    creep.memory.state = 'harvesting';
-    creep.memory.source_id = source.id;
-    creep.memory.dest_id = dest.id;
+    if (creep && source && dest) {
+        creep.memory.command = 'harvest';
+        creep.memory.state = 'harvesting';
+        creep.memory.source_id = source.id;
+        creep.memory.dest_id = dest.id;
+    }
 };
