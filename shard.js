@@ -11,7 +11,7 @@ function main() {
 
     function getBases(rooms){
         var bases = []
-        for(room in rooms) {
+        for(var room in rooms) {
             if (room.controller && room.controller.my) bases.concat(room);
         }
     }
