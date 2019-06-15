@@ -2,6 +2,7 @@
 
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
+    Memory = {};
     Memory.creeps = {};
     Memory.spawns = {};
     Memory.rooms = {};
