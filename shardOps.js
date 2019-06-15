@@ -14,7 +14,7 @@ function strategy() {
 
 function command(bases) {
     let baseOps = require('baseOps');
-    for (let room in bases) baseOps(room);
+    for (let room of bases) baseOps(room);
 }
 
 module.exports = function () {main()};
