@@ -1,5 +1,4 @@
 'use strict'
-var shard = require('shard');
 
 function main() {
     strategy();
@@ -11,7 +10,8 @@ function strategy() {
 }
 
 function command() {
-    shard.main();
+    var shardOps = require('shardOps');
+    shardOps.main();
 }
 
 module.exports.loop = function () {

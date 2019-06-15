@@ -1,13 +1,13 @@
 'use strict'
-var legacy = require('legacy.main');
 
 function main() {
+    var legacy = require('legacy.main');
     legacy.loop();
     var rooms = Game.rooms;
 
-    var bases = getBases(rooms);
+    var bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
     strategy();
-    command();
+    command(bases);
 
     function getBases(rooms){
         var bases = []
@@ -21,8 +21,9 @@ function strategy() {
 
 }
 
-function command() {
-
+function command(bases) {
+    var baseOps = require('baseOps');
+    for (var base in bases) baseOps(base);
 }
 
 module.exports = function () {main()};

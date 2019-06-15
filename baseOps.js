@@ -1,5 +1,5 @@
 'use strict'
-function main() {
+function main(base) {
     strategy();
     command();
 }
@@ -12,4 +12,4 @@ function command() {
 
 }
 
-module.exports = function () {main()};
+module.exports = main
