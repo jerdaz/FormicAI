@@ -6,7 +6,7 @@
         {
             "label": "stage & commit & push",
             "type": "shell",
-            "command": "cmd /c git add -A && git commit -m 'x' && git push",
+            "command": ".\\push.cmd",
             "group": {
                 "kind": "build",
                 "isDefault": true
