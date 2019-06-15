@@ -9,6 +9,10 @@ function strategy() {
 }
 
 function command() {
+    commandBuildings();
+}
+
+function commandBuildings() {
 
 }
 

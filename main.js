@@ -1,3 +1,4 @@
+'use strict'
 var shard = require('shard');
 
 function main() {

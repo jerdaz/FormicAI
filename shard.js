@@ -1,9 +1,20 @@
-var legacy = require('legacy.main');
+'use strict'
+import { loop } from 'legacy.main';
 
 function main() {
-    legacy.loop();
+    loop();
+    var rooms = Game.rooms;
+
+    var bases = getBases(rooms);
     strategy();
     command();
+
+    function getBases(rooms){
+        var bases = []
+        for(room in rooms) {
+            if (room.controller && room.controller.my) bases.concat(room);
+        }
+    }
 }
 
 function strategy() {
@@ -14,4 +25,4 @@ function command() {
 
 }
 
-module.exports = function () {main()};
+export default function () {main()};
