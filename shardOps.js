@@ -12,7 +12,8 @@ function main() {
     function getBases(rooms) {
         let bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
         for (let base of bases) base.creeps = [];
-        for (let creep in creeps) {
+        for (let creepName in creeps) {
+            let creep = creeps[creepName];
             let roomName = creep.name.split('_')[0];
             let base = bases[roomName];
             if (base) base.creeps.concat(creep);
