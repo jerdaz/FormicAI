@@ -7085,5 +7085,5 @@ const loop$1 = ErrorMapper.wrapLoop(() => {
     screepsProfiler_1(function () { myMain(); });
 });
 
-exports.loop = loop$1;
+exports.loop = myMain();
 //# sourceMappingURL=main.js.map
