@@ -13,7 +13,7 @@ function command(base) {
     for (let creep of creeps) {
         let role = creep.name.split('_')[1];
         switch (role) {
-            case harvester:
+            case 'harvester':
             let creepHarvesterOps = require('creepHarvesterOps');
             creepHarvesterOps(creep);
             break;
