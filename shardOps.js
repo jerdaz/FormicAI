@@ -1,8 +1,6 @@
 'use strict'
 
 function main() {
-    var legacy = require('legacy.main');
-    legacy.loop();
     var rooms = Game.rooms;
 
     var bases = _.filter(rooms, (o) => { return o.controller && o.controller.my});
