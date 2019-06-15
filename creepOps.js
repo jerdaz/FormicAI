@@ -14,7 +14,7 @@ function strategy(creep) {
 }
 
 function command(creep) {
-    switch (creep.state) {
+    switch (creep.memory.state) {
         case 'harvesting':
             let source = Game.getObjectById(creep.memory.source_id);
             creep.moveTo(source, {range:1});
