@@ -1,10 +1,7 @@
 'use strict'
 
 function main() {
-    let rooms = Game.rooms;
-    let creeps = Game.creeps;
-
-    let bases = getBases(rooms, creeps);
+    let bases = getBases(Game.rooms, Game.creeps);
 
     strategy();
     command(bases);
