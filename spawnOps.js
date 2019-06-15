@@ -9,7 +9,7 @@ function strategy() {
 }
 
 function command(spawn) {
-    spawn.spawnCreep([WORK,MOVE,CARRY]);
+    spawn.spawnCreep([WORK,MOVE,CARRY], Math.random());
 }
 
 module.exports = main;
