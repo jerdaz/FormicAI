@@ -44,4 +44,6 @@ function command(bases) {
     for (let base of bases) baseOps(base);
 }
 
-module.exports = function () {main()};
+module.exports = function () {
+    main()
+};
