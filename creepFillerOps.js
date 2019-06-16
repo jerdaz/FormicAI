@@ -7,8 +7,8 @@ function main(creep) {
 }
 
 function strategy(creep) {
-    let dest = creepOps.getDest(creep);
-    if (creepOps.getCommand(creep) == undefined || (dest.energy == dest.energyCapacity)) {
+    let dest = creep.mem.dest;
+    if (creep.mem.command == undefined || (dest.energy == dest.energyCapacity)) {
         creepOps.transfer(creep
                         , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
                         , creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (o) => {
