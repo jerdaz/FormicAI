@@ -5,7 +5,7 @@ function main(creep) {
     let cMem = mem[creep.name];
     if (cMem == undefined) {
         mem[creep.name] = {}
-        cmMem = mem[creep.name];
+        cMem = mem[creep.name];
         cMem.command = '';
         cMem.state = '';
     }
