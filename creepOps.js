@@ -1,31 +1,33 @@
 'use strict'
+let mem = [];
+
 function main(creep) {
     strategy(creep);
     command(creep);
 }
 
 function strategy(creep) {
-    switch (creep.memory.command) {
+    let cMem = mem[creep.name];
+    switch (cMem.command) {
         case 'harvest':
-            if (_.sum(creep.carry) == 0) creep.memory.state = 'harvesting';
-            if (_.sum(creep.carry) == creep.carryCapacity) creep.memory.state = 'dropping';
+            if (_.sum(creep.carry) == 0) cMem.state = 'harvesting';
+            if (_.sum(creep.carry) == creep.carryCapacity) cMem.state = 'dropping';
             break;
     }
 }
 
 function command(creep) {
-    switch (creep.memory.state) {
+    let cMem = mem[creep.name];
+    switch (cMem.state) {
         case 'harvesting':
-            let source = Game.getObjectById(creep.memory.source_id);
-            creep.moveTo(source, {range:1});
-            creep.harvest(source);
+            creep.moveTo(cMem.source, {range:1});
+            creep.harvest(cMem.source);
             break;
         case 'dropping':
-            let dest = Game.getObjectById(creep.memory.dest_id);
-            creep.moveTo(dest, {range:1});
-            creep.transfer(dest, RESOURCE_ENERGY);
-            creep.upgradeController(dest);
-            creep.build(dest);
+            creep.moveTo(cMem.dest, {range:1});
+            creep.transfer(cMem.dest, RESOURCE_ENERGY);
+            creep.upgradeController(cMem.dest);
+            creep.build(cMem.dest);
             break;
     }
 }
@@ -33,9 +35,15 @@ function command(creep) {
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     if (creep && source && dest) {
-        creep.memory.command = 'harvest';
-        creep.memory.source_id = source.id;
-        creep.memory.dest_id = dest.id;
-        if (creep.memory.state != 'harvesting' && creep.memory.state != 'dropping') creep.memory.state = 'harvesting';
+        cMem = mem[creep.name];
+        cMem.command = 'harvest';
+        cMem.source = source;
+        cMem.dest =dest;
+        if (cMem.state != 'harvesting' && cMem.state != 'dropping') cMem.state = 'harvesting';
     }
 };
+//module.exports.setDest = function(creep, dest) {mem[creep.name].dest=dest;}
+//module.exports.setSource = function (creep, source) {mem[creep.name].source=source}
+
+module.exports.getDest = function(creep) {return mem[creep.name].dest;}
+module.exports.getCommand = function(creep) {return mem[creep.name].command;}
