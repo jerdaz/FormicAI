@@ -103,6 +103,10 @@ function command(base) {
                 let creepUpgraderOps = require('creepUpgraderOps');
                 creepUpgraderOps(creep);
                 break;
+            case 'builder':
+                let creepBuilderOps = require('creepBuilderOps');
+                creepBuilderOps(creep);
+                break;
          }
      }
     
