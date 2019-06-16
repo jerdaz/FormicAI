@@ -25,23 +25,30 @@ function main(base) {
 
 function strategy(base) {
 
+    commandSpawns();
+    return;
+
+
+
     // building commands
-    let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
-    if (nConstructionSites == 0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
-        findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
+    function commandSpawns() {
+        let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
+        if (nConstructionSites == 0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
+            findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
+        }
+        let nCreeps = {filler: 0, upgrader:0, builder:0};
+        for (let creep of base.creeps) {
+            if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
+            else nCreeps [creep.memory.role]++;
+        }
+        let spawnCommand = '';
+        if (nCreeps['filler'] < 1 ) spawnCommand = 'spawnFirstFiller';
+        else if (nCreeps['filler'] < 2 ) spawnCommand = 'spawnFiller';
+        else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
+        else if (nConstructionSites > 0 && nCreeps['builder'] < 4) spawnCommand = 'spawnBuilder';
+        else if (nCreeps['upgrader'] < 15) spawnCommand = 'spawnUpgrader';
+        for (let spawn of base.spawns) spawn.command = spawnCommand;
     }
-    let nCreeps = {filler: 0, upgrader:0, builder:0};
-    for (let creep of base.creeps) {
-        if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
-        else nCreeps [creep.memory.role]++;
-    }
-    let spawnCommand = '';
-    if (nCreeps['filler'] < 1 ) spawnCommand = 'spawnFirstFiller';
-    else if (nCreeps['filler'] < 2 ) spawnCommand = 'spawnFiller';
-    else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
-    else if (nConstructionSites > 0 && nCreeps['builder'] < 4) spawnCommand = 'spawnBuilder';
-    else if (nCreeps['upgrader'] < 15) spawnCommand = 'spawnUpgrader';
-    for (let spawn of base.spawns) spawn.command = spawnCommand;
 
 
     function findBuildingSpot(base) {
