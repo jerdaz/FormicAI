@@ -13,7 +13,7 @@ function main(base) {
         }
     }
 
-    if (Math.floor(Math.random() * 1) == 0) strategy(base);
+    if (Math.floor(Math.random() * 10) == 0) strategy(base);
     
     command(base);
 }
