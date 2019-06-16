@@ -13,7 +13,7 @@ function command(spawn) {
         let capacity = spawn.room.energyCapacityAvailable;
         let bodySize = Math.floor(capacity / 200);
         let body = [];
-        for (let i = 0; i< bodySize;i++) body.concat([WORK,MOVE,CARRY]);
+        for (let i = 0; i< bodySize;i++) body.push(WORK,MOVE,CARRY);
         switch(spawn.command) {
             case 'spawnFirstFiller':
                 spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'filler'}});
