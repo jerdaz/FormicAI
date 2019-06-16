@@ -23,7 +23,7 @@ function command(base) {
     if (base.creeps.length < 15) {
         for (let spawn of base.spawns) spawn.command = 'spawnHarvester';
     } else {
-        spawn.command = ''
+        for (let spawn of base.spawns) spawn.command = '';
     }
 
      // creep ops
