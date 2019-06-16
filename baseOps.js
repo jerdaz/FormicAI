@@ -11,6 +11,7 @@ function strategy() {
 function command(base) {
     let creeps = base.creeps;
     for (let creep of creeps) {
+        creep.memory.role=creep.name.split('_')[1];
         switch (creep.memory.role) {
             case 'harvester':
             let creepHarvesterOps = require('creepHarvesterOps');
