@@ -25,6 +25,7 @@ function command(creep) {
             creep.moveTo(dest, {range:1});
             creep.transfer(dest, RESOURCE_ENERGY);
             creep.upgradeController(dest);
+            creep.build(dest);
             break;
     }
 }

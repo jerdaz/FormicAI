@@ -19,10 +19,26 @@ function main(base) {
 }
 
 function strategy(base) {
-    if (room.find(FIND_MY_CONSTRUCTION_SITES).length >0) return;
+    let nConstructionSites = room.find(FIND_MY_CONSTRUCTION_SITES).length;
+    if (nConstructionSites >0) return;
     if (base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION,base.controller.level]) {
         findBuildingSpot().createConstructionSite(STRUCTURE_EXTENSION);
     }
+
+    // building commands
+    let nCreeps = [];
+    for (let creep in base.creeps) {
+        if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
+        else nCreeps [creep.memory.role]++;
+    }
+
+    let spawnCommand = '';
+    if (nCreeps['harvester'] < 6 ) spawnCommand = 'spawnHarvester';
+    else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
+    else if (nConstructionSites > 0 && nCreeps['builder'] < 1) spawnCommand = 'spawnBuilder';
+    else if (nCreeps['upgrader'] < 9) spawnCommand = 'spawnUpgrader';
+    for (let spawn of base.spawns) spawn.command = spawnCommand;
+
 
     function findBuildingSpot() {
         var spawn = base.spawn;
@@ -74,15 +90,6 @@ function strategy(base) {
 }
 
 function command(base) {
-
-    // building commands
-    if (base.creeps.length < 6) {
-        for (let spawn of base.spawns) spawn.command = 'spawnHarvester';
-    } else if (base.creeps.length < 15) {
-        for (let spawn of base.spawns) spawn.command = 'spawnUpgrader';
-    } else {
-        for (let spawn of base.spawns) spawn.command = '';
-    }
 
      // creep ops
      let creeps = base.creeps;
