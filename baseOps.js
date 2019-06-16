@@ -52,7 +52,7 @@ function strategy(base) {
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && this.validBuildingSpot(spawn.pos.x+x, spawn.pos.y+y))
+                    if ( (x+y) % 2 == 0 && validBuildingSpot(spawn.pos.x+x, spawn.pos.y+y))
                         break loop;
                 }
             }
