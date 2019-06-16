@@ -7,8 +7,6 @@ let mem = {
 ,   creeps: {}
 };
 
-}
-
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
     for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName]; 
