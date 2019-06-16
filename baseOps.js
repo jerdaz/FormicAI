@@ -31,9 +31,9 @@ function strategy(base) {
         else nCreeps [creep.memory.role]++;
     }
     let spawnCommand = '';
-    if (nCreeps['filler'] < 6 ) spawnCommand = 'spawnFiller';
+    if (nCreeps['filler'] < 4 ) spawnCommand = 'spawnFiller';
     else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
-    else if (nConstructionSites > 0 && nCreeps['builder'] < 1) spawnCommand = 'spawnBuilder';
+    else if (nConstructionSites > 0 && nCreeps['builder'] < 4) spawnCommand = 'spawnBuilder';
     else if (nCreeps['upgrader'] < 9) spawnCommand = 'spawnUpgrader';
     for (let spawn of base.spawns) spawn.command = spawnCommand;
 
