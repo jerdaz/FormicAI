@@ -2,12 +2,13 @@
 let mem = {};
 
 function getMem(creepName){
+/*
     let cMem = mem[creepName] 
     if (cMem == undefined) {
         mem[creepName] = {};
         cMem = mem[creepName];
-    }
-    return cMem;
+    } */
+    return creep.mem;
 }
 
 function main(creep) {

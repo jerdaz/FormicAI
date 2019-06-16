@@ -17,6 +17,8 @@ function main() {
             let room = rooms[roomName];
             if (room.controller && room.controller.my) {
                 bases.push(room)
+                if (mem.bases[room.name] == undefined) mem.bases[room.name] = {};
+                room.mem = mem.bases[room.name];
                 room.creeps = [];
             }
         }
@@ -25,6 +27,8 @@ function main() {
             let roomName = creep.name.split('_')[0];
             let base = rooms[roomName];
             if (base) base.creeps.push(creep);
+            if (mem.creeps[creep.name] == undefined) mem.creeps[creep.name] = {};
+            creep.mem = mem.creeps[creep.name];
         }
         return bases;
     }
