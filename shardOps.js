@@ -2,7 +2,7 @@
 
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
-    for (let creepMem in Memory.creeps) if (Game.creeps[creepMem.name] == undefined) delete creepMem; 
+    for (let creepMem in Memory.creeps) if (Game.creeps[creepMem.name] == undefined) delete Memory.creeps[creepMem.name]; 
 
     strategy();
     command(bases);
