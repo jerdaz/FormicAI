@@ -41,7 +41,7 @@ function strategy(base) {
 
 
     function findBuildingSpot() {
-        var spawn = base.spawn;
+        var spawn = base.spawns[0];
         var x = spawn.pos.x;
         var y = spawn.pos.y;
     
