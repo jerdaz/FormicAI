@@ -36,6 +36,6 @@ module.exports.harvest = function(creep, source, dest) {
         creep.memory.command = 'harvest';
         creep.memory.source_id = source.id;
         creep.memory.dest_id = dest.id;
-        if (creep.memory.state != 'harvesting' && creep.memory.state != 'dropping') creep.memory.state = 'harvesting'
+        if (creep.memory.state != 'harvesting' && creep.memory.state != 'dropping') creep.memory.state = 'harvesting';
     }
 };
