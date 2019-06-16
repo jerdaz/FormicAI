@@ -22,7 +22,7 @@ function command(base) {
     // building commands
     if (base.creeps.length < 6) {
         for (let spawn of base.spawns) spawn.command = 'spawnHarvester';
-    } else if (base.creeps.length < 15 {
+    } else if (base.creeps.length < 15) {
         for (let spawn of base.spawns) spawn.command = 'spawnUpgrader';
     } else {
         for (let spawn of base.spawns) spawn.command = '';
