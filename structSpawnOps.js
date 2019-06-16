@@ -1,4 +1,5 @@
 'use strict'
+console.log ('hello')
 function main(spawn) {
     strategy();
     command(spawn);
