@@ -1,5 +1,5 @@
 'use strict'
-let mem = [];
+let mem = {};
 
 function getMem(creepName){
     let cMem = mem[creepName] 
