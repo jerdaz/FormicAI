@@ -1,4 +1,8 @@
 'use strict'
+let mem = {
+    bases: {}
+,   creeps: {}
+};
 
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
