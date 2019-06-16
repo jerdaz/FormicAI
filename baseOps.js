@@ -40,7 +40,7 @@ function strategy(base) {
     for (let spawn of base.spawns) spawn.command = spawnCommand;
 
 
-    function findBuildingSpot() {
+    function findBuildingSpot(base) {
         var spawn = base.spawns[0];
         var x = spawn.pos.x;
         var y = spawn.pos.y;
@@ -52,7 +52,7 @@ function strategy(base) {
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && validBuildingSpot(spawn.pos.x+x, spawn.pos.y+y))
+                    if ( (x+y) % 2 == 0 && validBuildingSpot(base, spawn.pos.x+x, spawn.pos.y+y))
                         break loop;
                 }
             }
@@ -63,9 +63,9 @@ function strategy(base) {
         return undefined;
     }
     
-    function validBuildingSpot(x, y) {
+    function validBuildingSpot(base, x, y) {
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
-        var pos = new RoomPosition(x, y, this.name)
+        var pos = new RoomPosition(x, y, base.name)
         var structures = pos.lookFor(LOOK_STRUCTURES);
         var buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
         var sources = pos.findInRange(FIND_SOURCES,2);
