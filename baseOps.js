@@ -27,7 +27,8 @@ function strategy(base) {
 
     // building commands
     let nCreeps = [];
-    for (let creep in base.creeps) {
+    for (let creepName in base.creeps) {
+        let creep = Game.creeps[creep];
         if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
         else nCreeps [creep.memory.role]++;
     }
