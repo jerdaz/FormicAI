@@ -1,4 +1,6 @@
 'use strict'
+let baseOps = require('baseOps');
+
 let mem = {
     bases: {}
 ,   creeps: {}
@@ -39,7 +41,6 @@ function strategy() {
 }
 
 function command(bases) {
-    let baseOps = require('baseOps');
     for (let base of bases) baseOps(base);
 }
 

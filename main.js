@@ -1,4 +1,5 @@
 'use strict'
+let shardOps = require('shardOps');
 
 function main() {
     strategy();
@@ -10,10 +11,7 @@ function strategy() {
 }
 
 function command() {
-    let shardOps = require('shardOps');
     shardOps();
 }
 
 module.exports.loop = main();
-
-//x

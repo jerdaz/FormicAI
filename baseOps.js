@@ -1,4 +1,9 @@
 'use strict'
+let creepFillerOps = require('creepFillerOps');
+let creepUpgraderOps = require('creepUpgraderOps');
+let creepBuilderOps = require('creepBuilderOps');
+
+
 function main(base) {
     base.spawns = []
     base.extensions = []
@@ -95,15 +100,12 @@ function command(base) {
      for (let creep of creeps) {
          switch (creep.memory.role) {
              case 'filler':
-                let creepFillerOps = require('creepFillerOps');
                 creepFillerOps(creep);
                 break;
             case 'upgrader':
-                let creepUpgraderOps = require('creepUpgraderOps');
                 creepUpgraderOps(creep);
                 break;
             case 'builder':
-                let creepBuilderOps = require('creepBuilderOps');
                 creepBuilderOps(creep);
                 break;
          }
