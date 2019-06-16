@@ -25,7 +25,7 @@ function strategy(base) {
     if (nConstructionSites == 0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
         findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
     }
-    let nCreeps = [];
+    let nCreeps = {filler: 0, upgrader:0, builder:0};
     for (let creep of base.creeps) {
         if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
         else nCreeps [creep.memory.role]++;
