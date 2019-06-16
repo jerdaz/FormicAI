@@ -21,7 +21,7 @@ function main(base) {
 function strategy(base) {
     let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
     if (nConstructionSites >0) return;
-    if (base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION,base.controller.level]) {
+    if (base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
         findBuildingSpot().createConstructionSite(STRUCTURE_EXTENSION);
     }
 
