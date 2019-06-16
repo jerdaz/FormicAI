@@ -1,11 +1,13 @@
 'use strict'
 function main(base) {
-    strategy();
+    strategy(base);
     command(base);
 }
 
-function strategy() {
-
+function strategy(base) {
+//    if (base.creeps.length < 15) {
+//        for (spawn.command = 'spawnHarvester';
+//    else 
 }
 
 function command(base) {
