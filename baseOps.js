@@ -76,11 +76,11 @@ function strategy(base) {
         if (buildingsites.length > 0 ) return false;
         if (sources.length > 0) return false;
         if (minerals.length > 0 ) return false;
-        if (pos.inRangeTo(this.controller.pos,2)) return false;
+        if (pos.inRangeTo(base.controller.pos,2)) return false;
         for (let nx=-1;nx<=1;nx++) {
             for (let ny=-1;ny<=1;ny++) {
                 if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                var terrain =this.lookForAt(LOOK_TERRAIN, x+nx, y+ny);
+                var terrain =base.lookForAt(LOOK_TERRAIN, x+nx, y+ny);
                 if (terrain[0] == 'wall' ) return false;
             }
         }
