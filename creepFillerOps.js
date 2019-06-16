@@ -9,7 +9,7 @@ function main(creep) {
 function strategy(creep) {
     let dest = creepOps.getDest(creep);
     if (creepOps.getCommand(creep) == undefined || (dest.energy == dest.energyCapacity)) {
-        creepOps.harvest(creep
+        creepOps.transfer(creep
                         , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
                         , creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (o) => {
                                 return  (o.energy < o.energyCapacity)
