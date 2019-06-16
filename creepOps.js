@@ -2,6 +2,11 @@
 let mem = [];
 
 function main(creep) {
+    let cMem = mem[creep.name];
+    if (cMem.command == undefined) {
+        cMem.command = '';
+        cMem.state = '';
+    }
     strategy(creep);
     command(creep);
 }
