@@ -8,7 +8,7 @@ function getMem(creepName){
         mem[creepName] = {};
         cMem = mem[creepName];
     } */
-    return creep.mem;
+    return Game.creeps(creepName).mem;
 }
 
 function main(creep) {
