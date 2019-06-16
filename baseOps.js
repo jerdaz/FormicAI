@@ -96,8 +96,8 @@ function command(base) {
      for (let creep of creeps) {
          switch (creep.memory.role) {
              case 'harvester':
-                let creepHarvesterOps = require('creepHarvesterOps');
-                creepHarvesterOps(creep);
+                let creepFillerOps = require('creepFillerOps');
+                creepFillerOps(creep);
                 break;
             case 'upgrader':
                 let creepUpgraderOps = require('creepUpgraderOps');
