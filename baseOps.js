@@ -24,12 +24,12 @@ function main(base) {
 }
 
 function strategy(base) {
-    planBase();
+    let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
+    planBase(nConstructionSites);
     planCreeps();
     return;
 
-    function planBase() {
-        let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
+    function planBase(nConstructionSites) {
         if (nConstructionSites == 0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
             findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
         }
@@ -83,7 +83,7 @@ function strategy(base) {
     }
 
     // building commands
-    function planCreeps() {
+    function planCreeps(nConstructionSites) {
         let nCreeps = {filler: 0, upgrader:0, builder:0};
         for (let creep of base.creeps) {
             if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
