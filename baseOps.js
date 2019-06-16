@@ -33,7 +33,7 @@ function strategy(base) {
     }
 
     let spawnCommand = '';
-    if (nCreeps['harvester'] < 6 ) spawnCommand = 'spawnHarvester';
+    if (nCreeps['filler'] < 6 ) spawnCommand = 'spawnFiller';
     else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
     else if (nConstructionSites > 0 && nCreeps['builder'] < 1) spawnCommand = 'spawnBuilder';
     else if (nCreeps['upgrader'] < 9) spawnCommand = 'spawnUpgrader';
