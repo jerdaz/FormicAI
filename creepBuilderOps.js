@@ -9,7 +9,7 @@ function main(creep) {
 function strategy(creep) {
     if (creep.memory.command == undefined) creepOps.harvest(creep
                                     , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
-                                    , creep.pos.find(FIND_MY_CONSTRUCTION_SITES)
+                                    , creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                                     );
 }
 
