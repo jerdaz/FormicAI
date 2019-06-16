@@ -1,14 +1,13 @@
 'use strict'
 let baseOps = require('baseOps');
 
-if (Game.mem == undefined) {
-    console.log ('MEM INIT');
-    Game.mem = {
-        bases: {}
-    ,   creeps: {}
-    };
+console.log ('MEM INIT');
+let mem = {
+    bases: {}
+,   creeps: {}
+};
+
 }
-let mem = Game.mem;
 
 function main() {
     let bases = getBases(Game.rooms, Game.creeps);
