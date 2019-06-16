@@ -9,7 +9,11 @@ function strategy() {
 }
 
 function command(spawn) {
-    spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random()) , {memory: {role: 'harvester'}};
+    switch(spawn.command) {
+        case 'spawnHarvester':
+            spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random()) , {memory: {role: 'harvester'}};
+            break;
+    }
 }
 
 module.exports = main;
