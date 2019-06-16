@@ -59,7 +59,7 @@ function strategy(base) {
             i++;
         }
     
-        if (i<50) return new RoomPosition (spawn.pos.x+x,spawn.pos.y+y, this.name);
+        if (i<50) return new RoomPosition (spawn.pos.x+x,spawn.pos.y+y, base.name);
         return undefined;
     }
     
