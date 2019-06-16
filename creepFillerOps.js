@@ -7,11 +7,16 @@ function main(creep) {
 }
 
 function strategy(creep) {
-    if (creep.memory.command == undefined) creepOps.harvest(creep
-                                    , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
-                                    , creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION}} )
-                                    );
-   // if (creep.dest.)
+    let dest = Game.getObjectById(creep.memory.dest_id)
+    if (creep.memory.command == undefined || (dest.energy == dest.energyCapacity)) {
+        creepOps.harvest(creep
+                        , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
+                        , creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (o) => {
+                                return  (o.energy < o.energyCapacity)
+                                        && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION)
+                                }})
+                        );
+    }
 }
 
 function command(creep) {
