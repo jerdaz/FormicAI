@@ -44,7 +44,7 @@ function command(creep) {
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     if (creep && source && dest) {
-        cMem = getMem(creep.name);
+        let cMem = getMem(creep.name);
         cMem.command = 'harvest';
         cMem.source = source;
         cMem.dest =dest;
