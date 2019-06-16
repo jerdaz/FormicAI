@@ -22,7 +22,7 @@ function strategy(base) {
 
     // building commands
     let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
-    if (nConstructionSites >0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
+    if (nConstructionSites == 0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
         findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
     }
     let nCreeps = [];
