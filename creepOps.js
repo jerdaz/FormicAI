@@ -1,20 +1,22 @@
 'use strict'
 let mem = [];
 
-function main(creep) {
-    let cMem = mem[creep.name];
+function getMem(creepName){
+    let cMem = mem[creepName] 
     if (cMem == undefined) {
-        mem[creep.name] = {}
-        cMem = mem[creep.name];
-        cMem.command = '';
-        cMem.state = '';
+        mem[creepName] = {};
+        cMem = mem[creepName];
     }
+    return cMem;
+}
+
+function main(creep) {
     strategy(creep);
     command(creep);
 }
 
 function strategy(creep) {
-    let cMem = mem[creep.name];
+    let cMem = getMem(creep.name);
     switch (cMem.command) {
         case 'harvest':
             if (_.sum(creep.carry) == 0) cMem.state = 'harvesting';
@@ -24,7 +26,7 @@ function strategy(creep) {
 }
 
 function command(creep) {
-    let cMem = mem[creep.name];
+    let cMem = getMem(creep.name);
     switch (cMem.state) {
         case 'harvesting':
             creep.moveTo(cMem.source, {range:1});
@@ -42,7 +44,7 @@ function command(creep) {
 module.exports.main = main;
 module.exports.harvest = function(creep, source, dest) {
     if (creep && source && dest) {
-        cMem = mem[creep.name];
+        cMem = getMem(creep.name);
         cMem.command = 'harvest';
         cMem.source = source;
         cMem.dest =dest;
@@ -52,5 +54,5 @@ module.exports.harvest = function(creep, source, dest) {
 //module.exports.setDest = function(creep, dest) {mem[creep.name].dest=dest;}
 //module.exports.setSource = function (creep, source) {mem[creep.name].source=source}
 
-module.exports.getDest = function(creep) {return mem[creep.name].dest;}
-module.exports.getCommand = function(creep) {return mem[creep.name].command;}
+module.exports.getDest = function(creep) {return getMem(creep.name).dest;}
+module.exports.getCommand = function(creep) {return getMem(creep.name).command;}
