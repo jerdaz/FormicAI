@@ -7,7 +7,7 @@ function main(creep) {
 }
 
 function strategy(creep) {
-    if (creepOps.mem.command == undefined || creep.mem.dest == undefined) creepOps.transfer(creep
+    if (creep.mem.command == undefined || creep.mem.dest == undefined) creepOps.transfer(creep
                                     , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
                                     , creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                                     );
