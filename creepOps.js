@@ -24,7 +24,7 @@ function command(creep) {
             let dest = Game.getObjectById(creep.memory.dest_id);
             creep.moveTo(dest, {range:1});
             creep.transfer(dest, RESOURCE_ENERGY);
-            creep.upgrade(dest);
+            creep.upgradeController(dest);
             break;
     }
 }
