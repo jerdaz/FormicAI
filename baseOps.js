@@ -26,7 +26,7 @@ function main(base) {
 function strategy(base) {
     let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
     planBase(nConstructionSites);
-    planCreeps();
+    planCreeps(nConstructionSites);
     return;
 
     function planBase(nConstructionSites) {
