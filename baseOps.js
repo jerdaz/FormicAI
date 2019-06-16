@@ -2,7 +2,7 @@
 let creepFillerOps = require('creepFillerOps');
 let creepUpgraderOps = require('creepUpgraderOps');
 let creepBuilderOps = require('creepBuilderOps');
-
+let spawnOps = require ('structSpawnOps');
 
 function main(base) {
     base.spawns = []
@@ -100,27 +100,31 @@ function strategy(base) {
 }
 
 function command(base) {
+    creepOps();
+    buildingOps();
+    return;
 
-     // creep ops
-     let creeps = base.creeps;
-     for (let creep of creeps) {
-         switch (creep.memory.role) {
-             case 'filler':
-                creepFillerOps(creep);
-                break;
-            case 'upgrader':
-                creepUpgraderOps(creep);
-                break;
-            case 'builder':
-                creepBuilderOps(creep);
-                break;
-         }
-     }
+    function creepOps() {
+        let creeps = base.creeps;
+        for (let creep of creeps) {
+            switch (creep.memory.role) {
+                case 'filler':
+                    creepFillerOps(creep);
+                    break;
+                case 'upgrader':
+                    creepUpgraderOps(creep);
+                    break;
+                case 'builder':
+                    creepBuilderOps(creep);
+                    break;
+            }
+        }
+    }
     
-    // building ops
-    let spawnOps = require ('structSpawnOps');
-    let spawns = base.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
-    for (let spawn of spawns) spawnOps(spawn);
+    function buildingOps() {
+        let spawns = base.find(FIND_MY_STRUCTURES, {filter: { structureType: STRUCTURE_SPAWN}});
+        for (let spawn of spawns) spawnOps(spawn);
+    }
 }
 
 module.exports = main

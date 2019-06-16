@@ -13,6 +13,7 @@ function main() {
 
     strategy();
     command(bases);
+    return;
 
     function getBases(rooms, creeps) {
         let bases = [];
