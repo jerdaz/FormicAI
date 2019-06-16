@@ -14,8 +14,8 @@ function command(spawn) {
             spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'harvester'}});
             break;
         case 'spawnUpgrader':
-                spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'upgrader'}});
-                break;
+            spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'upgrader'}});
+            break;
         }
 }
 
