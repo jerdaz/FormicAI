@@ -25,7 +25,7 @@ function command(creep) {
         case 'delivering':
             creep.moveTo(cMem.dest, {range:1});
             creep.transfer(cMem.dest, RESOURCE_ENERGY);
-            creep.upgradeController(cMem.dest);
+            //creep.upgradeController(cMem.dest);
             creep.build(cMem.dest);
             break;
     }
