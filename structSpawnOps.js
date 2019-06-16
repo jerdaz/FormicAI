@@ -13,7 +13,10 @@ function command(spawn) {
         case 'spawnHarvester':
             spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'harvester'}});
             break;
-    }
+        case 'spawnUpgrader':
+                spawn.spawnCreep([WORK,MOVE,CARRY], spawn.room.name + '_' + Math.random() , {memory: {role: 'upgrader'}});
+                break;
+        }
 }
 
 module.exports = main;

@@ -20,8 +20,10 @@ function strategy(base) {
 function command(base) {
 
     // building commands
-    if (base.creeps.length < 15) {
+    if (base.creeps.length < 6) {
         for (let spawn of base.spawns) spawn.command = 'spawnHarvester';
+    } else if (base.creeps.length < 15 {
+        for (let spawn of base.spawns) spawn.command = 'spawnUpgrader';
     } else {
         for (let spawn of base.spawns) spawn.command = '';
     }
@@ -31,9 +33,13 @@ function command(base) {
      for (let creep of creeps) {
          switch (creep.memory.role) {
              case 'harvester':
-             let creepHarvesterOps = require('creepHarvesterOps');
-             creepHarvesterOps(creep);
-             break;
+                let creepHarvesterOps = require('creepHarvesterOps');
+                creepHarvesterOps(creep);
+                break;
+            case 'upgrader':
+                let creepUpgraderOps = require('creepUpgraderOps');
+                creepUpgraderOps(creep);
+                break;
          }
      }
     
