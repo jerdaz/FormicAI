@@ -10,7 +10,7 @@ function strategy() {
 
 function command(spawn) {
     if (spawn.command) {
-        let capacity = spawn.room.energyCapacityAvailable();
+        let capacity = spawn.room.energyCapacityAvailable;
         let bodySize = Math.floor(capacity / 200);
         let body = [];
         for (let i = 0; i< bodySize;i++) body.concat([WORK,MOVE,CARRY]);
