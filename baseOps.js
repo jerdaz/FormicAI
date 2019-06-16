@@ -19,13 +19,12 @@ function main(base) {
 }
 
 function strategy(base) {
-    let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
-    if (nConstructionSites >0) return;
-    if (base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
-        findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
-    }
 
     // building commands
+    let nConstructionSites = base.find(FIND_MY_CONSTRUCTION_SITES).length;
+    if (nConstructionSites >0 && base.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][base.controller.level]) {
+        findBuildingSpot(base).createConstructionSite(STRUCTURE_EXTENSION);
+    }
     let nCreeps = [];
     for (let creep of base.creeps) {
         if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
