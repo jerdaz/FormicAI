@@ -13,7 +13,7 @@ function main(base) {
         }
     }
 
-    if (Math.floor(Math.random() * 10) == 0) strategy(base);
+    if (Math.floor(Math.random() * 1) == 0) strategy(base);
     
     command(base);
 }
@@ -31,7 +31,6 @@ function strategy(base) {
         if (nCreeps [creep.memory.role] == undefined) nCreeps [creep.memory.role] = 0;
         else nCreeps [creep.memory.role]++;
     }
-
     let spawnCommand = '';
     if (nCreeps['filler'] < 6 ) spawnCommand = 'spawnFiller';
     else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
