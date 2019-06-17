@@ -2,7 +2,7 @@ let baseOps = require('./baseOps');
 
 module.exports = class ShardOps {
     run() {
-        let bases = _getBases(Game.rooms, Game.creeps);
+        let bases = this._getBases();
     
         this._strategy();
         this._command(bases);
@@ -13,7 +13,7 @@ module.exports = class ShardOps {
 
     }
 
-    _command(){
+    _command(bases){
         for (let base of bases) baseOps(base);
     }
 
