@@ -1,37 +1,47 @@
-'use strict'
 let baseOps = require('./baseOps');
 
 module.exports = class ShardOps {
     run() {
-        let bases = getBases(Game.rooms, Game.creeps);
-        for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName]; 
+        let bases = _getBases(Game.rooms, Game.creeps);
     
-        strategy();
-        command(bases);
-        return;
-    
-        function getBases(rooms, creeps) {
-            let bases = [];
-            for (let roomName in rooms) {
-                let room = rooms[roomName];
-                if (room.controller && room.controller.my) {
-                    bases.push(room)
-                    if (mem.bases[room.name] == undefined) mem.bases[room.name] = {};
-                    room.mem = mem.bases[room.name];
-                    room.creeps = [];
-                }
-            }
-            for (let creepName in creeps) {
-                let creep = creeps[creepName];
-                let roomName = creep.name.split('_')[0];
-                let base = rooms[roomName];
-                if (base) base.creeps.push(creep);
-                if (mem.creeps[creep.name] == undefined) mem.creeps[creep.name] = {};
-                creep.mem = mem.creeps[creep.name];
-            }
-            return bases;
-        }
+        this._strategy();
+        this._command(bases);
+        this._cleanup();
     }
+
+    _strategy(){
+
+    }
+
+    _command(){
+        for (let base of bases) baseOps(base);
+    }
+
+    _cleanup(){
+        for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName]; 
+    }
+
+    _getBases() {
+        let bases = [];
+        for (let roomName in Game.rooms) {
+            let room = Game.rooms[roomName];
+            if (room.controller && room.controller.my) {
+                bases.push(room)
+                if (mem.bases[room.name] == undefined) mem.bases[room.name] = {};
+                room.mem = mem.bases[room.name];
+                room.creeps = [];
+            }
+        }
+        for (let creepName in Game.creeps) {
+            let creep = Game.creeps[creepName];
+            let roomName = creep.name.split('_')[0];
+            let base = Game.rooms[roomName];
+            if (base) base.creeps.push(creep);
+            if (mem.creeps[creep.name] == undefined) mem.creeps[creep.name] = {};
+            creep.mem = mem.creeps[creep.name];
+        }
+        return bases;
+    }    
 }
 
 console.log ('MEM INIT');
@@ -40,14 +50,7 @@ let mem = {
 ,   creeps: {}
 };
 
-function main() {
-
-}
-
-function strategy() {
-
-}
 
 function command(bases) {
-    for (let base of bases) baseOps(base);
+    
 }

@@ -1,4 +1,3 @@
-'use strict'
 let ShardOps = require('./shardOps');
 
 class Main {
