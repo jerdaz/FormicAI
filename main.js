@@ -1,7 +1,12 @@
 'use strict'
-let shardOps = require('shardOps');
+let ShardOps = require('./shardOps');
 
 class Main {
+    _shardOps;
+    constructor() {
+        this._shardOps = new ShardOps();
+    }
+
     run() {
         this._strategy();
         this._command();
@@ -10,7 +15,7 @@ class Main {
     _strategy() {};
 
     _command() {
-        shardOps.run();
+        this._shardOps.run();
     };
 }
 
