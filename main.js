@@ -1,5 +1,7 @@
 let ShardOp = require('./shardOp');
 
+console.log('GLOBAL INIT');
+
 class Main {
     constructor() {
         this._shardOp = new ShardOp();

@@ -57,9 +57,3 @@ module.exports = class ShardOp {
         return baseOps;
     }    
 }
-
-console.log ('MEM INIT');
-let mem = {
-    bases: {}
-,   creeps: {}
-};
