@@ -1,20 +1,21 @@
 'use strict'
-
 let shardOps = require('shardOps');
 
-function main() {
-    strategy();
-    command();
+class Main {
+    run() {
+        this._strategy();
+        this._command();
+    }
+
+    _strategy() {};
+
+    _command() {
+        shardOps.run();
+    };
 }
 
-function strategy() {
-
-}
-
-function command() {
-    shardOps();
-}
 
 module.exports.loop = function() {
-    main();
+    let main = new Main;
+    main.run();
 }

@@ -1,5 +1,7 @@
 'use strict'
 
+//import _ from "lodash";
+
 function main(creep) {
     strategy(creep);
     command(creep);
