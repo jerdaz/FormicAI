@@ -7,7 +7,7 @@ function main(creep) {
 }
 
 function strategy(creep) {
-    let dest = creep.mem.dest;
+    let dest = Game.getObjectById(creep.mem.dest.id);
     if (creep.mem.command == undefined || (dest.energy == dest.energyCapacity)) {
         creepOps.transfer(creep
                         , creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
