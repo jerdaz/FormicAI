@@ -1,0 +1,4 @@
+code refactoring
+type checking op game.getobjectbyid
+colonization
+classes updaten ipv reinitialiseren elke tick.

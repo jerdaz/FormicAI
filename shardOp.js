@@ -1,21 +1,8 @@
-let _baseOp = require('./baseOp');
-class BaseOp {
-    constructor () {
-        this._creepNames = [];
-    }
-
-    run () {
-        _baseOp();
-    }
-
-    addCreep(creep) {
-        this._creepNames.push (creep.name);
-    }
-}
+let BaseOp = require('./baseOp');
 
 module.exports = class ShardOp {
     constructor() {
-        /** @interface {string:BaseOp} */
+        /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
     }
     run() {
@@ -31,6 +18,7 @@ module.exports = class ShardOp {
     }
 
     _command(){
+        this._baseOps['x'];
         for (let roomName in this._baseOps) this._baseOps[roomName].run();
     }
 
@@ -40,12 +28,12 @@ module.exports = class ShardOp {
 
 
     _findBaseOps() {
+        /** @type {{[key:string]: BaseOp }} */
         let baseOps = {};
         for (let roomName in Game.rooms) {
             let room = Game.rooms[roomName];
             if (room.controller && room.controller.my) {
-                baseOps[roomName] = new BaseOp();
-                if (mem.bases[room.name] == undefined) mem.bases[room.name] = {};
+                baseOps[roomName] = new BaseOp(roomName);
             }
         }
         for (let creepName in Game.creeps) {

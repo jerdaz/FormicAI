@@ -12,10 +12,8 @@ class Main {
         this._command();
     }
 
-    /** @private */
     _strategy() {};
 
-    /** @private */
     _command() {
         this._shardOp.run();
     };
@@ -25,5 +23,4 @@ class Main {
 module.exports.loop = function() {
     let main = new Main;
     main.run();
-    
 }

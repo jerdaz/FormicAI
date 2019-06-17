@@ -3,6 +3,16 @@
 //        "target": "ES6",
     //"target": "esnext", 
         "module": "commonjs" ,
-        "checkJs": true
+        "checkJs": true,
+        "strict": true
+        /*
+        "noImplicitAny": true,
+        "strictNullChecks": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true
+        */
     }
 }
