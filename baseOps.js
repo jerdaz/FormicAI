@@ -1,5 +1,5 @@
 'use strict'
-let creepFillerOps = require('creepFillerOps');
+let creepFillerOps = require('creepFillerOps').default;
 let creepUpgraderOps = require('creepUpgraderOps');
 let creepBuilderOps = require('creepBuilderOps');
 let spawnOps = require ('structSpawnOps');

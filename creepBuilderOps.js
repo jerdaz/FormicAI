@@ -1,5 +1,5 @@
 'use strict'
-let creepOps = require('creepOps');
+let creepOps = require('./creepOps');
 
 function main(creep) {
     strategy(creep);

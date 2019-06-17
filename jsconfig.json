@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "target": "ES6",
+    //"target": "esnext", 
+   // "module": "commonjs" ,
+        "checkJs": true
+    }
+}
