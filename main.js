@@ -2,7 +2,6 @@
 let ShardOps = require('./shardOps');
 
 class Main {
-    _shardOps;
     constructor() {
         this._shardOps = new ShardOps();
     }
