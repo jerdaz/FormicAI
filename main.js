@@ -1,8 +1,8 @@
-let ShardOps = require('./shardOps');
+let ShardOp = require('./shardOp');
 
 class Main {
     constructor() {
-        this._shardOps = new ShardOps();
+        this._shardOp = new ShardOp();
     }
 
     run() {
@@ -13,7 +13,7 @@ class Main {
     _strategy() {};
 
     _command() {
-        this._shardOps.run();
+        this._shardOp.run();
     };
 }
 

@@ -1,8 +1,8 @@
 'use strict'
-let creepFillerOps = require('creepFillerOps');
-let creepUpgraderOps = require('creepUpgraderOps');
-let creepBuilderOps = require('creepBuilderOps');
-let spawnOps = require ('structSpawnOps');
+let creepFillerOps = require('./creepFillerOps');
+let creepUpgraderOps = require('./creepUpgraderOps');
+let creepBuilderOps = require('./creepBuilderOps');
+let spawnOps = require ('./structSpawnOps');
 
 function main(base) {
     base.spawns = []
