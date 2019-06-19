@@ -1,6 +1,5 @@
 let U = require('./util');
 const c = require('./constants');
-let _ = require('lodash');
 let Operation = require('./operation');
 /**@typedef {import('./baseOp')} BaseOp  */
 
