@@ -1,6 +1,7 @@
 let U = require('./util');
 const c = require('./constants');
 let CreepRoleOp = require('./creepRoleOp');
+///**@typedef {import('./creepRoleOp')} CreepRoleOp} */
 
 module.exports = class CreepFillerOp extends CreepRoleOp {
     _strategy() {
