@@ -113,6 +113,9 @@ module.exports = class BaseOp extends Operation{
         if (U.chance(100)) {
             let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
             this._planBase(nConstructionSites);
+        }
+        if (U.chance(10)) {
+            let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
             this._planCreeps(nConstructionSites);
         }
     }
