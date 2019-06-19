@@ -5,6 +5,6 @@ module.exports = {
     ROLE_NONE:  0,
     ROLE_FILLER: 1,
     ROLE_UPGRADER: 2,
-    ROLE_BUILDER: 3
-    ROLE_MAX: 3
+    ROLE_BUILDER: 3,
+    ROLE_MAX: 4
 }
