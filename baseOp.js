@@ -1,81 +1,118 @@
-'use strict'
-
-let creepFillerOps = require('./creepFillerOps');
-let creepUpgraderOps = require('./creepUpgraderOps');
-let creepBuilderOps = require('./creepBuilderOps');
+let U = require('./util');
+let c = require('./constants');
+let _ = require('lodash');
+let Operation = require('./operation');
+let ShardOp = require('./shardOp')
+let CreepRoleOp = require('./creepRoleOp');
 let SpawnOp = require ('./structSpawnOp');
 
-module.exports = class BaseOp {
-    /** @param {string} roomName */
-    constructor (roomName) {
-        /** @type {string[]} */
+module.exports = class BaseOp extends Operation{
+    /** @param {Base} base */
+    /** @param {ShardOp} shardOp */
+    constructor (base, shardOp) {
+        super();
+        this._shardOp = shardOp;
+
+//        /**@type {{[index:string]:Structure[]}} */
+//        this._myStructures = {}
+
+        /**@type {Base} */
+        this._base = base;
+        /**@type {string[]} */
         this._creepNames = [];
 
-        /** @type {string} */
-        this._roomName = roomName;
+        /**@type {{[creepName:string]: CreepRoleOp}} */
+        this._creepRoleOps = {};
 
-        /**@type {RoomStructures} */
-        this._structures = { 
-            spawns: []
-          , extensions: []
-        }
+        /**@type {{[id:string]: SpawnOp}} */
+        this._spawnOps = {};
+        this._spawnCommand = c.ROLE_NONE;
 
-        /**@type {Room} */
-        this._room = Game.rooms[this._roomName];
+        this._centerPos = this._getBaseCenter();
 
-        /**@type {SpawnOp[]} */
-        this._spawnOps = [];
+        this._fillerEmergency = false;
     }
 
-    run() {
-        this._refreshGameObjects();
-    
-        if (Math.floor(Math.random() * 10) == 0) this._strategy();
-        
-        this._command();
-    }
-
-    /**@param {Creep} creep */
-    addCreep(creep) {
-        this._creepNames.push (creep.name);
-    }
-
-    _refreshGameObjects() {
-        this._room = Game.rooms[this._roomName];
-        this._structures.spawns=[];
-        this._spawnOps=[];
-        this._structures.extensions=[];
-
-        for (let structure of this._room.find(FIND_MY_STRUCTURES)) {
+    /**@param {Base} base */
+    /**@param {string[]} creepNames */
+    initTick(base, creepNames) {
+        this._base = base;
+        this._creepNames = creepNames;
+        this._myStructures = {};
+        for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
+//            if (this._myStructures[structure.structureType] === undefined) this._myStructures[structure.structureType] = [];
+//            this._myStructures[structure.structureType].push(structure);
             switch (structure.structureType) {
                 case STRUCTURE_SPAWN:
-                    this._structures.spawns.push(structure);
-                    this._spawnOps.push(new SpawnOp(structure))
+                    if (this._spawnOps[structure.id] === undefined ) this._spawnOps[structure.id] = new SpawnOp(structure, this)
                     break;
-                case STRUCTURE_EXTENSION:
-                    this._structures.extensions.push(structure);
-                    break;
+            }
+        }
+        for (let creepName of this._creepNames) {
+            let creep = this._shardOp.getCreep(creepName);
+            if (!creep) throw Error;
+            if (this._creepRoleOps[creepName] === undefined) {
+                this._creepRoleOps[creepName] = CreepRoleOp.getRoleOp(creep, this);
+            }
+            this._creepRoleOps[creepName].initTick(creep)
+        }
+    }
+
+    /**@param {string} structureType */
+    /**@returns {Structure[]} */
+    getMyStructures(structureType) {
+        return this._base.find(FIND_MY_STRUCTURES, {filter: {structureType: structureType}})
+    }
+
+    getBase() {
+        return this._base;
+    }
+
+    getSpawnCommand() {
+        return this._spawnCommand;
+    }
+
+    getMaxSpawnEnergy() {
+        if (this._fillerEmergency) return SPAWN_ENERGY_CAPACITY;
+        else return this._base.energyCapacityAvailable;
+    }
+
+    _support() {
+        if (U.chance(1500)) {
+            //cleanup dead creeps
+            for (let creepName in this._creepRoleOps) {
+                if (this._shardOp.getCreep(creepName) === undefined) {
+                    delete this._creepRoleOps[creepName];
+                }
+            }
+
+            // cleanup dead buildings
+            for (let id in this._spawnOps) {
+                if (U.getObj(id) === undefined) {
+                    delete this._spawnOps[id];
+                }
             }
         }
     }
 
-
     _strategy() {
-        let nConstructionSites = this._room.find(FIND_MY_CONSTRUCTION_SITES).length;
-        this._planBase(nConstructionSites);
-        this._planCreeps(nConstructionSites);
+        if (U.chance(100)) {
+            let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
+            this._planBase(nConstructionSites);
+            this._planCreeps(nConstructionSites);
+        }
     }
 
     _command() {
-        this._creepOperation();
-        this._buildingOperation();
+        for (let creepName in this._creepRoleOps) this._creepRoleOps[creepName].run();
+        for (let id in this._spawnOps) this._spawnOps[id].run();
     }    
     
     /**@param {number} nConstructionSites */
     _planBase(nConstructionSites) {
-        let room = this._room;
-        if (!room.controller) throw Error;
-        if (nConstructionSites == 0 && this._structures.extensions.length < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
+        let room = this._base;
+        let nExtensions = this.getMyStructures(STRUCTURE_EXTENSION).length;
+        if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
             let pos = this._findBuildingSpot();
             if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
@@ -84,90 +121,122 @@ module.exports = class BaseOp {
 
     /**@param {number} nConstructionSites */
     _planCreeps(nConstructionSites) {
-        let base = this._room;
-        /**@type {{[key:string]:number}} */
-        let nCreeps = {'filler': 0, 'upgrader':0, 'builder':0};
-        for (let creepName of this._creepNames) {
-            let role = Memory.creeps[creepName].role;
+        let base = this._base;
+        /**@type {number[]} */
+        let nCreeps = [];
+
+        for (let creepName in this._creepRoleOps) {
+            let creepRoleOp = this._creepRoleOps[creepName];
+            let role = creepRoleOp.getRole();
             if (nCreeps [role] == undefined) nCreeps [role] = 0;
             else nCreeps [role]++;
         }
-        let spawnCommand = '';
-        if (nCreeps['filler'] < 1 ) spawnCommand = 'spawnFirstFiller';
-        else if (nCreeps['filler'] < 2 ) spawnCommand = 'spawnFiller';
-        else if (nCreeps['upgrader'] < 1) spawnCommand = 'spawnUpgrader';
-        else if (nConstructionSites > 0 && nCreeps['builder'] < 4) spawnCommand = 'spawnBuilder';
-        else if (nCreeps['upgrader'] < 15) spawnCommand = 'spawnUpgrader';
-        for (let spawnOp of this._spawnOps) spawnOp.command = spawnCommand;
+        let spawnCommand = c.ROLE_NONE;
+        this._fillerEmergency = false;
+        if (nCreeps[c.ROLE_FILLER] < 1 ) { spawnCommand = c.ROLE_FILLER; this._fillerEmergency = true; }
+        else if (nCreeps[c.ROLE_FILLER] < 2 ) spawnCommand = c.ROLE_FILLER;
+        else if (nCreeps[c.ROLE_UPGRADER] < 1) spawnCommand = c.ROLE_UPGRADER;
+        else if (nConstructionSites > 0 && nCreeps[c.ROLE_BUILDER] < 4) spawnCommand = c.ROLE_BUILDER;
+        else if (nCreeps[c.ROLE_UPGRADER] < 15) spawnCommand = c.ROLE_UPGRADER;
+        this._spawnCommand = spawnCommand;
     }
 
-    _creepOperation() {
-        for (let creepName of this._creepNames) {
-            switch (Memory.creeps[creepName].role) {
-                case 'filler':
-                    creepFillerOps(creepName);
-                    break;
-                case 'upgrader':
-                    creepUpgraderOps(creepName);
-                    break;
-                case 'builder':
-                    creepBuilderOps(creepName);
-                    break;
-            }
-        }
-    }
-        
-    _buildingOperation() {
-        for (let spawnOp of this._spawnOps) spawnOp.run();
-    }
         
     _findBuildingSpot() {
-        let room = this._room;
-        let spawn = this._structures.spawns[0];
-        let x = spawn.pos.x;
-        let y = spawn.pos.y;
+        let x_ = this._centerPos.x;
+        let y_ = this._centerPos.y;
+        let x = 0;
+        let y = 0;
     
         let i=1;
         loop:
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && this._validBuildingSpot(spawn.pos.x+x, spawn.pos.y+y))
+                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this._base))
                         break loop;
                 }
             }
             i++;
         }
     
-        if (i<50) return new RoomPosition (spawn.pos.x+x,spawn.pos.y+y, room.name);
+        if (i<50) return new RoomPosition (x_+x,y_+y, this._base.name);
         return undefined;
+
+   
+        /** @param {number} x */
+        /** @param {number} y */
+        /** @param {Base} base */
+        function _isValidBuildingSpot(x, y, base) {
+            if (!base.controller) throw Error;
+            if (x<2 || x > 47 || y < 2 || y > 47) return false;
+            var pos = new RoomPosition(x, y, base.name)
+            var structures = pos.lookFor(LOOK_STRUCTURES);
+            var buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
+            var sources = pos.findInRange(FIND_SOURCES,2);
+            var minerals = pos.findInRange(FIND_MINERALS,2);
+            var countStructures = 0;
+            for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
+            if (countStructures > 0) return false;
+            if (buildingsites.length > 0 ) return false;
+            if (sources.length > 0) return false;
+            if (minerals.length > 0 ) return false;
+            if (pos.inRangeTo(base.controller.pos,2)) return false;
+            for (let nx=-1;nx<=1;nx++) {
+                for (let ny=-1;ny<=1;ny++) {
+                    if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
+                    var terrain =base.lookForAt(LOOK_TERRAIN, x+nx, y+ny);
+                    if (terrain[0] == 'wall' ) return false;
+                }
+            }
+            return true;
+        }
+
     }
-    
-    /** @param {number} x */
-    /** @param {number} y */
-    _validBuildingSpot(x, y) {
-        let base = this._room;
-        if (!base.controller) throw Error;
-        if (x<2 || x > 47 || y < 2 || y > 47) return false;
-        var pos = new RoomPosition(x, y, base.name)
-        var structures = pos.lookFor(LOOK_STRUCTURES);
-        var buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-        var sources = pos.findInRange(FIND_SOURCES,2);
-        var minerals = pos.findInRange(FIND_MINERALS,2);
-        var countStructures = 0;
-        for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
-        if (countStructures > 0) return false;
-        if (buildingsites.length > 0 ) return false;
-        if (sources.length > 0) return false;
-        if (minerals.length > 0 ) return false;
-        if (pos.inRangeTo(base.controller.pos,2)) return false;
-        for (let nx=-1;nx<=1;nx++) {
-            for (let ny=-1;ny<=1;ny++) {
-                if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                var terrain =base.lookForAt(LOOK_TERRAIN, x+nx, y+ny);
-                if (terrain[0] == 'wall' ) return false;
+ 
+    _getBaseCenter() {
+        let base = this._base;
+        let x = 0;
+        let y = 0;
+        let n = 0;
+
+        x += base.controller.pos.x;
+        y += base.controller.pos.y;
+        n += 1;
+
+        for (let source of /**@type {Source[]} */(base.find(FIND_SOURCES))) {
+            x += source.pos.x;
+            y += source.pos.y;
+            n += 1;
+        }
+
+        for (let source of /**@type {Mineral[]} */(base.find(FIND_MINERALS))) {
+            x += source.pos.x;
+            y += source.pos.y;
+            n += 1;
+        }
+
+        x = Math.round(x / n);
+        y = Math.round(y / n);
+
+        let spawnX = x;
+        let spawnY = y;
+        let validSpot;
+        do {
+            validSpot = true;
+            spawnX = (spawnX + _.random(-1, 1) - 2 ) % 46 + 2;
+            spawnY = (spawnY + _.random(-1, 1) - 2 ) % 46 + 2;
+
+            for (let nx=-3;nx<=3;nx++) {
+                for (let ny=-3;ny<=3;ny++) {
+                    var terrain = Game.map.getTerrainAt(spawnX + nx, spawnY + ny, base.name);
+                    if (terrain == 'wall' )  validSpot = false;
+                }
             }
         }
-        return true;
+        while (validSpot == false )
+
+        let result = new RoomPosition(x, y, base.name);
+        return result;
     }
 }

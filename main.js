@@ -1,26 +1,22 @@
+let U = require('./util');
+let Operation = require('./operation');
 let ShardOp = require('./shardOp');
 
-console.log('GLOBAL INIT');
-
-class Main {
+class Main extends Operation {
     constructor() {
+        super();
+        U.l('INIT MAIN');
         this._shardOp = new ShardOp();
     }
 
-    run() {
-        this._strategy();
-        this._command();
-    }
-
-    _strategy() {};
-
     _command() {
+        this._shardOp.initTick();
         this._shardOp.run();
     };
 }
 
+let main = new Main;
 
 module.exports.loop = function() {
-    let main = new Main;
     main.run();
 }

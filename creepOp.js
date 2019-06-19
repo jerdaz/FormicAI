@@ -1,54 +1,67 @@
-'use strict'
+let U = require('./util');
+let c = require('./constants');
+let Operation = require('./operation');
+let BaseOp = require('./baseOp');
 
-module.exports = class CreepFillerOp {
+const STATE_NONE = 0;
+const STATE_RETRIEVING = 1;
+const STATE_DELIVERING = 2;
+
+module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
     constructor(creep) {
-        this._creepName = creep.name;
-    }
-
-    run() {
-        let creep = Game.creeps[this._creepName];
-        this._strategy(creep);
-        this._command(creep);
+        super();
+        this._creep = creep;
+        /**@type {RoomObject} */
+        this._dest;
+        /**@type {RoomObject} */
+        this._source;
+        this._state = STATE_NONE;
     }
 
     /**@param {Creep} creep */
-    /**@param {Source} source */
-    /**@param {Structure} dest */
-    transfer (creep, source, dest) {
-        if (!creep || !source || !dest) throw Error;
-        let cMem = creep.memory;
-        cMem.command = 'transfer';
-        cMem.source = source;
-        cMem.dest =dest;
-        if (cMem.state != 'retrieving' && cMem.state != 'delivering') cMem.state = 'retrieving';
-    };
-    
-     /**@param {Creep} creep */
-     _strategy(creep) {
-        let cMem = creep.memory;
-        switch (cMem.command) {
-            case 'transfer':
-                if (creep.carry.energy == 0) cMem.state = 'retrieving';
-                if (creep.carry.energy == creep.carryCapacity) cMem.state = 'delivering';
+    initTick(creep) {
+        this._creep = creep;
+    }
+
+    _command() {
+        let source = this._source;
+        let dest = this._dest;
+        let creep = this._creep;
+
+        switch (this._instruction.command) {
+            case c.COMMAND_TRANSFER:
+                if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
+                if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
                 break;
         }
-    }   
 
-    /**@param {Creep} creep */
-    _command(creep) {
-        let cMem = creep.memory;
-        switch (cMem.state) {
-            case 'retrieving':
-                creep.moveTo(cMem.source, {range:1});
-                creep.harvest(cMem.source);
+        switch (this._state) {
+            case STATE_RETRIEVING:
+                creep.moveTo(source, {range:1});
+                if      (source instanceof Source)    creep.harvest(source);
+                else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
+                else throw 'Cannot retrieve from object ' + source;
                 break;
-            case 'delivering':
-                creep.moveTo(cMem.dest, {range:1});
-                creep.transfer(cMem.dest, RESOURCE_ENERGY);
-                creep.build(cMem.dest);
+            case STATE_DELIVERING:
+                creep.moveTo(dest, {range:1});
+                if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
+                else if (dest instanceof ConstructionSite) creep.build(dest);
+                else throw 'Cannot retrieve to object ' + dest;
                 break;
         }    
+    }
+
+    getName() {
+        return this._creep.name;
+    }
+
+    getPos() {
+        return this._creep.pos;
+    }
+
+    getDest() {
+        return this._dest;
     }
 }
 
