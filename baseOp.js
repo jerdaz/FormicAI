@@ -2,19 +2,15 @@ let U = require('./util');
 const c = require('./constants');
 let _ = require('lodash');
 let Operation = require('./operation');
-let ShardOp = require('./shardOp')
 let CreepRoleOp = require('./creepRoleOp');
 let SpawnOp = require ('./structSpawnOp');
 
 module.exports = class BaseOp extends Operation{
     /** @param {Base} base */
-    /** @param {ShardOp} shardOp */
+    /** @param {import('./shardOp')} shardOp */
     constructor (base, shardOp) {
         super();
         this._shardOp = shardOp;
-
-//        /**@type {{[index:string]:Structure[]}} */
-//        this._myStructures = {}
 
         /**@type {Base} */
         this._base = base;
