@@ -14,7 +14,7 @@ module.exports = class ShardOp extends Operation {
         let creepNamesByBase = {};
         for (let creepName in Game.creeps) {
             let roomName = creepName.split('_')[0];
-            if (creepNamesByBase[roomName] === undefined) creepNamesByBase[roomName] = [];
+            if (creepNamesByBase[roomName] == undefined) creepNamesByBase[roomName] = [];
             creepNamesByBase[roomName].push (creepName);
         }
 
