@@ -142,11 +142,12 @@ module.exports = class BaseOp extends Operation{
         /**@type {number[]} */
         let nCreeps = [];
 
+        for (let i=1; i<=c.ROLE_MAX; i++) nCreeps[i] = 0;
+        
         for (let creepName in this._creepRoleOps) {
             let creepRoleOp = this._creepRoleOps[creepName];
             let role = creepRoleOp.getRole();
-            if (nCreeps [role] == undefined) nCreeps [role] = 0;
-            else nCreeps [role]++;
+            nCreeps [role]++;
         }
         let spawnCommand = c.ROLE_NONE;
         this._fillerEmergency = false;
