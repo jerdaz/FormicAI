@@ -11,11 +11,13 @@ module.exports = class CreepOp extends Operation {
     constructor(creep) {
         super();
         this._creep = creep;
-        /**@type {RoomObject} */
-        this._dest;
-        /**@type {RoomObject} */
-        this._source;
+//        /**@type {RoomObject} */
+//        this._dest;
+//        /**@type {RoomObject} */
+//        this._source;
         this._state = STATE_NONE;
+        /**@type {CreepOpInstruction} */
+        this._instruction;
     }
 
     /**@param {Creep} creep */
@@ -24,8 +26,8 @@ module.exports = class CreepOp extends Operation {
     }
 
     _command() {
-        let source = this._source;
-        let dest = this._dest;
+        let source = this._instruction.source.id;
+        let dest = this._instruction.dest.id;
         let creep = this._creep;
 
         switch (this._instruction.command) {
