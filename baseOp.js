@@ -2,9 +2,12 @@ let U = require('./util');
 const c = require('./constants');
 let _ = require('lodash');
 let Operation = require('./operation');
-let CreepRoleOp = require('./creepRoleOp');
+let CreepFillerOp = require('./creepFillerOp');
+let CreepUpgraderOp = require('./creepUpgraderOp');
+let CreepBuilderOp = require('./creepBuilderOp');
 let SpawnOp = require ('./structSpawnOp');
 /** @typedef {import('./shardOp')} ShardOp */
+/** @typedef {import('./creepRoleOp')} CreepRoleOp} */
 
 module.exports = class BaseOp extends Operation{
     /** @param {Base} base */
@@ -37,8 +40,6 @@ module.exports = class BaseOp extends Operation{
         this._creepNames = creepNames;
         this._myStructures = {};
         for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
-//            if (this._myStructures[structure.structureType] === undefined) this._myStructures[structure.structureType] = [];
-//            this._myStructures[structure.structureType].push(structure);
             switch (structure.structureType) {
                 case STRUCTURE_SPAWN:
                     if (this._spawnOps[structure.id] === undefined ) this._spawnOps[structure.id] = new SpawnOp(structure, this)
@@ -49,7 +50,24 @@ module.exports = class BaseOp extends Operation{
             let creep = this._shardOp.getCreep(creepName);
             if (!creep) throw Error;
             if (this._creepRoleOps[creepName] === undefined) {
-                this._creepRoleOps[creepName] = CreepRoleOp.getRoleOp(creep, this);
+                let role = parseInt(creep.name.split('_')[1]);
+                /**@type CreepRoleOp */
+                let ret;
+                switch (role) {
+                    case c.ROLE_FILLER:
+                        ret = new CreepFillerOp(creep, this);
+                        break;
+                    case c.ROLE_UPGRADER:
+                        ret = new CreepUpgraderOp(creep, this);
+                        break;
+                    case c.ROLE_BUILDER:
+                        ret = new CreepBuilderOp(creep, this);
+                        break;
+                    default:
+                        throw Error;
+                        break;
+                }
+                this._creepRoleOps[creepName] = ret;
             }
             this._creepRoleOps[creepName].initTick(creep)
         }
@@ -235,5 +253,5 @@ module.exports = class BaseOp extends Operation{
 
         let result = new RoomPosition(x, y, base.name);
         return result;
-    }
+    } 
 }
