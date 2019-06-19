@@ -19,6 +19,7 @@ module.exports = class ShardOp extends Operation {
         }
 
         for (let roomName in this._baseOps) {
+            if (creepNamesByBase[roomName] == undefined) creepNamesByBase[roomName] = [];
             let base = this.getBase(roomName);
             if (base.controller.my) {
                 this._baseOps[roomName].initTick(base, creepNamesByBase[base.name]);
