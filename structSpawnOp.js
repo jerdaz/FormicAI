@@ -2,7 +2,7 @@ let U = require('./util');
 const c = require('./constants');
 let _ = require('lodash');
 let Operation = require('./operation');
-let BaseOp = require ('./BaseOp');
+/**@typedef {import('./baseOp')} BaseOp  */
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};

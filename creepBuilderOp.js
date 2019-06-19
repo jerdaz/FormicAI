@@ -1,7 +1,5 @@
 let U = require('./util');
 const c = require('./constants');
-let BaseOp = require('./baseOp');
-let CreepOp = require('./creepOp');
 let CreepRoleOp = require('./creepRoleOp');
 
 module.exports = class CreepBuilderOp extends CreepRoleOp {
