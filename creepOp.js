@@ -1,7 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation');
-let BaseOp = require('./baseOp');
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;

@@ -4,10 +4,11 @@ let _ = require('lodash');
 let Operation = require('./operation');
 let CreepRoleOp = require('./creepRoleOp');
 let SpawnOp = require ('./structSpawnOp');
+/** @typedef {import('./shardOp')} ShardOp */
 
 module.exports = class BaseOp extends Operation{
     /** @param {Base} base */
-    /** @param {import('./shardOp')} shardOp */
+    /** @param {ShardOp} shardOp */
     constructor (base, shardOp) {
         super();
         this._shardOp = shardOp;
