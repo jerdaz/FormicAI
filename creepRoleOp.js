@@ -1,12 +1,11 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation');
-let BaseOp = require('./baseOp');
 let CreepOp = require('./creepOp');
 let CreepFillerOp = require('./creepFillerOp');
 let CreepUpgraderOp = require('./creepUpgraderOp');
 let CreepBuilderOp = require('./creepBuilderOp');
-
+/**@typedef {import('./baseOp')} BaseOp  */
 
 module.exports = class CreepRoleOp extends Operation {
     /**@param {Creep} creep */
