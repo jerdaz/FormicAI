@@ -1,5 +1,5 @@
 let U = require('./util');
-let c = require('./constants');
+const c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
 let CreepOp = require('./creepOp');

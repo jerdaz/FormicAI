@@ -1,4 +1,4 @@
-let c = require('./constants');
+const c = require('./constants');
 
 module.exports = class Operation {
     constructor() {

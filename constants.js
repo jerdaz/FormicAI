@@ -1,7 +1,9 @@
-export const COMMAND_NONE = 0;
-export const COMMAND_TRANSFER = 1;
+module.exports = {
+    COMMAND_NONE: 0,
+    COMMAND_TRANSFER: 1,
 
-export const ROLE_NONE = 0;
-export const ROLE_FILLER = 1;
-export const ROLE_UPGRADER = 2;
-export const ROLE_BUILDER = 3;
+    ROLE_NONE:  0,
+    ROLE_FILLER: 1,
+    ROLE_UPGRADER: 2,
+    ROLE_BUILDER: 3
+}
