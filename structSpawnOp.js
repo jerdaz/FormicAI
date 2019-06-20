@@ -35,8 +35,9 @@ module.exports = class SpawnOp extends Operation {
         }
     }
 
-    /**@param {string[]} body */
+    /**@param {BodyPartConstant[]} body */
     _expandCreep (body, minLength = 3, maxLength = MAX_CREEP_SIZE) {
+        /**@type {BodyPartConstant[]} */
         var result = [];
         var i=0;
         var maxEnergy = this._baseOp.getMaxSpawnEnergy();
@@ -54,7 +55,7 @@ module.exports = class SpawnOp extends Operation {
         if (result.length>= minLength) return result;
         else return [];
 
-        /**@param {string[]} body */
+        /**@param {BodyPartConstant[]} body */
         function _getCreepCost (body) {
             var cost = 0;
             for (var i=0; i<body.length;i++) cost += BODYPART_COST[body[i]];

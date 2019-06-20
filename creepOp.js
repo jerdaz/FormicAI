@@ -23,7 +23,7 @@ module.exports = class CreepOp extends Operation {
     }
 
     /**@param {Source} source */
-    /**@param {Structure} dest */
+    /**@param {Structure | ConstructionSite} dest */
     instructTransfer(source, dest) {
         this._sourceId = source.id;
         this._destId = dest.id;

@@ -11,7 +11,7 @@ module.exports = class CreepUpgraderOp extends CreepRoleOp {
         {
             let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
             let dest = this._baseOp.getBase().controller;
-            creepOp.instructTransfer(source, dest);
+            if (source && dest) creepOp.instructTransfer(source, dest);
         }
     }
 }

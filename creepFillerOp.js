@@ -17,7 +17,7 @@ module.exports = class CreepFillerOp extends CreepRoleOp {
                                     && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION);
                             }})
                         
-            creepOp.instructTransfer(source, dest);
+            if (source && dest) creepOp.instructTransfer(source, dest);
         }
     }
 }

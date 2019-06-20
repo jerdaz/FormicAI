@@ -11,7 +11,7 @@ module.exports = class CreepBuilderOp extends CreepRoleOp {
         {
             let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
             let dest = creepOp.getPos().findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-            creepOp.instructTransfer(source, dest);
+            if (source && dest) creepOp.instructTransfer(source, dest);
         }
     }
 }

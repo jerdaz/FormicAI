@@ -206,8 +206,8 @@ module.exports = class BaseOp extends Operation{
             for (let nx=-1;nx<=1;nx++) {
                 for (let ny=-1;ny<=1;ny++) {
                     if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                    var terrain =base.lookForAt(LOOK_TERRAIN, x+nx, y+ny);
-                    if (terrain[0] == 'wall' ) return false;
+                    var terrain =base.getTerrain().get(x+nx, y+ny);
+                    if (terrain == TERRAIN_MASK_WALL) return false;
                 }
             }
             return true;

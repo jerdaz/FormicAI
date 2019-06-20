@@ -7,6 +7,7 @@ class Main extends Operation {
         super();
         U.l('INIT MAIN');
         for (let memObj in Memory) {
+            // @ts-ignore
             delete Memory[memObj];
         }
         this._shardOp = new ShardOp();
