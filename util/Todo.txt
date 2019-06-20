@@ -1,4 +1,6 @@
-code refactoring
-type checking op game.getobjectbyid
+functionele operaties onder bases bouwen:
+- spawning
+- filling
+- upgrading
+- building
 colonization
-classes updaten ipv reinitialiseren elke tick.

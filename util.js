@@ -1,7 +1,7 @@
 module.exports = class Util {
     /**@param {any} message Logs message to console*/
     static l(message){
-        console.log(message);
+        console.log(JSON.stringify(message));
     }
 
     /**@param {number} x */
