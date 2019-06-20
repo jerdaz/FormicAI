@@ -18,6 +18,8 @@ module.exports = class Util {
     /**@param {Error} err */
     static log_error(err) {
         this.l(err);
+        // @ts-ignore
+        Game.debug.dumpMain();
         Game.notify(JSON.stringify(err), 60 * 4);
     }
 }
