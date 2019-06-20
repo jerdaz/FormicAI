@@ -6,7 +6,18 @@ class Main extends Operation {
     constructor() {
         super();
         U.l('INIT MAIN');
-        Memory = {creeps: {}, rooms: {}, spawns: {}, flags:{}}
+        for (let memObj in Memory) {
+            switch (memObj) {
+                case 'creep':
+                case 'room':
+                case 'flag':
+                case 'spawn':
+                    Memory[memObj] = {};
+                    break;
+                default:
+                    delete Memory[memObj];
+            }
+        }
         this._shardOp = new ShardOp();
     }
 
