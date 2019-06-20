@@ -6,16 +6,18 @@ module.exports = class Operation {
     }
 
     run() {
+        let err;
         try {
             this._support();
-        } catch(error) {throw error};
+        } catch(error) {err = error};
         try {
             this._strategy();
-        } catch(error) {throw error};
+        } catch(error) {err = error};
         try {
             this._command();
-        } catch(error) {throw error};
+        } catch(error) {err = error};
         if (this._firstRun) this._firstRun = false;
+        throw err;
     }
 
     _support() {}
