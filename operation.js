@@ -17,7 +17,7 @@ module.exports = class Operation {
             this._command();
         } catch(error) {err = error};
         if (this._firstRun) this._firstRun = false;
-        throw err;
+        if (err) throw err;
     }
 
     _support() {}
