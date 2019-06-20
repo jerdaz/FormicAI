@@ -1,6 +1,7 @@
 let U = require('./util');
 let Operation = require('./operation');
 let ShardOp = require('./shardOp');
+let Debug = require('./debug');
 
 class Main extends Operation {
     constructor() {
@@ -20,8 +21,11 @@ class Main extends Operation {
 }
 
 let main = new Main;
+let debug = new Debug;
 
 module.exports.loop = function() {
+    // @ts-ignore
+    Game.debug = debug;
     // @ts-ignore
     Game.main = main;
     main.run();
