@@ -1,3 +1,4 @@
+let U = require('./util')
 const c = require('./constants');
 
 module.exports = class Operation {
@@ -9,15 +10,14 @@ module.exports = class Operation {
         let err;
         try {
             this._support();
-        } catch(error) {err = error};
+        } catch(error) {U.l(err)};
         try {
             this._strategy();
-        } catch(error) {err = error};
+        } catch(error) {U.l(err)};
         try {
             this._command();
-        } catch(error) {err = error};
+        } catch(error) {U.l(err)};
         if (this._firstRun) this._firstRun = false;
-        if (err) throw err;
     }
 
     _support() {}
