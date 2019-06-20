@@ -7,20 +7,17 @@ module.exports = class CreepFillerOp extends CreepRoleOp {
     _strategy() {
         let creepOp = this._creepOp;
         let dest = creepOp.getDest();
-        let newCommand = false;
         if (!(dest instanceof StructureSpawn || dest instanceof StructureExtension)
-           || (creepOp.getInstr().command == undefined)
+           || (creepOp.getInstr() != c.COMMAND_TRANSFER)
            || (dest.energy && dest.energy == dest.energyCapacity) ) 
-           {
-            let instr = {command: c.COMMAND_TRANSFER
-                        , source: creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE)
-                        , dest: creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
+        {
+            let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE)
+            let dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
                             return  (o.energy < o.energyCapacity)
                                     && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION);
                             }})
-                        };
-            creepOp.setInstr(instr);
+                        
+            creepOp.instructTransfer(source, dest);
         }
     }
 }
-

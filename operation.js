@@ -3,18 +3,6 @@ const c = require('./constants');
 module.exports = class Operation {
     constructor() {
         this._firstRun = true;
-        /**@type {Instruction} */
-        this._instruction = {command: c.COMMAND_NONE};
-    }
-
-    /**@param {Instruction} instruction */
-    setInstr(instruction) {
-        this._instruction = instruction;
-    }
-
-    /**@returns {Instruction} instruction */
-    getInstr() {
-        return this._instruction;
     }
 
     run() {

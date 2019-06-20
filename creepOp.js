@@ -11,13 +11,10 @@ module.exports = class CreepOp extends Operation {
     constructor(creep) {
         super();
         this._creep = creep;
-//        /**@type {RoomObject} */
-//        this._dest;
-//        /**@type {RoomObject} */
-//        this._source;
         this._state = STATE_NONE;
-        /**@type {CreepOpInstruction} */
-        this._instruction;
+        this._instruct = c.COMMAND_NONE;
+        this._sourceId = '';
+        this._destId = '';
     }
 
     /**@param {Creep} creep */
@@ -25,12 +22,20 @@ module.exports = class CreepOp extends Operation {
         this._creep = creep;
     }
 
+    /**@param {Source} source */
+    /**@param {Structure} dest */
+    instructTransfer(source, dest) {
+        this._sourceId = source.id;
+        this._destId = dest.id;
+        this._instruct = c.COMMAND_TRANSFER
+    }
+    
     _command() {
-        let source = this._instruction.source.id;
-        let dest = this._instruction.dest.id;
+        let source = U.getObj(this._sourceId);
+        let dest = U.getObj(this._destId);
         let creep = this._creep;
 
-        switch (this._instruction.command) {
+        switch (this._instruct) {
             case c.COMMAND_TRANSFER:
                 if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
@@ -62,7 +67,11 @@ module.exports = class CreepOp extends Operation {
     }
 
     getDest() {
-        return this._dest;
+        return U.getObj(this._destId);
+    }
+
+    getInstr() {
+        return this._instruct;
     }
 }
 

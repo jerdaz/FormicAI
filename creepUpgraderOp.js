@@ -6,14 +6,12 @@ module.exports = class CreepUpgraderOp extends CreepRoleOp {
     _strategy() {
         let creepOp = this._creepOp;
         let dest = creepOp.getDest();
-        let newCommand = false;
-        if (!(dest instanceof StructureController)
-           || (creepOp.getInstr().command == undefined) )
+        if (!(dest instanceof ConstructionSite)
+           || (creepOp.getInstr() != c.COMMAND_TRANSFER) )
         {
-            let instr = {command: c.COMMAND_TRANSFER
-                        , source: creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE)
-                        , dest: this._baseOp.getBase().controller}
-            creepOp.setInstr(instr);
+            let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
+            let dest = this._baseOp.getBase().controller;
+            creepOp.instructTransfer(source, dest);
         }
     }
 }
