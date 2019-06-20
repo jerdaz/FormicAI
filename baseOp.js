@@ -27,7 +27,10 @@ module.exports = class BaseOp extends Operation{
         this._spawnOps = {};
         this._spawnCommand = c.ROLE_NONE;
 
-        this._centerPos = this._getBaseCenter();
+        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
+
+        if (firstSpawn) this._centerPos = firstSpawn.pos;
+        else this._centerPos = this._getBaseCenter;
 
         this._fillerEmergency = false;
     }

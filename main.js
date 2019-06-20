@@ -6,6 +6,7 @@ class Main extends Operation {
     constructor() {
         super();
         U.l('INIT MAIN');
+        Memory = {creeps: {}, rooms: {}, spawns: {}, flags:{}}
         this._shardOp = new ShardOp();
     }
 
