@@ -15,7 +15,7 @@ module.exports = class Util {
         return Game.getObjectById(id);
     }
 
-    /**@param {Error} err */
+    /**@param {any} err */
     static log_error(err) {
         this.l(err);
         // @ts-ignore
