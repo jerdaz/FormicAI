@@ -39,6 +39,7 @@ module.exports = class CreepOp extends Operation {
             case c.COMMAND_TRANSFER:
                 if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
+                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
         }
 
