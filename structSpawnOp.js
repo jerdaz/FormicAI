@@ -29,7 +29,7 @@ module.exports = class SpawnOp extends Operation {
             let capacity = spawn.room.energyCapacityAvailable;
             let bodySize = Math.floor(capacity / 200);
             
-            let body = this._expandCreep([WORK,MOVE,CARRY]);
+            let body = this._expandCreep([MOVE,CARRY,WORK]);
 
             spawn.spawnCreep(body, spawn.room.name + '_' + role + '_' + _.random(0, 999999999))
         }
