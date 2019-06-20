@@ -30,7 +30,7 @@ module.exports = class BaseOp extends Operation{
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
 
         if (firstSpawn) this._centerPos = firstSpawn.pos;
-        else this._centerPos = this._getBaseCenter;
+        else this._centerPos = this._getBaseCenter();
 
         this._fillerEmergency = false;
     }
