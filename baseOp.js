@@ -45,6 +45,7 @@ module.exports = class BaseOp extends Operation{
             switch (structure.structureType) {
                 case STRUCTURE_SPAWN:
                     if (this._spawnOps[structure.id] === undefined ) this._spawnOps[structure.id] = new SpawnOp(structure, this)
+                    else this._spawnOps[structure.id].initTick(structure);
                     break;
             }
         }
