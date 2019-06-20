@@ -7,6 +7,7 @@ module.exports = class Operation {
     }
 
     run() {
+        if(Game.debug.verbose) U.l (this);
         let err;
         try {
             this._support();
@@ -18,6 +19,7 @@ module.exports = class Operation {
             this._command();
         } catch(error) {U.log_error(err)};
         if (this._firstRun) this._firstRun = false;
+        if(Game.debug.verbose) U.l (this);
     }
 
     _support() {}
