@@ -3,7 +3,7 @@ module.exports = class Debug {
     dumpMain() {
         // Note: cache should not be re-used by repeated calls to JSON.stringify.
         var cache = [];
-        JSON.stringify(Game.main, function(key, value) {
+        return JSON.stringify(Game.main, function(key, value) {
             if (typeof value === 'object' && value !== null) {
                 if (cache.indexOf(value) !== -1) {
                     // Duplicate reference found, discard key
@@ -14,6 +14,5 @@ module.exports = class Debug {
             }
             return value;
         });
-        cache = null; // Enable garbage collection        
     }
 }
