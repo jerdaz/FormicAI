@@ -94,16 +94,7 @@ module.exports = class BaseOp extends Operation{
         else return this._base.energyCapacityAvailable;
     }
 
-    _support() {
-        if (U.chance(1500)) {
-            // cleanup dead buildings
-            for (let id in this._spawnOps) {
-                if (U.getObj(id) === undefined) {
-                    delete this._spawnOps[id];
-                }
-            }
-        }
-    }
+
 
     _strategy() {
         if (U.chance(100)) {
@@ -121,7 +112,10 @@ module.exports = class BaseOp extends Operation{
             if (this._shardOp.getCreep(creepName)) this._creepRoleOps[creepName].run();
             else delete this._creepRoleOps[creepName];
         }
-        for (let id in this._spawnOps) this._spawnOps[id].run();
+        for (let id in this._spawnOps) {
+            if (U.getObj(id)) this._spawnOps[id].run();
+            else delete this._spawnOps[id];
+        }
     }    
     
     /**@param {number} nConstructionSites */
