@@ -6,9 +6,15 @@ module.exports = class Operation {
     }
 
     run() {
-        this._support();
-        this._strategy();
-        this._command();
+        try {
+            this._support();
+        } catch(error) {throw error};
+        try {
+            this._strategy();
+        } catch(error) {throw error};
+        try {
+            this._command();
+        } catch(error) {throw error};
         if (this._firstRun) this._firstRun = false;
     }
 
