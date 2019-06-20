@@ -22,5 +22,7 @@ class Main extends Operation {
 let main = new Main;
 
 module.exports.loop = function() {
+    // @ts-ignore
+    Game.main = main;
     main.run();
 }

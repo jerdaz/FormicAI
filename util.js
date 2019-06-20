@@ -15,4 +15,9 @@ module.exports = class Util {
         return Game.getObjectById(id);
     }
 
+    /**@param {Error} err */
+    static log_error(err) {
+        this.l(err);
+        Game.notify(JSON.stringify(err), 60 * 4);
+    }
 }

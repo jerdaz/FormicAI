@@ -10,13 +10,13 @@ module.exports = class Operation {
         let err;
         try {
             this._support();
-        } catch(error) {U.l(err)};
+        } catch(error) {U.log_error(err)};
         try {
             this._strategy();
-        } catch(error) {U.l(err)};
+        } catch(error) {U.log_error(err)};
         try {
             this._command();
-        } catch(error) {U.l(err)};
+        } catch(error) {U.log_error(err)};
         if (this._firstRun) this._firstRun = false;
     }
 
