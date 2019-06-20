@@ -1,7 +1,7 @@
 module.exports = class Util {
     /**@param {any} message Logs message to console*/
     static l(message){
-        console.log(JSON.stringify(message));
+        console.log(this.stringify(message));
     }
 
     /**@param {number} x */
@@ -21,5 +21,24 @@ module.exports = class Util {
         // @ts-ignore
         Game.debug.dumpMain();
         Game.notify(JSON.stringify(err), 60 * 4);
+    }
+
+    /**@param {any} obj */
+    static stringify(obj) {
+        // Note: cache should not be re-used by repeated calls to JSON.stringify.
+        /**@type {any} */
+        var cache = [];
+        return JSON.stringify(obj, function(key, value) {
+            if (typeof value === 'object' && value !== null) {
+                if (cache.indexOf(value) !== -1) {
+                    // Duplicate reference found, discard key
+                    return;
+                }
+                // Store value in our collection
+                cache.push(value);
+            }
+            return value;
+        });
+
     }
 }
