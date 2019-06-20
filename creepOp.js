@@ -59,6 +59,11 @@ module.exports = class CreepOp extends Operation {
         }    
     }
 
+    isAlive() {
+        if(U.getObj(this._creep.id)) return true;
+        else return false;
+    }
+
     getName() {
         return this._creep.name;
     }

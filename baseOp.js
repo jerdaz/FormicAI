@@ -96,13 +96,6 @@ module.exports = class BaseOp extends Operation{
 
     _support() {
         if (U.chance(1500)) {
-            //cleanup dead creeps
-            for (let creepName in this._creepRoleOps) {
-                if (this._shardOp.getCreep(creepName) === undefined) {
-                    delete this._creepRoleOps[creepName];
-                }
-            }
-
             // cleanup dead buildings
             for (let id in this._spawnOps) {
                 if (U.getObj(id) === undefined) {
@@ -124,7 +117,10 @@ module.exports = class BaseOp extends Operation{
     }
 
     _command() {
-        for (let creepName in this._creepRoleOps) this._creepRoleOps[creepName].run();
+        for (let creepName in this._creepRoleOps) {
+            if (this._shardOp.getCreep(creepName)) this._creepRoleOps[creepName].run();
+            else delete this._creepRoleOps[creepName];
+        }
         for (let id in this._spawnOps) this._spawnOps[id].run();
     }    
     
