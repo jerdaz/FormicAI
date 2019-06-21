@@ -21,8 +21,6 @@ module.exports = class Operation {
             this._command();
         } catch(error) {U.log_error(error)};
         if (this._firstRun) this._firstRun = false;
-        // @ts-ignore
-        if(Game.debug.verbose) U.l (this);
     }
 
     _support() {}
