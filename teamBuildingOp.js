@@ -4,7 +4,9 @@ let CreepTeamOp = require('./teamOp');
 
 module.exports = class CreepBuilderOp extends CreepTeamOp {
     _strategy() {
-        this._spawningOp.ltRequestSpawn(c.OPERATION_BUILDING, 8)
+        let creepCount = 0;
+        if (this._baseOp.getBase().find(FIND_CONSTRUCTION_SITES).length > 0) creepCount = 8;
+        this._spawningOp.ltRequestSpawn(c.OPERATION_BUILDING, creepCount)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
