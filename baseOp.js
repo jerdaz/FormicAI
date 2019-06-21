@@ -4,7 +4,7 @@ let Operation = require('./operation');
 let CreepFillerOp = require('./creepFillerOp');
 let CreepUpgraderOp = require('./creepUpgraderOp');
 let CreepBuilderOp = require('./creepBuilderOp');
-let SpawnOp = require ('./structSpawnOp');
+let SpawnOp = require ('./spawnOp');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import('./creepRoleOp')} CreepRoleOp} */
 
@@ -23,12 +23,11 @@ module.exports = class BaseOp extends Operation{
         /**@type {{[creepName:string]: CreepRoleOp}} */
         this._creepRoleOps = {};
 
-        /**@type {{[id:string]: SpawnOp}} */
-        this._spawnOps = {};
+        /**@type {SpawnOp}} */
+        this._spawnOp = new SpawnOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
         this._spawnCommand = c.ROLE_NONE;
 
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
-
         if (firstSpawn) this._centerPos = firstSpawn.pos;
         else this._centerPos = this._getBaseCenter();
 
@@ -41,14 +40,7 @@ module.exports = class BaseOp extends Operation{
         this._base = base;
         this._creepNames = creepNames;
         this._myStructures = {};
-        for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
-            switch (structure.structureType) {
-                case STRUCTURE_SPAWN:
-                    if (this._spawnOps[structure.id] === undefined ) this._spawnOps[structure.id] = new SpawnOp(structure, this)
-                    else this._spawnOps[structure.id].initTick(structure);
-                    break;
-            }
-        }
+        this._spawnOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
         for (let creepName of this._creepNames) {
             let creep = this._shardOp.getCreep(creepName);
             if (!creep) throw Error;
@@ -113,10 +105,7 @@ module.exports = class BaseOp extends Operation{
             if (this._shardOp.getCreep(creepName)) this._creepRoleOps[creepName].run();
             else delete this._creepRoleOps[creepName];
         }
-        for (let id in this._spawnOps) {
-            if (U.getObj(id)) this._spawnOps[id].run();
-            else delete this._spawnOps[id];
-        }
+        this._spawnOp.run();
     }    
     
     /**@param {number} nConstructionSites */

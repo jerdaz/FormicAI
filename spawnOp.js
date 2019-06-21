@@ -7,27 +7,27 @@ let Operation = require('./operation');
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
 
 module.exports = class SpawnOp extends Operation {
-    /**@param {StructureSpawn} spawn */
+    /**@param {StructureSpawn[]} spawns */
     /**@param {BaseOp} baseOp */
-    constructor(spawn, baseOp) {
+    constructor(spawns, baseOp) {
         super();
-        this._spawn = spawn;
+        this._spawns = spawns;
         /**@type {BaseOp} */
         this._baseOp = baseOp;
     }
 
-    /**@param {StructureSpawn} spawn */
-    initTick(spawn) {
-        this._spawn = spawn;
+    /**@param {StructureSpawn[]} spawns */
+    initTick(spawns) {
+        this._spawns = spawns;
     }
 
     _command() {
-        let spawn = this._spawn;
+        let spawns = this._spawns;
         let command = this._baseOp.getSpawnCommand();
         let role = command;
         if (command != c.ROLE_NONE) {
             let body = this._expandCreep([MOVE,CARRY,WORK]);
-            spawn.spawnCreep(body, spawn.room.name + '_' + role + '_' + _.random(0, 999999999))
+            spawns[0].spawnCreep(body, spawns[0].room.name + '_' + role + '_' + _.random(0, 999999999))
         }
     }
 
