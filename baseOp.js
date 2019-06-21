@@ -4,6 +4,7 @@ let Operation = require('./operation');
 let TeamFillingOp = require('./teamFillingOp');
 let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
+let TeamColonizingOp = require('./TeamColonizingOp');
 let SpawningOp = require ('./spawningOp');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import ('./teamOp')} TeamOp */
@@ -28,6 +29,8 @@ module.exports = class BaseOp extends Operation{
         this._teamBuildingOp = new TeamBuildingOp(this, this._spawningOp);
         /**@type {TeamUpgradingOp} */
         this._teamUpgradingOp = new TeamUpgradingOp(this, this._spawningOp);
+        /**@type {TeamColonizingOp} */
+        this._teamColonizingOp = new TeamColonizingOp(this, this._spawningOp);
         
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
         if (firstSpawn) this._centerPos = firstSpawn.pos;
@@ -53,6 +56,7 @@ module.exports = class BaseOp extends Operation{
         this._teamFillingOp.initTick(teamCreeps[c.OPERATION_FILLING]);
         this._teamUpgradingOp.initTick(teamCreeps[c.OPERATION_UPGRADING]);
         this._teamBuildingOp.initTick(teamCreeps[c.OPERATION_BUILDING]);
+        this._teamColonizingOp.initTick(teamCreeps[c.OPERATION_COLONIZING]);
     }
 
     /**@param {number} directive */
