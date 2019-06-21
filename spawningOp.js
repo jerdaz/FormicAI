@@ -38,6 +38,7 @@ module.exports = class SpawnOp extends Operation {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 10;
+            this._spawnPrio[c.OPERATION_COLONIZING] = 10;
         }
     }
 
