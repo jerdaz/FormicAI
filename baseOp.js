@@ -60,6 +60,10 @@ module.exports = class BaseOp extends Operation{
         this._directive = directive;
     }
 
+    getDirective(){
+        return this._directive;
+    }
+
     /**@param {string} structureType */
     /**@returns {Structure[]} */
     getMyStructures(structureType) {

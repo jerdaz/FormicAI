@@ -14,7 +14,7 @@ module.exports = class SpawnOp extends Operation {
         this._spawns = spawns;
         /**@type {BaseOp} */
         this._baseOp = baseOp;
-        /**@type {{count:number}[]} */
+        /**@type {{count:number, template:CreepTemplate}[]} */
         this._spawnRequests = [];
 
         /**@type {number[]} */
@@ -27,9 +27,10 @@ module.exports = class SpawnOp extends Operation {
     }
 
     /**@param {number} opType */
+    /**@param {CreepTemplate} template */
     /**@param {number} count */
-    ltRequestSpawn(opType, count) {
-        this._spawnRequests[opType] = {count:count};
+    ltRequestSpawn(opType, template, count) {
+        this._spawnRequests[opType] = {count:count, template: template};
     }
 
     _strategy() {
@@ -49,9 +50,9 @@ module.exports = class SpawnOp extends Operation {
             if (spawnList.length > 0 ) {
                 for (let spawn of this._spawns) {
                     if (spawn.spawning == null) {
-                        let body = this._expandCreep([MOVE,CARRY,WORK]);
                         let spawnItem = spawnList.pop();
                         if (spawnItem) {
+                            let body = this._expandCreep(spawnItem.template);
                             let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
                             if (result != OK) spawnList.push(spawnItem);
                         }
@@ -63,7 +64,7 @@ module.exports = class SpawnOp extends Operation {
 
     _getSpawnList() {
         let base = this._baseOp.getBase();
-        /**@type {{prio:number, opType:number}[]} */
+        /**@type {{prio:number, opType:number, template:CreepTemplate}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
@@ -72,7 +73,7 @@ module.exports = class SpawnOp extends Operation {
             if (spawnRequest) {
                 let nCreeps = this._baseOp.getSubTeamOp(opType).getCreepCount();
                 if (spawnRequest.count > nCreeps) {
-                    spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType})
+                    spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, template:spawnRequest.template})
                 }
             }
         }
@@ -85,8 +86,15 @@ module.exports = class SpawnOp extends Operation {
     }
 
 
-    /**@param {BodyPartConstant[]} body */
-    _expandCreep (body, minLength = 3, maxLength = MAX_CREEP_SIZE) {
+    /**@param {CreepTemplate} template */
+    _expandCreep (template) {
+        /**@type {BodyPartConstant[]} */
+        let body = template.body;
+        let minLength = template.minLength;
+        let maxLength = template.maxLength;
+        if (!minLength) minLength = 3
+        if (!maxLength || maxLength > MAX_CREEP_SIZE) maxLength = MAX_CREEP_SIZE;
+
         /**@type {BodyPartConstant[]} */
         var result = [];
         var i=0;
