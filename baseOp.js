@@ -43,6 +43,7 @@ module.exports = class BaseOp extends Operation{
         this._spawningOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
         /**@type {Creep[][]} */
         let teamCreeps = [];
+        if(!creeps) return;
         for (let creep of creeps) {
             let opType = parseInt(creep.name.split('_')[1]);
             if (!teamCreeps[opType]) teamCreeps[opType] = [];
