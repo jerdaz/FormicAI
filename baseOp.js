@@ -118,6 +118,7 @@ module.exports = class BaseOp extends Operation{
         this._teamFillingOp.run();
         this._teamBuildingOp.run();
         this._teamUpgradingOp.run();
+        this._teamColonizingOp.run();
         this._spawningOp.run();
     }    
     
