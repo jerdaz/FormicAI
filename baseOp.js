@@ -28,7 +28,6 @@ module.exports = class BaseOp extends Operation{
         /**@type {TeamUpgradingOp} */
         this._teamUpgradingOp;
         
-
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
         if (firstSpawn) this._centerPos = firstSpawn.pos;
         else this._centerPos = this._getBaseCenter();
