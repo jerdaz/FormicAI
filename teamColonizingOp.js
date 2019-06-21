@@ -21,7 +21,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let room = creepOp.getRoom();
-            if (room.controller && !room.controller.my && room.controller.owner == null) {
+            if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
                 creepOp.instructClaimController(room.controller);
             }
             if (room.name != this._lastRoomName) {

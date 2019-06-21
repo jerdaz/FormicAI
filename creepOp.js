@@ -58,8 +58,10 @@ module.exports = class CreepOp extends Operation {
                 break;
             case c.COMMAND_MOVETO:
                 this._state=STATE_MOVING;
+                break;
             case c.COMMAND_CLAIMCONTROLLER:
                 this._state=STATE_CLAIMING
+                break;
         }
 
         switch (this._state) {
