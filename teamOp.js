@@ -20,9 +20,11 @@ module.exports = class CreepTeamOp extends Operation {
 
     /**@param {Creep[]} creeps */
     initTick(creeps) {
-        for(let creep of creeps) {
-            if (!this._creepOps[creep.name]) this._creepOps[creep.name] = new CreepOp(creep);
-            else this._creepOps[creep.name].initTick(creep);
+        if (creeps) {
+            for(let creep of creeps) {
+                if (!this._creepOps[creep.name]) this._creepOps[creep.name] = new CreepOp(creep);
+                else this._creepOps[creep.name].initTick(creep);
+            }
         }
     }
 

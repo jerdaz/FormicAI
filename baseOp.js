@@ -1,7 +1,7 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation');
-let TeamFillingOp = require('./teamFllingOp');
+let TeamFillingOp = require('./teamFillingOp');
 let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
 let SpawningOp = require ('./spawningOp');
