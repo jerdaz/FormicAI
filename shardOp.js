@@ -11,21 +11,22 @@ module.exports = class ShardOp extends Operation {
     }
 
     initTick(){
-        /**@type {{[baseName:string]:string[]}} */
-        let creepNamesByBase = {};
+        /**@type {{[baseName:string]:Creep[]}} */
+        let creepsByBase = {};
         for (let creepName in Game.creeps) {
             let roomName = creepName.split('_')[0];
-            if (creepNamesByBase[roomName] == undefined) creepNamesByBase[roomName] = [];
-            creepNamesByBase[roomName].push (creepName);
+            if (creepsByBase[roomName] == undefined) creepsByBase[roomName] = [];
+            let creep = U.getCreep(creepName);
+            if (creep) creepsByBase[roomName].push (creep);
         }
 
-        for (let roomName in this._baseOps) {
-            if (creepNamesByBase[roomName] == undefined) creepNamesByBase[roomName] = [];
-            let base = this.getBase(roomName);
-            if (base.controller.my) {
-                this._baseOps[roomName].initTick(base, creepNamesByBase[base.name]);
+        for (let roomName in Game.rooms) {
+            let room = this.getRoom(roomName);
+            if (room.controller && room.controller.my) {
+                if (!this._baseOps[room.name]) this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
+                else this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
+
             }
-            else delete this._baseOps.roomName;
         }
     }
 
@@ -34,14 +35,6 @@ module.exports = class ShardOp extends Operation {
         // clean dead creep memory
         if (U.chance(1500)) {
             for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName];
-        }
-
-        // check for new bases
-        if (this._firstRun || U.chance(10)) {
-            for (let roomName in Game.rooms) {
-                let base = this.getBase(roomName);
-                if (this._baseOps[base.name] === undefined) this._baseOps[base.name] = new BaseOp(base, this);
-            }
         }
     }
 

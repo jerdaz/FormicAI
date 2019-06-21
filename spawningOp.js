@@ -69,7 +69,7 @@ module.exports = class SpawnOp extends Operation {
         for (let opType; opType = 1; opType++){
             let spawnRequest = spawnRequests[opType];
             if (spawnRequest) {
-                let creeps = this._baseOp.getSubOp(opType).getCreeps();
+                let creeps = this._baseOp.getSubTeamOp(opType).getCreepCount();
                 let nCreeps = creeps.count;
                 if (spawnRequest.count > nCreeps) {
                     spawnList.push ({prio: (spawnRequest.count - nCreeps) * this._spawnPrio[opType], opType: opType})

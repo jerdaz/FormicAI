@@ -1,71 +1,57 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation');
-let CreepFillerOp = require('./creepFillerOp');
-let CreepUpgraderOp = require('./creepUpgraderOp');
-let CreepBuilderOp = require('./creepBuilderOp');
+let TeamFillingOp = require('./teamFllingOp');
+let TeamUpgradingOp = require('./teamUpgradingOp');
+let TeamBuildingOp = require('./teamBuildingOp');
 let SpawningOp = require ('./spawningOp');
 /** @typedef {import('./shardOp')} ShardOp */
-/** @typedef {import('./creepRoleOp')} CreepRoleOp} */
+/** @typedef {import ('./teamOp')} TeamOp */
 
 module.exports = class BaseOp extends Operation{
     /** @param {Base} base */
+    /** @param {Creep[]} creeps */
     /** @param {ShardOp} shardOp */
-    constructor (base, shardOp) {
+    constructor (base, creeps, shardOp) {
         super();
         this._shardOp = shardOp;
 
         /**@type {Base} */
         this._base = base;
-        /**@type {string[]} */
-        this._creepNames = [];
-
-        /**@type {{[creepName:string]: CreepRoleOp}} */
-        this._creepRoleOps = {};
 
         /**@type {SpawningOp}} */
         this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
-        this._spawnCommand = c.ROLE_NONE;
+        /**@type {TeamFillingOp} */
+        this._teamFillingOp;
+        /**@type {TeamBuildingOp} */
+        this._teamBuildingOp;
+        /**@type {TeamUpgradingOp} */
+        this._teamUpgradingOp;
+        
 
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
         if (firstSpawn) this._centerPos = firstSpawn.pos;
         else this._centerPos = this._getBaseCenter();
 
         this._fillerEmergency = false;
+        this.initTick(base, creeps);
     }
 
     /**@param {Base} base */
-    /**@param {string[]} creepNames */
-    initTick(base, creepNames) {
+    /**@param {Creep[]} creeps */
+    initTick(base, creeps) {
         this._base = base;
-        this._creepNames = creepNames;
-        this._myStructures = {};
         this._spawningOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
-        for (let creepName of this._creepNames) {
-            let creep = this._shardOp.getCreep(creepName);
-            if (!creep) throw Error;
-            if (this._creepRoleOps[creepName] === undefined) {
-                let role = parseInt(creep.name.split('_')[1]);
-                /**@type CreepRoleOp */
-                let ret;
-                switch (role) {
-                    case c.ROLE_FILLER:
-                        ret = new CreepFillerOp(creep, this);
-                        break;
-                    case c.ROLE_UPGRADER:
-                        ret = new CreepUpgraderOp(creep, this);
-                        break;
-                    case c.ROLE_BUILDER:
-                        ret = new CreepBuilderOp(creep, this);
-                        break;
-                    default:
-                        throw Error;
-                        break;
-                }
-                this._creepRoleOps[creepName] = ret;
-            }
-            this._creepRoleOps[creepName].initTick(creep)
+        /**@type {Creep[][]} */
+        let teamCreeps = [];
+        for (let creep of creeps) {
+            let opType = parseInt(creep.name.split('_')[1]);
+            if (!teamCreeps[opType]) teamCreeps[opType] = [];
+            teamCreeps[opType].push(creep);
         }
+        this._teamFillingOp.initTick(teamCreeps[c.OPERATION_FILLING]);
+        this._teamUpgradingOp.initTick(teamCreeps[c.OPERATION_UPGRADING]);
+        this._teamBuildingOp.initTick(teamCreeps[c.OPERATION_BUILDING]);
     }
 
     /**@param {string} structureType */
@@ -78,19 +64,32 @@ module.exports = class BaseOp extends Operation{
         return this._base;
     }
 
-    getSpawnCommand() {
-        return this._spawnCommand;
-    }
-
     getMaxSpawnEnergy() {
         if (this._fillerEmergency) return SPAWN_ENERGY_CAPACITY;
         else return this._base.energyCapacityAvailable;
     }
 
-    getCreepNames() {
-        return this._creepNames;
+    /**@param {number} opType */
+    /**@returns {TeamOp} */
+    getSubTeamOp(opType) {
+        /**@type {TeamOp} */
+        let ret;
+        switch (opType) {
+            case c.OPERATION_BUILDING:
+                ret = this._teamBuildingOp;
+                break;
+            case c.OPERATION_FILLING:
+                ret = this._teamFillingOp;
+                break;
+            case c.OPERATION_UPGRADING:
+                ret = this._teamUpgradingOp;
+                break;
+            default:
+                throw Error;
+                break;
+        }
+        return ret;
     }
-
 
     _strategy() {
         if (U.chance(100)) {
@@ -100,10 +99,9 @@ module.exports = class BaseOp extends Operation{
     }
 
     _command() {
-        for (let creepName in this._creepRoleOps) {
-            if (this._shardOp.getCreep(creepName)) this._creepRoleOps[creepName].run();
-            else delete this._creepRoleOps[creepName];
-        }
+        this._teamFillingOp.run();
+        this._teamBuildingOp.run();
+        this._teamUpgradingOp.run();
         this._spawningOp.run();
     }    
     
@@ -117,7 +115,6 @@ module.exports = class BaseOp extends Operation{
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
     }
-
         
     _findBuildingSpot() {
         let x_ = this._centerPos.x;

@@ -17,7 +17,7 @@ module.exports = class Util {
 
     /**@param {string} creepName */
     /**@returns {Creep|undefined} returns creep with creepName */
-    getCreep(creepName) {
+    static getCreep(creepName) {
         let creep = Game.creeps[creepName];
         return creep;
     }
