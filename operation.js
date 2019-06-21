@@ -16,10 +16,10 @@ module.exports = class Operation {
         let err;
         try {
             this._strategy();
-        } catch(error) {U.log_error(err)};
+        } catch(error) {U.log_error(error)};
         try {
             this._command();
-        } catch(error) {U.log_error(err)};
+        } catch(error) {U.log_error(error)};
         if (this._firstRun) this._firstRun = false;
         // @ts-ignore
         if(Game.debug.verbose) U.l (this);
