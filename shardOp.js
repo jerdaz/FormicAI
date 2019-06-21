@@ -56,7 +56,7 @@ module.exports = class ShardOp extends Operation {
     /**@returns {Room} returns room with RoomName */
     getRoom(roomName) {
         let room = Game.rooms[roomName];
-        if (!room) throw Error;
+        if (!room) throw 'Error';
         return room;
     }
 
@@ -64,8 +64,8 @@ module.exports = class ShardOp extends Operation {
     /**@returns {Base} returns base with RoomName */
     getBase(roomName) {
         let base = /**@type {Base} */ (Game.rooms[roomName]);
-        if (!base) throw Error;
-        if (base.controller === undefined) throw Error;
+        if (!base) throw 'Error';
+        if (base.controller === undefined) throw 'Error';
         return base;
     }
 }

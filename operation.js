@@ -11,8 +11,6 @@ module.exports = class Operation {
     }
 
     run() {
-        // @ts-ignore
-        if(Game.debug.verbose) U.l (this);
 //        try {
             this._strategy();
 //        } catch(err) {U.log_error(err); throw err};

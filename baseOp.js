@@ -101,7 +101,7 @@ module.exports = class BaseOp extends Operation{
             case c.OPERATION_COLONIZING:
                 ret = this._teamColonizingOp;
             default:
-                throw Error;
+                throw 'Error';
                 break;
         }
         return ret;
@@ -159,7 +159,7 @@ module.exports = class BaseOp extends Operation{
         /** @param {number} y */
         /** @param {Base} base */
         function _isValidBuildingSpot(x, y, base) {
-            if (!base.controller) throw Error;
+            if (!base.controller) throw 'Error';
             if (x<2 || x > 47 || y < 2 || y > 47) return false;
             var pos = new RoomPosition(x, y, base.name)
             var structures = pos.lookFor(LOOK_STRUCTURES);
