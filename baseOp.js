@@ -4,7 +4,7 @@ let Operation = require('./operation');
 let CreepFillerOp = require('./creepFillerOp');
 let CreepUpgraderOp = require('./creepUpgraderOp');
 let CreepBuilderOp = require('./creepBuilderOp');
-let SpawnOp = require ('./structSpawnOp');
+let SpawningOp = require ('./spawningOp');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import('./creepRoleOp')} CreepRoleOp} */
 
@@ -23,12 +23,11 @@ module.exports = class BaseOp extends Operation{
         /**@type {{[creepName:string]: CreepRoleOp}} */
         this._creepRoleOps = {};
 
-        /**@type {{[id:string]: SpawnOp}} */
-        this._spawnOps = {};
+        /**@type {SpawningOp}} */
+        this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
         this._spawnCommand = c.ROLE_NONE;
 
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
-
         if (firstSpawn) this._centerPos = firstSpawn.pos;
         else this._centerPos = this._getBaseCenter();
 
@@ -41,14 +40,7 @@ module.exports = class BaseOp extends Operation{
         this._base = base;
         this._creepNames = creepNames;
         this._myStructures = {};
-        for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
-            switch (structure.structureType) {
-                case STRUCTURE_SPAWN:
-                    if (this._spawnOps[structure.id] === undefined ) this._spawnOps[structure.id] = new SpawnOp(structure, this)
-                    else this._spawnOps[structure.id].initTick(structure);
-                    break;
-            }
-        }
+        this._spawningOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
         for (let creepName of this._creepNames) {
             let creep = this._shardOp.getCreep(creepName);
             if (!creep) throw Error;
@@ -95,16 +87,15 @@ module.exports = class BaseOp extends Operation{
         else return this._base.energyCapacityAvailable;
     }
 
+    getCreepNames() {
+        return this._creepNames;
+    }
 
 
     _strategy() {
         if (U.chance(100)) {
             let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
             this._planBase(nConstructionSites);
-        }
-        if (U.chance(10)) {
-            let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
-            this._planCreeps(nConstructionSites);
         }
     }
 
@@ -113,10 +104,7 @@ module.exports = class BaseOp extends Operation{
             if (this._shardOp.getCreep(creepName)) this._creepRoleOps[creepName].run();
             else delete this._creepRoleOps[creepName];
         }
-        for (let id in this._spawnOps) {
-            if (U.getObj(id)) this._spawnOps[id].run();
-            else delete this._spawnOps[id];
-        }
+        this._spawningOp.run();
     }    
     
     /**@param {number} nConstructionSites */
@@ -128,29 +116,6 @@ module.exports = class BaseOp extends Operation{
             if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
-    }
-
-    /**@param {number} nConstructionSites */
-    _planCreeps(nConstructionSites) {
-        let base = this._base;
-        /**@type {number[]} */
-        let nCreeps = [];
-
-        for (let i=1; i<=c.ROLE_MAX; i++) nCreeps[i] = 0;
-        
-        for (let creepName in this._creepRoleOps) {
-            let creepRoleOp = this._creepRoleOps[creepName];
-            let role = creepRoleOp.getRole();
-            nCreeps [role]++;
-        }
-        let spawnCommand = c.ROLE_NONE;
-        this._fillerEmergency = false;
-        if (nCreeps[c.ROLE_FILLER] < 1 ) { spawnCommand = c.ROLE_FILLER; this._fillerEmergency = true; }
-        else if (nCreeps[c.ROLE_FILLER] < 2 ) spawnCommand = c.ROLE_FILLER;
-        else if (nCreeps[c.ROLE_UPGRADER] < 1) spawnCommand = c.ROLE_UPGRADER;
-        else if (nConstructionSites > 0 && nCreeps[c.ROLE_BUILDER] < 4) spawnCommand = c.ROLE_BUILDER;
-        else if (nCreeps[c.ROLE_UPGRADER] < 15) spawnCommand = c.ROLE_UPGRADER;
-        this._spawnCommand = spawnCommand;
     }
 
         
