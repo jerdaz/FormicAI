@@ -84,9 +84,9 @@ module.exports = class BaseOp extends Operation{
     }
 
     /**@param {number} opType */
-    /**@returns {TeamOp} */
+    /**@returns {TeamOp | undefined} */
     getSubTeamOp(opType) {
-        /**@type {TeamOp} */
+        /**@type {TeamOp | undefined} */
         let ret;
         switch (opType) {
             case c.OPERATION_BUILDING:

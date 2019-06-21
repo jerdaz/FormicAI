@@ -5,6 +5,7 @@ let Operation = require('./operation');
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
 const STATE_DELIVERING = 2;
+const STATE_MOVING = 3;
 
 module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
@@ -15,6 +16,7 @@ module.exports = class CreepOp extends Operation {
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
+        this._destPos;
     }
 
     /**@param {Creep} creep */
@@ -30,6 +32,12 @@ module.exports = class CreepOp extends Operation {
         this._instruct = c.COMMAND_TRANSFER
     }
     
+    /**@param {RoomPosition} dest */
+    instructMoveTo(dest) {
+        this._destPos = dest;
+        this._instruct = c.COMMAND_MOVETO
+    }
+    
     _command() {
         let source = U.getObj(this._sourceId);
         let dest = U.getObj(this._destId);
@@ -41,6 +49,8 @@ module.exports = class CreepOp extends Operation {
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
                 if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
+            case c.COMMAND_MOVETO:
+                this._state=STATE_MOVING;
         }
 
         switch (this._state) {
@@ -56,6 +66,9 @@ module.exports = class CreepOp extends Operation {
                 else if (dest instanceof ConstructionSite) creep.build(dest);
                 else throw Error('Cannot retrieve to object ' + dest);
                 break;
+            case STATE_MOVING:
+                if (this._destPos) creep.moveTo(this._destPos);
+                break;
         }    
     }
 
@@ -65,6 +78,10 @@ module.exports = class CreepOp extends Operation {
 
     getDest() {
         return U.getObj(this._destId);
+    }
+
+    getRoom() {
+        return this._creep.room;
     }
 
     getInstr() {

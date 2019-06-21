@@ -1,6 +1,7 @@
 module.exports = {
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
+    COMMAND_MOVETO: 2,
 
     OPERATION_NONE: 0,
     OPERATION_MAIN: 1,
