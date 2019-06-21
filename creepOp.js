@@ -59,10 +59,6 @@ module.exports = class CreepOp extends Operation {
         }    
     }
 
-    getName() {
-        return this._creep.name;
-    }
-
     getPos() {
         return this._creep.pos;
     }
@@ -75,5 +71,3 @@ module.exports = class CreepOp extends Operation {
         return this._instruct;
     }
 }
-
-
