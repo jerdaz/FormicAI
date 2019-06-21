@@ -18,6 +18,7 @@ module.exports = class BaseOp extends Operation{
 
         /**@type {Base} */
         this._base = base;
+        this._directive = c.DIRECTIVE_NONE;
 
         /**@type {SpawningOp}} */
         this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
@@ -52,6 +53,11 @@ module.exports = class BaseOp extends Operation{
         this._teamFillingOp.initTick(teamCreeps[c.OPERATION_FILLING]);
         this._teamUpgradingOp.initTick(teamCreeps[c.OPERATION_UPGRADING]);
         this._teamBuildingOp.initTick(teamCreeps[c.OPERATION_BUILDING]);
+    }
+
+    /**@param {number} directive */
+    setDirective(directive) {
+        this._directive = directive;
     }
 
     /**@param {string} structureType */

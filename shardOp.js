@@ -1,6 +1,9 @@
 let U = require('./util');
+let c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
+
+const CPU_MAX_BUCKET = 10000;
 
 module.exports = class ShardOp extends Operation {
     constructor() {
@@ -35,6 +38,14 @@ module.exports = class ShardOp extends Operation {
         // clean dead creep memory
         if (U.chance(1500)) {
             for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName];
+        }
+    }
+
+    _strategy(){
+        if (U.chance(100)) {
+            let directive = c.DIRECTIVE_NONE;
+            if (Game.cpu.bucket >= CPU_MAX_BUCKET) directive = c.DIRECTIVE_COLONIZE
+            for (let baseOp in this._baseOps) this._baseOps[baseOp].setDirective(directive);
         }
     }
 

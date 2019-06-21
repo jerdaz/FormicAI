@@ -18,4 +18,7 @@ module.exports = {
     ROLE_UPGRADER: 2,
     ROLE_BUILDER: 3,
 
+    DIRECTIVE_NONE: 0,
+    DIRECTIVE_COLONIZE: 1,
+
 }

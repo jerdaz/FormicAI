@@ -25,8 +25,6 @@ module.exports = class Util {
     /**@param {any} err */
     static log_error(err) {
         this.l(err);
-        // @ts-ignore
-        Game.debug.dumpMain();
         Game.notify(JSON.stringify(err), 60 * 4);
     }
 
@@ -46,6 +44,5 @@ module.exports = class Util {
             }
             return value;
         });
-
     }
 }
