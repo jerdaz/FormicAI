@@ -24,7 +24,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
             if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
                 creepOp.instructClaimController(room.controller);
             }
-            if (room.name != this._lastRoomName) {
+            else if (room.name != this._lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
                 let exits = /**@type {{[index:string]:string}} */(Game.map.describeExits(room.name))
                 if (_.size(exits) > 1 ) {
                     for (let exit in exits) if (exits[exit] == this._lastRoomName) delete exits[exit];
