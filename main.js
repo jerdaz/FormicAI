@@ -28,5 +28,5 @@ module.exports.loop = function() {
     Game.debug = debug;
     // @ts-ignore
     Game.main = main;
-    main.run();
+    main.run(); 
 }
