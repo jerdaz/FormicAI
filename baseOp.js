@@ -98,6 +98,8 @@ module.exports = class BaseOp extends Operation{
             case c.OPERATION_UPGRADING:
                 ret = this._teamUpgradingOp;
                 break;
+            case c.OPERATION_COLONIZING:
+                ret = this._teamColonizingOp;
             default:
                 throw Error;
                 break;
