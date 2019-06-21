@@ -9,6 +9,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
     /**@param {SpawningOp} spawningOp*/
     constructor(baseOp, spawningOp) {
         super(baseOp, spawningOp);
+        /**@type {string} */
         this._lastRoomName = '';
     }
 
@@ -20,6 +21,9 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let room = creepOp.getRoom();
+            if (room.controller && !room.controller.my && room.controller.owner == null) {
+                creepOp.instructClaimController(room.controller);
+            }
             if (room.name != this._lastRoomName) {
                 let exits = /**@type {{[index:string]:string}} */(Game.map.describeExits(room.name))
                 if (_.size(exits) > 1 ) {

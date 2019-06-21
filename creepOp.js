@@ -6,6 +6,7 @@ const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
 const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
+const STATE_CLAIMING = 4;
 
 module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
@@ -37,6 +38,12 @@ module.exports = class CreepOp extends Operation {
         this._destPos = dest;
         this._instruct = c.COMMAND_MOVETO
     }
+
+    /**@param {StructureController} controller */
+    instructClaimController(controller) {
+        this._destId = controller.id
+        this._instruct = c.COMMAND_CLAIMCONTROLLER
+    }
     
     _command() {
         let source = U.getObj(this._sourceId);
@@ -51,6 +58,8 @@ module.exports = class CreepOp extends Operation {
                 break;
             case c.COMMAND_MOVETO:
                 this._state=STATE_MOVING;
+            case c.COMMAND_CLAIMCONTROLLER:
+                this._state=STATE_CLAIMING
         }
 
         switch (this._state) {
@@ -69,6 +78,11 @@ module.exports = class CreepOp extends Operation {
             case STATE_MOVING:
                 if (this._destPos) creep.moveTo(this._destPos);
                 break;
+            case STATE_CLAIMING:
+                if (dest) {
+                    creep.moveTo(dest, {range:1});
+                    creep.claimController(dest);
+                }
         }    
     }
 
