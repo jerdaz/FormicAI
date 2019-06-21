@@ -43,6 +43,7 @@ module.exports = class SpawnOp extends Operation {
     _command() {
         let canSpawn = false;
         for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
+        if (this._baseOp.getBase().energyAvailable < this._baseOp.getMaxSpawnEnergy()) canSpawn = false
         if (canSpawn) {
             let spawnList = this._getSpawnList();
             if (spawnList.length > 0 ) {
