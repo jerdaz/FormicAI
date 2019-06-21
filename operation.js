@@ -15,10 +15,10 @@ module.exports = class Operation {
         if(Game.debug.verbose) U.l (this);
         try {
             this._strategy();
-        } catch(err) {U.log_error(err)};
+        } catch(err) {U.log_error(err); throw err};
         try {
             this._command();
-        } catch(err) {U.log_error(err)};
+        } catch(err) {U.log_error(err); throw err};
         if (this._firstRun) this._firstRun = false;
     }
 
