@@ -32,6 +32,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                 if (exit_side>0) {
                     dest = /**@type {RoomPosition} */(creepOp.getPos().findClosestByPath(/**@type {any}*/ (exit_side)));
                     if (dest) creepOp.instructMoveTo(dest)
+                    this._lastRoomName = room.name;
                 }
             }
         }
