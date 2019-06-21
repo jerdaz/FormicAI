@@ -4,7 +4,7 @@ let Operation = require('./operation');
 let TeamFillingOp = require('./teamFillingOp');
 let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
-let TeamColonizingOp = require('./TeamColonizingOp');
+let TeamColonizingOp = require('./teamColonizingOp');
 let SpawningOp = require ('./spawningOp');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import ('./teamOp')} TeamOp */
