@@ -101,7 +101,7 @@ module.exports = class BaseOp extends Operation{
             case c.OPERATION_COLONIZING:
                 ret = this._teamColonizingOp;
             default:
-                throw Error();
+                ret = undefined;
                 break;
         }
         return ret;
