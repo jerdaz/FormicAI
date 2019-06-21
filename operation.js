@@ -7,6 +7,7 @@ module.exports = class Operation {
     }
 
     run() {
+        // @ts-ignore
         if(Game.debug.verbose) U.l (this);
         let err;
         try {
@@ -19,6 +20,7 @@ module.exports = class Operation {
             this._command();
         } catch(error) {U.log_error(err)};
         if (this._firstRun) this._firstRun = false;
+        // @ts-ignore
         if(Game.debug.verbose) U.l (this);
     }
 
