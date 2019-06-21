@@ -6,16 +6,14 @@ let SpawningOp = require('./spawningOp');
 /**@typedef {import('./baseOp')} BaseOp  */
 
 module.exports = class CreepTeamOp extends Operation {
-    /**@param {Creep[]} creeps */
     /**@param {BaseOp} baseOp */
     /**@param {SpawningOp} spawningOp*/
-    constructor(creeps, baseOp, spawningOp) {
+    constructor(baseOp, spawningOp) {
         super();
         this._baseOp = baseOp;
         this._spawningOp = spawningOp;
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
-        this.initTick(creeps);
     }
 
     /**@param {Creep[]} creeps */

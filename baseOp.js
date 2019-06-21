@@ -22,11 +22,11 @@ module.exports = class BaseOp extends Operation{
         /**@type {SpawningOp}} */
         this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
         /**@type {TeamFillingOp} */
-        this._teamFillingOp = new TeamFillingOp(creeps, this, this._spawningOp);
+        this._teamFillingOp = new TeamFillingOp(this, this._spawningOp);
         /**@type {TeamBuildingOp} */
-        this._teamBuildingOp = new TeamBuildingOp(creeps, this, this._spawningOp);
+        this._teamBuildingOp = new TeamBuildingOp(this, this._spawningOp);
         /**@type {TeamUpgradingOp} */
-        this._teamUpgradingOp = new TeamUpgradingOp(creeps, this, this._spawningOp);
+        this._teamUpgradingOp = new TeamUpgradingOp(this, this._spawningOp);
         
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
         if (firstSpawn) this._centerPos = firstSpawn.pos;
