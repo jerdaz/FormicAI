@@ -42,7 +42,7 @@ module.exports = class SpawnOp extends Operation {
 
     _command() {
         let canSpawn = false;
-        for (let spawn of this._spawns) if (spawn.spawning != null) canSpawn = true;
+        for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
         if (canSpawn) {
             let spawnList = this._getSpawnList();
             if (spawnList.length > 0 ) {
@@ -66,7 +66,7 @@ module.exports = class SpawnOp extends Operation {
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
-        for (let opType; opType = 1; opType++){
+        for (let opType = 1; opType <= c.OPERATION_MAX; opType++){
             let spawnRequest = spawnRequests[opType];
             if (spawnRequest) {
                 let creeps = this._baseOp.getSubTeamOp(opType).getCreepCount();

@@ -11,6 +11,7 @@ module.exports = {
     OPERATION_UPGRADING: 6,
     OPERATION_BUILDING: 7,
     OPERATION_CREEP: 8,
+    OPERATION_MAX:8,
 
     ROLE_NONE:  0,
     ROLE_FILLER: 1,
