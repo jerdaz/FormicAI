@@ -64,7 +64,7 @@ module.exports = class BaseOp extends Operation{
     }
 
     getMaxSpawnEnergy() {
-        if (this._teamFillingOp.getCreepCount() > 0) return SPAWN_ENERGY_CAPACITY;
+        if (this._teamFillingOp.getCreepCount() == 0) return this._base.energyAvailable;
         else return this._base.energyCapacityAvailable;
     }
 
