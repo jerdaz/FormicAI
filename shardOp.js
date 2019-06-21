@@ -20,7 +20,10 @@ module.exports = class ShardOp extends Operation {
             let roomName = creepName.split('_')[0];
             if (creepsByBase[roomName] == undefined) creepsByBase[roomName] = [];
             let creep = U.getCreep(creepName);
-            if (creep) creepsByBase[roomName].push (creep);
+            if (creep) {
+                if (creep.hits > 0) creepsByBase[roomName].push (creep);
+                else if (creep.memory) delete creep.memory;
+            }
         }
 
         for (let roomName in Game.rooms) {
@@ -33,13 +36,6 @@ module.exports = class ShardOp extends Operation {
         }
     }
 
-
-    _support(){
-        // clean dead creep memory
-        if (U.chance(1500)) {
-            for (let creepName in Memory.creeps) if (!Game.creeps[creepName]) delete Memory.creeps[creepName];
-        }
-    }
 
     _strategy(){
         if (U.chance(100)) {
