@@ -7,6 +7,7 @@ module.exports = class ShardOp extends Operation {
         super();
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
+        this.initTick();
     }
 
     initTick(){
@@ -50,12 +51,6 @@ module.exports = class ShardOp extends Operation {
         }
     }
 
-    /**@param {string} creepName */
-    /**@returns {Creep|undefined} returns creep with creepName */
-    getCreep(creepName) {
-        let creep = Game.creeps[creepName];
-        return creep;
-    }
 
     /**@param {string} roomName */
     /**@returns {Room} returns room with RoomName */
