@@ -36,6 +36,11 @@ module.exports = class ShardOp extends Operation {
         }
     }
 
+    /**@param {String} roomName */
+    ltRequestBuilder(roomName){
+        
+    }
+
 
     _strategy(){
         if (U.chance(100)) {

@@ -138,6 +138,9 @@ module.exports = class BaseOp extends Operation{
             if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
+        if (nSpawns == 0) {
+            this._shardOp.ltRequestBuilder(room.name);
+        }
     }
         
     _findBuildingSpot() {
