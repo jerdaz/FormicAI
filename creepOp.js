@@ -49,19 +49,22 @@ module.exports = class CreepOp extends Operation {
     }
 
     _strategy() {
+
         switch (this._instruct) {
             case c.COMMAND_NONE:
                 if (this._creep.pos.roomName != this._baseOp.getName()) {
                     this.instructMoveTo(this._baseOp.getBaseCenter());
                 }
                 break;
-        }             
+        }      
     }
     
     _command() {
         let source = U.getObj(this._sourceId);
         let dest = U.getObj(this._destId);
         let creep = this._creep;
+
+        if(!dest) this._command = c.COMMAND_NONE;
 
         switch (this._instruct) {
             case c.COMMAND_TRANSFER:
