@@ -68,6 +68,10 @@ module.exports = class BaseOp extends Operation{
         return this._directive;
     }
 
+    getName() {
+        return this._base.name;
+    }
+
     /**@param {string} structureType */
     /**@returns {Structure[]} */
     getMyStructures(structureType) {
@@ -108,6 +112,11 @@ module.exports = class BaseOp extends Operation{
         return ret;
     }
 
+    /**@param {string} roomName */
+    requestBuilder(roomName) {
+        
+    }
+
     _strategy() {
         if (U.chance(100)) {
             let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
@@ -138,8 +147,8 @@ module.exports = class BaseOp extends Operation{
             if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
-        if (nSpawns == 0) {
-            this._shardOp.ltRequestBuilder(room.name);
+        if (nSpawns == 0 && this._teamBuildingOp.getCreepCount() == 0) {
+            this._shardOp.requestBuilder(room.name);
         }
     }
         

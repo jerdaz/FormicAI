@@ -2,6 +2,7 @@ let U = require('./util');
 let c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
+let Map = require('./map');
 
 const CPU_MAX_BUCKET = 10000;
 
@@ -10,6 +11,7 @@ module.exports = class ShardOp extends Operation {
         super();
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
+        this._map = new Map(this);
         this.initTick();
     }
 
@@ -26,19 +28,25 @@ module.exports = class ShardOp extends Operation {
             }
         }
 
+        let updateMap = false;
         for (let roomName in Game.rooms) {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
-                if (!this._baseOps[room.name]) this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
+                if (!this._baseOps[room.name]) {
+                    this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
+                    updateMap = true;
+                }
                 else this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
 
             }
         }
+        if (updateMap) this._map.updateBaseDistances(this._baseOps);
     }
 
     /**@param {String} roomName */
-    ltRequestBuilder(roomName){
-        
+    requestBuilder(roomName){
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 2);
+        if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
     }
 
 
@@ -51,9 +59,16 @@ module.exports = class ShardOp extends Operation {
     }
 
     _command(){
+        let updateMap = false;
         for (let roomName in this._baseOps) {
-            this._baseOps[roomName].run();
+            let baseOp = this._baseOps[roomName]
+            if (baseOp.getBase().controller.my) this._baseOps[roomName].run();
+            else {
+                delete this._baseOps[roomName];
+                updateMap = true;
+            }
         }
+        if (updateMap) this._map.updateBaseDistances(this._baseOps);
     }
 
 
