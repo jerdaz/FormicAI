@@ -18,12 +18,16 @@ module.exports = class CreepTeamOp extends Operation {
 
     /**@param {Creep[]} creeps */
     initTick(creeps) {
+        /**@type {{[creepName:string]:CreepOp}} */
+        let newCreepOps = {};
         if (creeps) {
             for(let creep of creeps) {
                 if (!this._creepOps[creep.name]) this._creepOps[creep.name] = new CreepOp(creep, this._baseOp);
                 else this._creepOps[creep.name].initTick(creep);
+                newCreepOps[creep.name] = this._creepOps[creep.name];
             }
         }
+        this._creepOps = newCreepOps;
     }
 
     getCreepCount(){
@@ -35,7 +39,6 @@ module.exports = class CreepTeamOp extends Operation {
     _command() {
         for (let creepName in this._creepOps) {
             if (U.getCreep(creepName)) this._creepOps[creepName].run();
-            else delete this._creepOps[creepName];
         }
     }
 }

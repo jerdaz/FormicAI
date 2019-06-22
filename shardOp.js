@@ -29,6 +29,8 @@ module.exports = class ShardOp extends Operation {
         }
 
         let updateMap = false;
+        /** @type {{[key:string]: BaseOp }} */
+        let newBaseOps = {}
         for (let roomName in Game.rooms) {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
@@ -39,9 +41,12 @@ module.exports = class ShardOp extends Operation {
                 else {
                     this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
                 }
+                newBaseOps[roomName] = this._baseOps[roomName];
                 delete creepsByBase[room.name];
             }
         }
+        if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
+        this._baseOps = newBaseOps;
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
         // kill all creeps of dead bases.
         for (let baseName in creepsByBase) {
@@ -71,12 +76,7 @@ module.exports = class ShardOp extends Operation {
         for (let roomName in this._baseOps) {
             let baseOp = this._baseOps[roomName]
             if (this.getBase(roomName).controller.my) this._baseOps[roomName].run();
-            else {
-                delete this._baseOps[roomName];
-                updateMap = true;
-            }
         }
-        if (updateMap) this._map.updateBaseDistances(this._baseOps);
     }
 
 
