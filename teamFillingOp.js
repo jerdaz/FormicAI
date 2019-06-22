@@ -4,7 +4,7 @@ let CreepTeamOp = require('./teamOp');
 
 module.exports = class CreepFillerOp extends CreepTeamOp {
     _strategy() {
-        this._spawningOp.ltRequestSpawn(c.OPERATION_FILLING, {body:[WORK,MOVE,CARRY]}, 2)
+        this._spawningOp.ltRequestSpawn(c.OPERATION_FILLING, {body:[MOVE,CARRY,WORK]}, 2)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];

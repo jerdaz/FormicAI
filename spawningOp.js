@@ -53,7 +53,7 @@ module.exports = class SpawnOp extends Operation {
         for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
         if (canSpawn) {
             if (this._builderRequest && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count) {
-                let body = this._expandCreep({body:[WORK,MOVE,CARRY]});
+                let body = this._expandCreep({body:[MOVE,CARRY,WORK]});
                 let roomName = this._builderRequest
                 for (let spawn of this._spawns) {
                     let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
