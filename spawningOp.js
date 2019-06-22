@@ -52,7 +52,7 @@ module.exports = class SpawnOp extends Operation {
         let canSpawn = false;
         for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
         if (canSpawn) {
-            if (this._builderRequest && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= 1) {
+            if (this._builderRequest && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count) {
                 let body = this._expandCreep({body:[WORK,MOVE,CARRY]});
                 let roomName = this._builderRequest
                 for (let spawn of this._spawns) {
