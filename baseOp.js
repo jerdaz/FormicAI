@@ -204,6 +204,10 @@ module.exports = class BaseOp extends Operation{
 
     }
  
+    getBaseCenter() {
+        return this._centerPos;
+    }
+
     _getBaseCenter() {
         let base = this._base;
         let x = 0;

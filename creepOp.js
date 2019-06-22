@@ -1,6 +1,7 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation');
+/**@typedef {import('./baseOp')} BaseOp  */
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
@@ -10,7 +11,8 @@ const STATE_CLAIMING = 4;
 
 module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
-    constructor(creep) {
+    /**@param {BaseOp} baseOp */
+    constructor(creep, baseOp) {
         super();
         this._creep = creep;
         this._state = STATE_NONE;
@@ -18,6 +20,7 @@ module.exports = class CreepOp extends Operation {
         this._sourceId = '';
         this._destId = '';
         this._destPos;
+        this._baseOp = baseOp;
     }
 
     /**@param {Creep} creep */
@@ -43,6 +46,16 @@ module.exports = class CreepOp extends Operation {
     instructClaimController(controller) {
         this._destId = controller.id
         this._instruct = c.COMMAND_CLAIMCONTROLLER
+    }
+
+    _strategy() {
+        switch (this._instruct) {
+            case c.COMMAND_NONE:
+                if (this._creep.pos.roomName != this._baseOp.getName()) {
+                    this.instructMoveTo(this._baseOp.getBaseCenter());
+                }
+                break;
+        }             
     }
     
     _command() {
