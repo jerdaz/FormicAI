@@ -15,7 +15,7 @@ module.exports = class Map {
     /**@param {number} minLevel */
     /**@param {boolean} hasSpawn */
     /**@returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = true) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false) {
         for (let baseDist of this._baseDist[roomName]) {
             let base = this._shardOp.getBase(baseDist.roomName);
             if (base.controller.level >= minLevel && (hasSpawn == false || this._shardOp.getBaseOp(base.name).hasSpawn() )) return base.name;

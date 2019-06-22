@@ -27,7 +27,9 @@ module.exports = class CreepTeamOp extends Operation {
     }
 
     getCreepCount(){
-        return _.size(this._creepOps);
+        let res = _.size(this._creepOps)
+        if (!res) res = 0;
+        return res;
     }
 
     _command() {
