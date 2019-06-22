@@ -88,9 +88,9 @@ module.exports = class BaseOp extends Operation{
     }
 
     /**@param {number} opType */
-    /**@returns {TeamOp | undefined} */
+    /**@returns {TeamOp} */
     getSubTeamOp(opType) {
-        /**@type {TeamOp | undefined} */
+        /**@type {TeamOp} */
         let ret;
         switch (opType) {
             case c.OPERATION_BUILDING:
@@ -106,7 +106,7 @@ module.exports = class BaseOp extends Operation{
                 ret = this._teamColonizingOp;
                 break;
             default:
-                ret = undefined;
+                throw Error();
                 break;
         }
         return ret;
@@ -114,7 +114,7 @@ module.exports = class BaseOp extends Operation{
 
     /**@param {string} roomName */
     requestBuilder(roomName) {
-        
+        this._spawningOp.requestBuilder(roomName);
     }
 
     _strategy() {

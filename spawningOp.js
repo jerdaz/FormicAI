@@ -16,6 +16,7 @@ module.exports = class SpawnOp extends Operation {
         this._baseOp = baseOp;
         /**@type {{count:number, template:CreepTemplate}[]} */
         this._spawnRequests = [];
+        this._builderRequest = '';
 
         /**@type {number[]} */
         this._spawnPrio = [];
@@ -33,6 +34,11 @@ module.exports = class SpawnOp extends Operation {
         this._spawnRequests[opType] = {count:count, template: template};
     }
 
+    /**@param {string} roomName */
+    requestBuilder(roomName) {
+        this._builderRequest = roomName;
+    }
+
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
@@ -45,17 +51,25 @@ module.exports = class SpawnOp extends Operation {
     _command() {
         let canSpawn = false;
         for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
-        //if (this._baseOp.getBase().energyAvailable < this._baseOp.getMaxSpawnEnergy()) canSpawn = false
         if (canSpawn) {
-            let spawnList = this._getSpawnList();
-            if (spawnList.length > 0 ) {
+            if (this._builderRequest && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= 1) {
+                let body = this._expandCreep({body:[WORK,MOVE,CARRY]});
+                let roomName = this._builderRequest
                 for (let spawn of this._spawns) {
-                    if (spawn.spawning == null) {
-                        let spawnItem = spawnList.pop();
-                        if (spawnItem) {
-                            let body = this._expandCreep(spawnItem.template);
-                            let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
-                            if (result != OK) spawnList.push(spawnItem);
+                    let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
+                    if (result != OK) this._builderRequest = '';
+                }
+            } else {
+                let spawnList = this._getSpawnList();
+                if (spawnList.length > 0 ) {
+                    for (let spawn of this._spawns) {
+                        if (spawn.spawning == null) {
+                            let spawnItem = spawnList.pop();
+                            if (spawnItem) {
+                                let body = this._expandCreep(spawnItem.template);
+                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
+                                if (result != OK) spawnList.push(spawnItem);
+                            }
                         }
                     }
                 }
