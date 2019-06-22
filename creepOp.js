@@ -95,7 +95,7 @@ module.exports = class CreepOp extends Operation {
                     creep.moveTo(dest, {range:1});
                     if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
                     else if (dest instanceof ConstructionSite) creep.build(dest);
-                    else throw Error('Cannot retrieve to object ' + dest);
+                    else throw Error('Cannot deliver to object ' + dest);
                 }
                 break;
             case STATE_MOVING:
