@@ -243,8 +243,8 @@ module.exports = class BaseOp extends Operation{
 
             for (let nx=-3;nx<=3;nx++) {
                 for (let ny=-3;ny<=3;ny++) {
-                    var terrain = Game.map.getTerrainAt(spawnX + nx, spawnY + ny, base.name);
-                    if (terrain == 'wall' )  validSpot = false;
+                    var terrain =base.getTerrain().get(spawnX +nx, spawnY + ny);
+                    if (terrain == TERRAIN_MASK_WALL) validSpot = false;
                 }
             }
         }

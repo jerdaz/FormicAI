@@ -57,7 +57,7 @@ module.exports = class SpawnOp extends Operation {
                 let roomName = this._builderRequest
                 for (let spawn of this._spawns) {
                     let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
-                    if (result != OK) this._builderRequest = '';
+                    if (result == OK) this._builderRequest = '';
                 }
             } else {
                 let spawnList = this._getSpawnList();
