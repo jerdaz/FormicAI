@@ -36,11 +36,19 @@ module.exports = class ShardOp extends Operation {
                     this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
                     updateMap = true;
                 }
-                else this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
-
+                else {
+                    this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
+                    delete creepsByBase[room.name];
+                }
             }
         }
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
+        // kill all creeps of dead bases.
+        for (let baseName in creepsByBase) {
+            for (let creep of creepsByBase[baseName]) {
+                creep.suicide();
+            }
+        }
     }
 
     /**@param {String} roomName */
