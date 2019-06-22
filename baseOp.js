@@ -59,6 +59,10 @@ module.exports = class BaseOp extends Operation{
         this._teamColonizingOp.initTick(teamCreeps[c.OPERATION_COLONIZING]);
     }
 
+    hasSpawn() {
+        return this.getMyStructures(STRUCTURE_SPAWN).length > 0;
+    }
+
     /**@param {number} directive */
     setDirective(directive) {
         this._directive = directive;
