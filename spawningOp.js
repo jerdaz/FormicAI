@@ -55,7 +55,8 @@ module.exports = class SpawnOp extends Operation {
             let base = this._baseOp.getBase();
             if (this._builderRequest 
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count) {
+                && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
+                ) {
                 let body = this._expandCreep({body:[MOVE,CARRY,WORK]});
                 let roomName = this._builderRequest
                 for (let spawn of this._spawns) {

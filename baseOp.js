@@ -228,12 +228,13 @@ module.exports = class BaseOp extends Operation{
             n += 1;
         }
 
-        for (let source of /**@type {Mineral[]} */(base.find(FIND_MINERALS))) {
-            x += source.pos.x;
-            y += source.pos.y;
-            n += 1;
-        }
-
+        
+        // for (let source of /**@type {Mineral[]} */(base.find(FIND_MINERALS))) {
+        //     x += source.pos.x;
+        //     y += source.pos.y;
+        //     n += 1;
+        // }
+        
         x = Math.round(x / n);
         y = Math.round(y / n);
 
