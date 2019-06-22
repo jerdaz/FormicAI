@@ -38,8 +38,8 @@ module.exports = class ShardOp extends Operation {
                 }
                 else {
                     this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
-                    delete creepsByBase[room.name];
                 }
+                delete creepsByBase[room.name];
             }
         }
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
