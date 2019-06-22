@@ -123,8 +123,7 @@ module.exports = class BaseOp extends Operation{
 
     _strategy() {
         if (U.chance(10)) {
-            let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
-            this._planBase(nConstructionSites);
+            this._planBase();
         }
     }
 
@@ -136,9 +135,9 @@ module.exports = class BaseOp extends Operation{
         this._spawningOp.run();
     }    
     
-    /**@param {number} nConstructionSites */
-    _planBase(nConstructionSites) {
+    _planBase() {
         let room = this._base;
+        let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
         let nExtensions = this.getMyStructures(STRUCTURE_EXTENSION).length;
         let nSpawns = this.getMyStructures(STRUCTURE_EXTENSION).length;
         if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
