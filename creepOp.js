@@ -64,7 +64,7 @@ module.exports = class CreepOp extends Operation {
         let dest = U.getObj(this._destId);
         let creep = this._creep;
 
-        if(!dest) this._command = c.COMMAND_NONE;
+        if(!dest) this._instruct = c.COMMAND_NONE;
 
         switch (this._instruct) {
             case c.COMMAND_TRANSFER:
