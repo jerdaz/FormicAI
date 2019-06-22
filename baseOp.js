@@ -127,9 +127,15 @@ module.exports = class BaseOp extends Operation{
     _planBase(nConstructionSites) {
         let room = this._base;
         let nExtensions = this.getMyStructures(STRUCTURE_EXTENSION).length;
+        let nSpawns = this.getMyStructures(STRUCTURE_EXTENSION).length;
         if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
             let pos = this._findBuildingSpot();
             if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
+            else console.log('WARNING: Cannot find building spot in room ' + room.name);
+        }
+        if (nConstructionSites == 0 && nSpawns < CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][room.controller.level]) {
+            let pos = this._findBuildingSpot();
+            if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
     }
