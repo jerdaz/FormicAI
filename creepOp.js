@@ -64,7 +64,6 @@ module.exports = class CreepOp extends Operation {
         let dest = U.getObj(this._destId);
         let creep = this._creep;
 
-        if(!dest) this._instruct = c.COMMAND_NONE;
 
         switch (this._instruct) {
             case c.COMMAND_TRANSFER:
@@ -88,10 +87,13 @@ module.exports = class CreepOp extends Operation {
                 else throw Error('Cannot retrieve from object ' + source);
                 break;
             case STATE_DELIVERING:
-                creep.moveTo(dest, {range:1});
-                if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
-                else if (dest instanceof ConstructionSite) creep.build(dest);
-                else throw Error('Cannot retrieve to object ' + dest);
+                if(!dest) this._instruct = c.COMMAND_NONE;
+                else {
+                    creep.moveTo(dest, {range:1});
+                    if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
+                    else if (dest instanceof ConstructionSite) creep.build(dest);
+                    else throw Error('Cannot retrieve to object ' + dest);
+                }
                 break;
             case STATE_MOVING:
                 if (this._destPos) creep.moveTo(this._destPos);
