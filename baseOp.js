@@ -141,7 +141,7 @@ module.exports = class BaseOp extends Operation{
         let room = this._base;
         let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
         let nExtensions = this.getMyStructures(STRUCTURE_EXTENSION).length;
-        let nSpawns = this.getMyStructures(STRUCTURE_EXTENSION).length;
+        let nSpawns = this.getMyStructures(STRUCTURE_SPAWN).length;
         if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
             let pos = this._findBuildingSpot();
             if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
