@@ -9,7 +9,7 @@ module.exports = class CreepUpgraderOp extends CreepTeamOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.getDest();
-            if (!(dest instanceof ConstructionSite)
+            if (!(dest instanceof StructureController)
             || (creepOp.getInstr() != c.COMMAND_TRANSFER) )
             {
                 let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
