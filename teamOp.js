@@ -26,7 +26,7 @@ module.exports = class CreepTeamOp extends Operation {
                 else this._creepOps[creep.name].initTick(creep);
                 newCreepOps[creep.name] = this._creepOps[creep.name];
             }
-        }
+        } 
         this._creepOps = newCreepOps;
     }
 
