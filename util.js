@@ -22,12 +22,6 @@ module.exports = class Util {
         return creep;
     }
 
-    /**@param {any} err */
-    static log_error(err) {
-        this.l(err);
-        Game.notify(JSON.stringify(err), 60 * 4);
-    }
-
     /**@param {any} obj */
     static stringify(obj) {
         // Note: cache should not be re-used by repeated calls to JSON.stringify.

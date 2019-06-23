@@ -1,4 +1,5 @@
 let U = require('./util')
+
 const c = require('./constants');
 
 //unique id of Operation
@@ -11,12 +12,12 @@ module.exports = class Operation {
     }
 
     run() {
-//        try {
+        try {
             this._strategy();
-//        } catch(err) {U.log_error(err); throw err};
-//        try {
+        } catch(err) {Game.debug.log_error(err)};
+        try {
             this._command();
-//        } catch(err) {U.log_error(err); throw err};
+        } catch(err) {Game.debug.log_error(err)};
         if (this._firstRun) this._firstRun = false;
     }
 

@@ -24,9 +24,7 @@ let main = new Main;
 let debug = new Debug;
 
 module.exports.loop = function() {
-    // @ts-ignore
     Game.debug = debug;
-    // @ts-ignore
     Game.main = main;
-    main.run();
+    Game.main.run();
 }
