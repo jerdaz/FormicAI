@@ -72,10 +72,8 @@ module.exports = class ShardOp extends Operation {
     }
 
     _command(){
-        let updateMap = false;
         for (let roomName in this._baseOps) {
-            let baseOp = this._baseOps[roomName]
-            if (this.getBase(roomName).controller.my) this._baseOps[roomName].run();
+            this._baseOps[roomName].run();
         }
     }
 

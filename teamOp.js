@@ -38,7 +38,7 @@ module.exports = class CreepTeamOp extends Operation {
 
     _command() {
         for (let creepName in this._creepOps) {
-            if (U.getCreep(creepName)) this._creepOps[creepName].run();
+            this._creepOps[creepName].run();
         }
     }
 }
