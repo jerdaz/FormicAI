@@ -64,7 +64,7 @@ module.exports = class ShardOp extends Operation {
 
 
     _strategy(){
-        if (U.chance(10)) {
+        if (U.chance(100)) {
             let directive = c.DIRECTIVE_NONE;
             if (Game.cpu.bucket >= CPU_MAX_BUCKET && Game.gcl > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
