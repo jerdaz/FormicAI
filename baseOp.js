@@ -37,6 +37,7 @@ module.exports = class BaseOp extends Operation{
         else this._centerPos = this._getBaseCenter();
 
         this._fillerEmergency = false;
+        for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
         this.initTick(base, creeps);
     }
 
