@@ -14,8 +14,11 @@ class Main extends Operation {
         this._shardOp = new ShardOp();
     }
 
-    _command() {
+    initTick() {
         this._shardOp.initTick();
+    }
+
+    _command() {
         this._shardOp.run();
     };
 }
@@ -26,6 +29,7 @@ let main = new Main;
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = main;
+    main.initTick();
     main.run();
     if (debug.verbose) {
         debug.printVerboseLog();
