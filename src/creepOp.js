@@ -48,6 +48,11 @@ module.exports = class CreepOp extends Operation {
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
+    instrStop() {
+        this._instruct = c.COMMAND_NONE;
+    }
+
+
     _strategy() {
 
         switch (this._instruct) {

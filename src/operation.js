@@ -15,11 +15,11 @@ module.exports = class Operation {
     }
 
     run() {
-        if(this._debug.verbose) this._debug.logState('command', this)
+        if(this._debug.verbose) this._debug.logState('strategy', this)
         try {
             this._strategy();
         } catch(err) {this._debug.logError(err)};
-        if(this._debug.verbose) this._debug.logState('strategy', this)
+        if(this._debug.verbose) this._debug.logState('command', this)
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
