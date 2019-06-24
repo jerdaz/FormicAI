@@ -23,7 +23,7 @@ module.exports = class ShardOp extends Operation {
             if (creepsByBase[roomName] == undefined) creepsByBase[roomName] = [];
             let creep = U.getCreep(creepName);
             if (creep) {
-                if (creep.hits > 0) creepsByBase[roomName].push (creep);
+                if (creep.hits > 0 && creep.spawning == false) creepsByBase[roomName].push (creep);
                 else if (creep.memory) delete creep.memory;
             }
         }
@@ -60,6 +60,15 @@ module.exports = class ShardOp extends Operation {
     requestBuilder(roomName){
         let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
+    }
+
+    _support() {
+        //garbage collection
+        if (U.chance(1500)) {
+            for (let creepName in Memory.creeps) {
+                if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
+            }
+        }
     }
 
 
