@@ -6,6 +6,7 @@ let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
 let TeamColonizingOp = require('./teamColonizingOp');
 let SpawningOp = require ('./spawningOp');
+let TowerOp = require('./towerOp');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import ('./teamOp')} TeamOp */
 
@@ -23,6 +24,8 @@ module.exports = class BaseOp extends Operation{
 
         /**@type {SpawningOp}} */
         this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
+        /**@type {TowerOp}} */
+        this._towerOp = new TowerOp(/**@type {StructureTower[]} */(this.getMyStructures(STRUCTURE_TOWER)), this);
         /**@type {TeamFillingOp} */
         this._teamFillingOp = new TeamFillingOp(this, this._spawningOp);
         /**@type {TeamBuildingOp} */
@@ -46,6 +49,7 @@ module.exports = class BaseOp extends Operation{
     initTick(base, creeps) {
         this._base = base;
         this._spawningOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
+        this._towerOp.initTick(/**@type {StructureTower[]} */(this.getMyStructures(STRUCTURE_TOWER)) )
         /**@type {Creep[][]} */
         let teamCreeps = [];
         if (creeps) {
@@ -138,6 +142,7 @@ module.exports = class BaseOp extends Operation{
         this._teamBuildingOp.run();
         this._teamUpgradingOp.run();
         this._teamColonizingOp.run();
+        this._towerOp.run();
         this._spawningOp.run();
     }    
     
@@ -146,17 +151,23 @@ module.exports = class BaseOp extends Operation{
         let nConstructionSites = this._base.find(FIND_MY_CONSTRUCTION_SITES).length;
         let nExtensions = this.getMyStructures(STRUCTURE_EXTENSION).length;
         let nSpawns = this.getMyStructures(STRUCTURE_SPAWN).length;
-        if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
-            let pos = this._findBuildingSpot();
-            if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
-            else console.log('WARNING: Cannot find building spot in room ' + room.name);
-        }
+        let nTowers = this.getMyStructures(STRUCTURE_TOWER).length;
         if (nConstructionSites == 0 && nSpawns < CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][room.controller.level]) {
             let pos = this._findBuildingSpot();
             if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
-        if (nSpawns == 0 && this._teamBuildingOp.getCreepCount() == 0) {
+        else if (nConstructionSites == 0 && nExtensions < CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]) {
+            let pos = this._findBuildingSpot();
+            if (pos) pos.createConstructionSite(STRUCTURE_EXTENSION);
+            else console.log('WARNING: Cannot find building spot in room ' + room.name);
+        }
+        else if (nConstructionSites == 0 && nTowers < CONTROLLER_STRUCTURES[STRUCTURE_TOWER][room.controller.level]) {
+            let pos = this._findBuildingSpot();
+            if (pos) pos.createConstructionSite(STRUCTURE_TOWER);
+            else console.log('WARNING: Cannot find building spot in room ' + room.name);
+        }
+        else if (nSpawns == 0 && this._teamBuildingOp.getCreepCount() == 0) {
             this._shardOp.requestBuilder(room.name);
         }
     }
