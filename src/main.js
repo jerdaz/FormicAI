@@ -19,13 +19,17 @@ class Main extends Operation {
         this._shardOp.run();
     };
 }
-
-let main = new Main;
 let debug = new Debug;
+/**@type {any}*/(Game).debug = debug;
+let main = new Main;
 
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = main;
     main.run();
+    if (debug.verbose) {
+        debug.printVerboseLog();
+        debug.verbose = false;
+    }
     debug.throwErrors();
 }

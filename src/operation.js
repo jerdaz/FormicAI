@@ -15,26 +15,16 @@ module.exports = class Operation {
     }
 
     run() {
-        if(this._debug.verbose) {
-            U.l('Strategy: ' + this.constructor.name + ', state:')
-            U.l(this);
-        }
+        if(this._debug.verbose) this._debug.logState('command', this)
         try {
             this._strategy();
         } catch(err) {this._debug.logError(err)};
-        if(this._debug.verbose) {
-            U.l('Command: ' + this.constructor.name + ', state:')
-            U.l(this);
-        }
+        if(this._debug.verbose) this._debug.logState('strategy', this)
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
         if (this._firstRun) this._firstRun = false;
-        if(this._debug.verbose) {
-            U.l('End: ' + this.constructor.name + ', state:')
-            U.l(this);
-            this._debug.printErrors();
-        }
+        if(this._debug.verbose) this._debug.logState('end', this)
     }
 
     _support() {}
