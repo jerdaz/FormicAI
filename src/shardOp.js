@@ -58,7 +58,7 @@ module.exports = class ShardOp extends Operation {
 
     /**@param {String} roomName */
     requestBuilder(roomName){
-        let donorRoom = this._map.findClosestBaseByPath(roomName, 1 , true);
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
     }
 
