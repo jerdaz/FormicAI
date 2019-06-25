@@ -49,7 +49,7 @@ module.exports = class Debug {
 
     //prints errors to console and deletes them
     printErrors() {
-        for(let err in this._errors) {
+        for(let err of this._errors) {
             U.l(err);
         }
         this._errors = []
@@ -57,6 +57,6 @@ module.exports = class Debug {
 
     //throws all logged errors
     throwErrors() {
-        for(let err in this._errors) throw err;
+        for(let err of this._errors) throw err;
     }
 }
