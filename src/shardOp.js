@@ -5,6 +5,7 @@ let BaseOp = require('./baseOp');
 let Map = require('./map');
 
 const CPU_MAX_BUCKET = 10000;
+const CPU_RESERVE = 500;
 
 module.exports = class ShardOp extends Operation {
     constructor() {
@@ -27,7 +28,7 @@ module.exports = class ShardOp extends Operation {
             if (creepsByBase[roomName] == undefined) creepsByBase[roomName] = [];
             let creep = U.getCreep(creepName);
             if (creep) {
-                if (creep.hits > 0) creepsByBase[roomName].push (creep);
+                if (creep.hits > 0 && creep.spawning == false) creepsByBase[roomName].push (creep);
                 else if (creep.memory) delete creep.memory;
             }
         }
@@ -66,6 +67,15 @@ module.exports = class ShardOp extends Operation {
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
     }
 
+    _support() {
+        //garbage collection
+        if (U.chance(1500)) {
+            for (let creepName in Memory.creeps) {
+                if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
+            }
+        }
+    }
+
 
     _strategy(){
         if (U.chance(100)) {
@@ -76,8 +86,22 @@ module.exports = class ShardOp extends Operation {
     }
 
     _command(){
-        for (let roomName in this._baseOps) {
-            this._baseOps[roomName].run();
+        //running cpu bound run bases in level order
+        if (Game.cpu.bucket < CPU_MAX_BUCKET - CPU_RESERVE) {
+            let cpuRange = CPU_MAX_BUCKET - 2* CPU_RESERVE
+            /**@type {Base[]} */
+            let bases = [];
+            let maxBases = _.size(this._baseOps)
+            for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+            bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+            while (bases.length > 0 && Game.cpu.bucket > CPU_RESERVE + (maxBases - bases.length) * cpuRange) {
+                let base = /**@type {Base}*/ (bases.pop())
+                this._baseOps[base.name].run();
+            }
+        } else { // not running cpu bound, run all bases
+            for (let roomName in this._baseOps) {
+                this._baseOps[roomName].run();
+            }
         }
     }
 
