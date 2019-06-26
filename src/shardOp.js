@@ -4,9 +4,6 @@ let Operation = require('./operation');
 let BaseOp = require('./baseOp');
 let Map = require('./map');
 
-const CPU_MAX_BUCKET = 10000;
-const CPU_RESERVE = 500;
-
 module.exports = class ShardOp extends Operation {
     constructor() {
         super();
@@ -80,21 +77,22 @@ module.exports = class ShardOp extends Operation {
     _strategy(){
         if (U.chance(100)) {
             let directive = c.DIRECTIVE_NONE;
-            if (Game.cpu.bucket >= CPU_MAX_BUCKET && Game.gcl.level > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
+            if (Game.cpu.bucket >= this._maxCPU && Game.gcl.level > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
         }
     }
 
     _command(){
         //running cpu bound run bases in level order
-        if (Game.cpu.bucket < CPU_MAX_BUCKET - CPU_RESERVE) {
-            let cpuRange = CPU_MAX_BUCKET - 2* CPU_RESERVE
+        let cpuReserve = this._maxCPU / 20;
+        if (Game.cpu.bucket < this._maxCPU - cpuReserve) {
+            let cpuRange = this._maxCPU - 2* cpuReserve
             /**@type {Base[]} */
             let bases = [];
             let maxBases = _.size(this._baseOps)
             for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
-            while (bases.length > 0 && Game.cpu.bucket > CPU_RESERVE + (maxBases - bases.length) * cpuRange) {
+            while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
                 let base = /**@type {Base}*/ (bases.pop())
                 this._baseOps[base.name].run();
             }
