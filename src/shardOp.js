@@ -123,13 +123,11 @@ module.exports = class ShardOp extends Operation {
             let maxBases = _.size(this._baseOps)
             for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+            let baseCount = 0;
             while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
                 let base = /**@type {Base}*/ (bases.pop())
-                this._baseOps[base.name].run();
-            }
-        } else { // not running cpu bound, run all bases
-            for (let roomName in this._baseOps) {
-                this._baseOps[roomName].run();
+                if (++baseCount <= maxBases) this._baseOps[base.name].run();
+                else U.l('debug unclaim' + base.name ) //base.controller.unclaim();
             }
         }
     }
