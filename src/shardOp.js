@@ -13,10 +13,14 @@ module.exports = class ShardOp extends Operation {
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
         this._map = new Map(this);
+        /**@type {number} */
+        this._maxCPU = Game.cpu.bucket;
         this.initTick();
     }
 
     initTick(){
+        this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
+
         /**@type {{[baseName:string]:Creep[]}} */
         let creepsByBase = {};
         for (let creepName in Game.creeps) {
