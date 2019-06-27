@@ -127,7 +127,7 @@ module.exports = class ShardOp extends Operation {
             while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
                 let base = /**@type {Base}*/ (bases.pop())
                 if (++baseCount <= maxBases) this._baseOps[base.name].run();
-                else U.l('debug unclaim' + base.name ) //base.controller.unclaim();
+                else U.l('debug unclaim ' + base.name ) //base.controller.unclaim();
             }
         }
     }
