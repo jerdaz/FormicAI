@@ -15,6 +15,10 @@ module.exports = class Operation {
     }
 
     run() {
+        if(this._debug.verbose) this._debug.logState('support', this)
+        try {
+            this._support();
+        } catch(err) {this._debug.logError(err)};
         if(this._debug.verbose) this._debug.logState('strategy', this)
         try {
             this._strategy();
