@@ -17,6 +17,8 @@ module.exports = class SpawnOp extends Operation {
         /**@type {{count:number, template:CreepTemplate}[]} */
         this._spawnRequests = [];
         this._builderRequest = '';
+        this._shardColonizer = '';
+        this._shardColBuilder = '';
 
         /**@type {number[]} */
         this._spawnPrio = [];
@@ -39,6 +41,19 @@ module.exports = class SpawnOp extends Operation {
         this._builderRequest = roomName;
     }
 
+    /**@param {string} shard */
+    /**@param {number} requestType} */
+    requestShardColonizers(shard, requestType){
+        switch (requestType) {
+            case c.SHARDREQUEST_BUILDER:
+                this._shardColBuilder = shard;
+                break;
+            case c.SHARDREQUEST_COLONIZER:
+                this._shardColonizer = shard;
+                break;
+        }
+    }
+
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
@@ -53,17 +68,11 @@ module.exports = class SpawnOp extends Operation {
         for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
         if (canSpawn) {
             let base = this._baseOp.getBase();
-            if (this._builderRequest 
+            if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
                 && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
-                ) {
-                let body = this._expandCreep({body:[MOVE,CARRY,WORK]});
-                let roomName = this._builderRequest
-                for (let spawn of this._spawns) {
-                    let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
-                    if (result == OK) this._builderRequest = '';
-                }
-            } else {
+                )  this._prioritySpawn();
+            else {
                 let spawnList = this._getSpawnList();
                 if (spawnList.length > 0 ) {
                     for (let spawn of this._spawns) {
@@ -77,6 +86,32 @@ module.exports = class SpawnOp extends Operation {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    _prioritySpawn() {
+        let body = [];
+        if (this._shardColonizer) {
+            body = [MOVE,CLAIM];    
+            let roomName = this._shardColonizer
+            for (let spawn of this._spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+                if (result == OK) this._shardColonizer = '';
+            }
+        } else  if (this._shardColBuilder) {
+            body = this._expandCreep({body:[MOVE,CARRY,WORK]});
+            let roomName = this._shardColBuilder
+            for (let spawn of this._spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+                if (result == OK) this._builderRequest = '';
+            }
+        } else  if (this._builderRequest) {
+            body = this._expandCreep({body:[MOVE,CARRY,WORK]});
+            let roomName = this._builderRequest
+            for (let spawn of this._spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
+                if (result == OK) this._builderRequest = '';
             }
         }
     }

@@ -27,13 +27,13 @@ module.exports = class BaseOp extends Operation{
         /**@type {TowerOp}} */
         this._towerOp = new TowerOp(/**@type {StructureTower[]} */(this.getMyStructures(STRUCTURE_TOWER)), this);
         /**@type {TeamFillingOp} */
-        this._teamFillingOp = new TeamFillingOp(this, this._spawningOp);
+        this._teamFillingOp = new TeamFillingOp(this);
         /**@type {TeamBuildingOp} */
-        this._teamBuildingOp = new TeamBuildingOp(this, this._spawningOp);
+        this._teamBuildingOp = new TeamBuildingOp(this);
         /**@type {TeamUpgradingOp} */
-        this._teamUpgradingOp = new TeamUpgradingOp(this, this._spawningOp);
+        this._teamUpgradingOp = new TeamUpgradingOp(this);
         /**@type {TeamColonizingOp} */
-        this._teamColonizingOp = new TeamColonizingOp(this, this._spawningOp);
+        this._teamColonizingOp = new TeamColonizingOp(this, this._shardOp.getMap());
         
         let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
         if (firstSpawn) this._centerPos = firstSpawn.pos;
@@ -54,7 +54,7 @@ module.exports = class BaseOp extends Operation{
         let teamCreeps = [];
         if (creeps) {
             for (let creep of creeps) {
-                let opType = parseInt(creep.name.split('_')[1]);
+                let opType = creep.memory.operation || parseInt(creep.name.split('_')[1]);
                 if (!teamCreeps[opType]) teamCreeps[opType] = [];
                 teamCreeps[opType].push(creep);
             }
@@ -126,9 +126,22 @@ module.exports = class BaseOp extends Operation{
         return ret;
     }
 
+    /**@param {number} opType */
+    /**@param {CreepTemplate} template */
+    /**@param {number} count */
+    ltRequestSpawn(opType, template, count) {
+        this._spawningOp.ltRequestSpawn(opType, template, count);
+    }
+
     /**@param {string} roomName */
     requestBuilder(roomName) {
         this._spawningOp.requestBuilder(roomName);
+    }
+
+    /**@param {string} shard */
+    /**@param {number} requestType} */
+    requestShardColonization(shard, requestType) {
+        this._spawningOp.requestShardColonizers(shard, requestType);
     }
 
     _strategy() {

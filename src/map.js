@@ -39,4 +39,20 @@ module.exports = class Map {
             })
         }
     }
+
+    /**@param {String} roomName */
+    findClosestPortalRoom(roomName){
+        let ew = roomName.slice(1);
+        let x = parseInt(roomName);
+        let ns = roomName.match('(N|S)');
+        let y = parseInt(roomName.slice(-2));
+        x = Math.round(x/10) * 10;
+        y = Math.round (y/10) * 10;
+        return ew + x + ns + y;
+    }
+
+    /**@param {String} roomName */
+    describeExits(roomName) {
+        return Game.map.describeExits(roomName);
+    }
 }

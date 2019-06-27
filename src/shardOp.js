@@ -3,15 +3,23 @@ let c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
 let Map = require('./map');
+let TeamColonizingOp = require('./teamColonizingOp')
+/** @typedef {import('./main').Main} MainOp */
+
 
 module.exports = class ShardOp extends Operation {
-    constructor() {
+    /**@param {MainOp} main */
+    constructor(main) {
         super();
+        this._main = main
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
+        /** @type {Map} */
         this._map = new Map(this);
         /**@type {number} */
         this._maxCPU = Game.cpu.bucket;
+        this._maxShardBases = Game.gcl.level
+        this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
         this.initTick();
     }
 
@@ -50,18 +58,39 @@ module.exports = class ShardOp extends Operation {
         if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
         this._baseOps = newBaseOps;
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
+
+        //init shard colonization
+        let creeps = []
+        for (let baseName in creepsByBase) if (baseName.startsWith('shard')) {
+            for(let creep of creepsByBase[baseName]) creeps.push(creep);
+            delete creepsByBase[baseName]
+        }
+        this._teamShardColonizing.initTick(creeps)
+
         // kill all creeps of dead bases.
         for (let baseName in creepsByBase) {
             for (let creep of creepsByBase[baseName]) {
                 creep.suicide();
             }
         }
+
+    }
+
+    /**@param {number} max */
+    setDirectiveMaxBases(max){
+        this._maxShardBases = max;
     }
 
     /**@param {String} roomName */
     requestBuilder(roomName){
         let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
+    }
+
+    /**@param {string} shard */
+    /**@param {number} requestType} */
+    requestShardColonization(shard, requestType) {
+        for(let baseOp in this._baseOps) this._baseOps[baseOp].requestShardColonization(shard, requestType);
     }
 
     _support() {
@@ -75,10 +104,12 @@ module.exports = class ShardOp extends Operation {
 
 
     _strategy(){
-        if (U.chance(100)) {
+        if (U.chance(100) || this._firstRun) {
             let directive = c.DIRECTIVE_NONE;
-            if (Game.cpu.bucket >= this._maxCPU && Game.gcl.level > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
+            if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
+            if (_.size(this._baseOps) == 0) this._main.requestCreep(c.SHARDREQUEST_COLONIZER);
+            else if (_.size(Game.spawns) == 0 ) this._main.requestCreep(c.SHARDREQUEST_BUILDER)
         }
     }
 
@@ -103,6 +134,11 @@ module.exports = class ShardOp extends Operation {
         }
     }
 
+    
+
+    getMap(){
+        return this._map;
+    }
 
     /**@param {string} roomName */
     /**@returns {Room} returns room with RoomName */
