@@ -41,7 +41,8 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
             } else {
                 let lastPart = _.last(creep.body)
                 if (!lastPart) throw Error();
-                if (lastPart.type == WORK) {
+                if (lastPart.type == WORK) { 
+                    // creep is a colonizing builder
                     let targetRoom = this._map.findClosestBaseByPath(room.name,1);
                     if (!targetRoom) continue;
                     if (room.name!= targetRoom) creepOp.instructMoveTo(new RoomPosition(25,25, targetRoom));
@@ -51,6 +52,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                         if (source && dest) creepOp.instructTransfer(source, dest);
                     }
                 } else {
+                    // creep is a claimer
                     if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
                         creepOp.instructClaimController(room.controller);
                     }
