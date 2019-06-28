@@ -10,8 +10,8 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
     /**@param {Map} map */
     constructor(baseOp, map) {
         super(baseOp);
-        /**@type {string} */
-        this._lastRoomName = '';
+        /**@type {{[creepName:string]: string}} */
+        this._lastRoomName = {};
         this._map = map;
     }
 
@@ -34,7 +34,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                 if(portalRoomName != room.name) {
                     creepOp.instructMoveTo(new RoomPosition(25, 25, portalRoomName));
                 } else {
-                    let destShard = creep.name.slice(6);
+                    let destShard = creep.name.substr(0,6);
                     let portal = room.find(FIND_STRUCTURES, {filter: (/**@type {any} */o) => {return o.structureType == STRUCTURE_PORTAL && o.destination.shard == destShard}})[0];
                     if (portal) creepOp.instructMoveTo(portal.pos)
                 }
@@ -53,13 +53,14 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                     }
                 } else {
                     // creep is a claimer
+                    let lastRoomName = this._lastRoomName[creep.name];
                     if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
                         creepOp.instructClaimController(room.controller);
                     }
-                    else if (room.name != this._lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
+                    else if (room.name != lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
                         let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                         if (_.size(exits) > 1 ) {
-                            for (let exit in exits) if (exits[exit] == this._lastRoomName) delete exits[exit];
+                            for (let exit in exits) if (exits[exit] == lastRoomName) delete exits[exit];
                         }
                         /**@type {string | undefined} */
                         let destRoomName = _.sample(exits);
@@ -69,7 +70,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                         if (exit_side>0) {
                             dest = /**@type {RoomPosition} */(creepOp.getPos().findClosestByPath(/**@type {any}*/ (exit_side)));
                             if (dest) creepOp.instructMoveTo(dest)
-                            this._lastRoomName = room.name;
+                            this._lastRoomName[creep.name] = room.name;
                         }
                     }
                 }

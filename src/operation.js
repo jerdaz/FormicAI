@@ -15,6 +15,9 @@ module.exports = class Operation {
     }
 
     run() {
+        //last resort cpu overflow prevention.
+        if (Game.cpu.bucket < Game.cpu.getUsed() + Game.cpu.limit) return;
+
         if(this._debug.verbose) this._debug.logState('strategy', this)
         try {
             this._strategy();

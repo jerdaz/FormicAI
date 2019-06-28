@@ -108,13 +108,20 @@ module.exports = class ShardOp extends Operation {
             let directive = c.DIRECTIVE_NONE;
             if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
-            if (_.size(this._baseOps) == 0) this._main.requestCreep(c.SHARDREQUEST_COLONIZER);
-            else if (_.size(Game.spawns) == 0 ) this._main.requestCreep(c.SHARDREQUEST_BUILDER)
+            if (_.isEmpty(this._baseOps)) this._main.requestCreep(c.SHARDREQUEST_COLONIZER);
+            else if (_.isEmpty(Game.spawns)) this._main.requestCreep(c.SHARDREQUEST_BUILDER)
+
+            if (_.size(this._baseOps) > this._maxShardBases) {
+                let bases = [];
+                for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+                bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+                
+                for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) U.l('debug unclaim ' + bases[i].name);
+            }
         }
     }
 
     _command(){
-        //running cpu bound run bases in level order
         let cpuReserve = this._maxCPU / 20;
         let cpuRange = this._maxCPU - 2* cpuReserve
         /**@type {Base[]} */
@@ -123,12 +130,13 @@ module.exports = class ShardOp extends Operation {
         for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
         bases.sort ((a,b) => {return a.controller.level - b.controller.level});
         let baseCount = 0;
-        while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
+        while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) / maxBases * cpuRange) {
             let base = /**@type {Base}*/ (bases.pop())
             if (++baseCount <= maxBases) this._baseOps[base.name].run();
-            else U.l('debug unclaim ' + base.name ) //base.controller.unclaim();
         }
-}
+
+        this._teamShardColonizing.run();
+    }
 
     
 
@@ -157,5 +165,10 @@ module.exports = class ShardOp extends Operation {
     /**@returns {BaseOp} */
     getBaseOp(roomName) {
         return this._baseOps[roomName];
+    }
+
+    /**@returns {Number} */
+    getBaseCount() {
+        return _.size(this._baseOps);
     }
 }

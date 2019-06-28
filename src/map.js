@@ -42,12 +42,13 @@ module.exports = class Map {
 
     /**@param {String} roomName */
     findClosestPortalRoom(roomName){
-        let ew = roomName.slice(1);
-        let x = parseInt(roomName);
-        let ns = roomName.match('(N|S)');
-        let y = parseInt(roomName.slice(-2));
+        let ew = (roomName.match('E|W')||[''])[0];
+        let x = parseInt((roomName.match('[0-9]+')||[''])[0]);
+        let ns = (roomName.match('N|S')||[''])[0];
+        let y = parseInt((roomName.match('[0-9]+$')||[''])[0]);
         x = Math.round(x/10) * 10;
         y = Math.round (y/10) * 10;
+        if (!ew || !ns) throw Error();
         return ew + x + ns + y;
     }
 

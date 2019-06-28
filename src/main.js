@@ -42,7 +42,9 @@ class Main extends Operation {
         if(U.chance(10000) || this._firstRun) {
             // divide cpu evenly between shards
             let totalCPU = 0;
-            let shardLimits = Game.cpu.shardLimits;
+            /**@type {{[key:string]:number}} */
+            let shardLimits = {};
+            Object.assign(shardLimits, Game.cpu.shardLimits);
             for (let shard in shardLimits) {
                 totalCPU += shardLimits[shard]
             }
@@ -50,13 +52,13 @@ class Main extends Operation {
             for (let shard of this._shards) {
                 shardLimits[shard] = dividedCPU;
             }
-            Game.cpu.setShardLimits(shardLimits);
+            //Game.cpu.setShardLimits(shardLimits);
 
 
             //set max bases
             let nBases = Game.gcl.level
             let cpuPerBase = totalCPU / nBases;
-            shardLimits = Game.cpu.shardLimits;
+            Object.assign(shardLimits, Game.cpu.shardLimits);
             /**@type {{[index:string] : Number}} */
             let maxShardBases = {};
             while (nBases > 0) {
@@ -73,7 +75,7 @@ class Main extends Operation {
         }
 
         // check for shard requests
-        if(U.chance(100) || this._firstRun) {
+        if((U.chance(100) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
             let interShardMem = this._loadInterShardMem();
             for (let i=0; i < interShardMem.shards.length; i++) {
                 if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
