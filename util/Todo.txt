@@ -1,6 +1,0 @@
-functionele operaties onder bases bouwen:
-- spawning
-- filling
-- upgrading
-- building
-colonization
