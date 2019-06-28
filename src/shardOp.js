@@ -116,21 +116,19 @@ module.exports = class ShardOp extends Operation {
     _command(){
         //running cpu bound run bases in level order
         let cpuReserve = this._maxCPU / 20;
-        if (Game.cpu.bucket < this._maxCPU - cpuReserve) {
-            let cpuRange = this._maxCPU - 2* cpuReserve
-            /**@type {Base[]} */
-            let bases = [];
-            let maxBases = _.size(this._baseOps)
-            for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
-            bases.sort ((a,b) => {return a.controller.level - b.controller.level});
-            let baseCount = 0;
-            while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
-                let base = /**@type {Base}*/ (bases.pop())
-                if (++baseCount <= maxBases) this._baseOps[base.name].run();
-                else U.l('debug unclaim ' + base.name ) //base.controller.unclaim();
-            }
+        let cpuRange = this._maxCPU - 2* cpuReserve
+        /**@type {Base[]} */
+        let bases = [];
+        let maxBases = _.size(this._baseOps)
+        for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+        bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+        let baseCount = 0;
+        while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) * cpuRange) {
+            let base = /**@type {Base}*/ (bases.pop())
+            if (++baseCount <= maxBases) this._baseOps[base.name].run();
+            else U.l('debug unclaim ' + base.name ) //base.controller.unclaim();
         }
-    }
+}
 
     
 

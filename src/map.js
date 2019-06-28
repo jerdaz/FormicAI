@@ -1,7 +1,7 @@
 let U = require('./util');
 let c = require('./constants');
-let BaseOp = require('./baseOp');
 /** @typedef {import('./shardOp')} ShardOp */
+/** @typedef {import('./baseOp')} BaseOp */
 
 module.exports = class Map {
     /** @param {ShardOp} shardOp */
