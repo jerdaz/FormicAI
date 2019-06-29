@@ -53,7 +53,7 @@ class Main extends Operation {
                 shardLimits[shard] = dividedCPU;
             }
             //Game.cpu.setShardLimits(shardLimits);
-
+            U.l(shardLimits);
 
             //set max bases
             let nBases = Game.gcl.level
@@ -75,7 +75,7 @@ class Main extends Operation {
         }
 
         // check for shard requests
-        if((U.chance(100) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
+        if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
             let interShardMem = this._loadInterShardMem();
             for (let i=0; i < interShardMem.shards.length; i++) {
                 if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
