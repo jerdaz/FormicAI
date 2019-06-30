@@ -19,7 +19,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
         // if running under a base give spawn requests.
         if (this._baseOp) {
             let nCreep = 0;
-            if (this._baseOp.getDirective() == c.DIRECTIVE_COLONIZE) nCreep = 1;
+            if (this._baseOp.getDirective() == c.DIRECTIVE_COLONIZE && this._baseOp.getMaxSpawnEnergy() >= U.getCreepCost([MOVE,CLAIM])) nCreep = 1;
             this._baseOp.ltRequestSpawn(c.OPERATION_COLONIZING, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
         }
 
@@ -43,7 +43,9 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                 if (!lastPart) throw Error();
                 if (lastPart.type == WORK) { 
                     // creep is a colonizing builder
+                    /**@type {Structure | ConstructionSite | null}  */
                     let dest = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                    if (dest == undefined && room.controller && room.controller.my) dest = room.controller;
                     let targetRoom ;
                     if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
                     else targetRoom = this._map.findClosestBaseByPath(room.name,1);

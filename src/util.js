@@ -45,5 +45,12 @@ module.exports = class Util {
     static getShardID(shardName) {
         return (parseInt(shardName.slice(-1)));
     }
+
+    /**@param {BodyPartConstant[]} body */
+    static getCreepCost (body) {
+        var cost = 0;
+        for (var i=0; i<body.length;i++) cost += BODYPART_COST[body[i]];
+        return cost;
+    }    
 }
 
