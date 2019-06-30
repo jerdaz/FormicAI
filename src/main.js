@@ -107,12 +107,12 @@ class Main extends Operation {
         let interShardMem = undefined;
         for (let shard of this._shards) {
             let shardMem = /**@type {ShardMem}*/(JSON.parse(InterShardMemory.getRemote(shard) || '{}'));
-            if ((interShardMem==undefined) || shardMem.timeStamp > interShardMem.timeStamp) interShardMem = shardMem
+            if (shardMem.timeStamp && (interShardMem==undefined || shardMem.timeStamp > interShardMem.timeStamp)) interShardMem = shardMem
         }
         if(!interShardMem) throw Error();
         if (_.isEmpty(interShardMem)) interShardMem = {timeStamp: new Date(), shards:[]}
         for (let shard of this._shards) {
-            let shardNum = parseInt(shard.slice(-1))
+            let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
                 if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE};
                 else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER};

@@ -39,5 +39,11 @@ module.exports = class Util {
             return value;
         });
     }
+
+    /**@param {String} shardName */
+    /**@returns {Number} */
+    static getShardID(shardName) {
+        return (parseInt(shardName.slice(-1)));
+    }
 }
 
