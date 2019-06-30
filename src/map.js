@@ -26,11 +26,20 @@ module.exports = class Map {
     /** @param {{[key:string]: BaseOp }} baseOps*/
     updateBaseDistances(baseOps) {
         this._baseDist = {};
-        for(let baseAName in baseOps) {
-            this._baseDist[baseAName] = [];
-            for( let baseBName in baseOps) {
+        let baseNames = [];
+        for(let baseName in baseOps) {
+            this._baseDist[baseName] = [];
+            baseNames.push(baseName);
+        }
+        for(let i=0; i <baseNames.length;i++) {
+            let baseAName = baseNames[i];
+            for(let j=i+1; j < baseNames.length;j++){
+                let baseBName = baseNames[j]
                 let dist = Game.map.findRoute(baseAName, baseBName)
-                if (dist != ERR_NO_PATH) this._baseDist[baseAName].push( {roomName:baseBName, dist: dist.length })
+                if (dist != ERR_NO_PATH) { 
+                    this._baseDist[baseAName].push( {roomName:baseBName, dist: dist.length })
+                    this._baseDist[baseBName].push( {roomName:baseAName, dist: dist.length })
+                }
             }
             this._baseDist[baseAName].sort((a,b) => {
                 if (a.dist < b.dist) return -1;
