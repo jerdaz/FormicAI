@@ -9,5 +9,5 @@ declare interface CreepOpInstruction extends Instruction {source: RoomObject, de
 declare type CreepTemplate = {body: BodyPartConstant[], minLength?: number, maxLength?: number}
 interface Memory {[name: string]: any}
 
-//interface CreepMemory {operation: number;}
+interface CreepMemory {operation: number;}
 ;

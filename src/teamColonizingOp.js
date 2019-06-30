@@ -43,11 +43,13 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                 if (!lastPart) throw Error();
                 if (lastPart.type == WORK) { 
                     // creep is a colonizing builder
-                    let targetRoom = this._map.findClosestBaseByPath(room.name,1);
+                    let dest = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                    let targetRoom ;
+                    if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
+                    else targetRoom = this._map.findClosestBaseByPath(room.name,1);
                     if (!targetRoom) continue;
                     if (room.name!= targetRoom) creepOp.instructMoveTo(new RoomPosition(25,25, targetRoom));
                     else {
-                        let dest = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
                         let source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
                         if (source && dest) creepOp.instructTransfer(source, dest);
                     }
