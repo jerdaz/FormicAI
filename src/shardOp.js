@@ -17,7 +17,7 @@ module.exports = class ShardOp extends Operation {
         /** @type {Map} */
         this._map = new Map(this);
         /**@type {number} */
-        this._maxCPU = Game.cpu.bucket;
+        this._maxCPU = Memory.maxCPU;
         this._maxShardBases = Game.gcl.level
         this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
         this.initTick();
@@ -25,6 +25,7 @@ module.exports = class ShardOp extends Operation {
 
     initTick(){
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
+        Memory.maxCPU = this._maxCPU
 
         /**@type {{[baseName:string]:Creep[]}} */
         let creepsByBase = {};

@@ -3,11 +3,12 @@ let c = require('./constants');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import('./baseOp')} BaseOp */
 
+/**@typedef {{roomName:string, dist:number}} BaseDist */
 module.exports = class Map {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
         this._shardOp = shardOp
-        /**@type {{[roomName:string]:{roomName:string, dist:number}[]}} */
+        /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
     }
 
@@ -16,9 +17,21 @@ module.exports = class Map {
     /**@param {boolean} hasSpawn */
     /**@returns {String | undefined} */
     findClosestBaseByPath(roomName, minLevel, hasSpawn = false) {
-        for (let baseDist of this._baseDist[roomName]) {
-            let base = this._shardOp.getBase(baseDist.roomName);
-            if (base.controller.level >= minLevel && (hasSpawn == false || this._shardOp.getBaseOp(base.name).hasSpawn() )) return base.name;
+        if (this._baseDist[roomName]) {
+            for (let baseDist of this._baseDist[roomName]) {
+                let base = this._shardOp.getBase(baseDist.roomName);
+                if (base.controller.level >= minLevel && (hasSpawn == false || this._shardOp.getBaseOp(base.name).hasSpawn() )) return base.name;
+            }
+        } else {
+            let closestBase = {roomName: '', dist:10000}
+            for (let baseName in this._baseDist) {
+                let route = Game.map.findRoute(roomName, baseName);
+                if (route instanceof Array && route.length < closestBase.dist) {
+                    closestBase.roomName = baseName;
+                    closestBase.dist = route.length;
+                }  
+            }
+            return closestBase.roomName;
         }
         return undefined;
     }

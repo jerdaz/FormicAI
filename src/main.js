@@ -12,7 +12,7 @@ class Main extends Operation {
         U.l('INIT MAIN');
         for (let memObj in Memory) {
             // @ts-ignore
-            delete Memory[memObj];
+            if (memObj != 'maxCPU') delete Memory[memObj];
         }
         InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -104,10 +104,12 @@ class Main extends Operation {
 
     /**@returns {ShardMem} */
     _loadInterShardMem(){
-        let interShardMem = undefined;
+        /**@type {ShardMem} */
+        let interShardMem = {timeStamp: new Date(), shards:[]};
         for (let shard of this._shards) {
+            let shardId = U.getShardID(shard)
             let shardMem = /**@type {ShardMem}*/(JSON.parse(InterShardMemory.getRemote(shard) || '{}'));
-            if (shardMem.timeStamp && (interShardMem==undefined || shardMem.timeStamp > interShardMem.timeStamp)) interShardMem = shardMem
+            if (!_.isEmpty(shardMem)) interShardMem.shards[shardId] = shardMem.shards[shardId];
         }
         if(!interShardMem) throw Error();
         if (_.isEmpty(interShardMem)) interShardMem = {timeStamp: new Date(), shards:[]}
