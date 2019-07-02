@@ -109,15 +109,17 @@ module.exports = class ShardOp extends Operation {
             let directive = c.DIRECTIVE_NONE;
             if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
+
             if (_.isEmpty(this._baseOps)) this._main.requestCreep(c.SHARDREQUEST_COLONIZER);
             else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._main.requestCreep(c.SHARDREQUEST_BUILDER)
+            else this._main.requestCreep(c.SHARDREQUEST_NONE);
 
             if (_.size(this._baseOps) > this._maxShardBases) {
                 let bases = [];
                 for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
                 bases.sort ((a,b) => {return a.controller.level - b.controller.level});
                 
-                for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) U.l('debug unclaim ' + bases[i].name);
+                for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
             }
         }
     }
