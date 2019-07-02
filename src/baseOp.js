@@ -258,33 +258,28 @@ module.exports = class BaseOp extends Operation{
         }
 
         
-        // for (let source of /**@type {Mineral[]} */(base.find(FIND_MINERALS))) {
-        //     x += source.pos.x;
-        //     y += source.pos.y;
-        //     n += 1;
-        // }
-        
         x = Math.round(x / n);
         y = Math.round(y / n);
 
         let spawnX = x;
         let spawnY = y;
         let validSpot;
+        let roomTerrain = base.getTerrain();
         do {
             validSpot = true;
             spawnX = (spawnX + _.random(-1, 1) - 2 ) % 46 + 2;
             spawnY = (spawnY + _.random(-1, 1) - 2 ) % 46 + 2;
 
-            for (let nx=-3;nx<=3;nx++) {
-                for (let ny=-3;ny<=3;ny++) {
-                    var terrain =base.getTerrain().get(spawnX +nx, spawnY + ny);
+            for (let nx=-2;nx<=2;nx++) {
+                for (let ny=-2;ny<=2;ny++) {
+                    var terrain = roomTerrain.get(spawnX + nx, spawnY + ny);
                     if (terrain == TERRAIN_MASK_WALL) validSpot = false;
                 }
             }
         }
         while (validSpot == false )
 
-        let result = new RoomPosition(x, y, base.name);
+        let result = new RoomPosition(spawnX, spawnY, base.name);
         return result;
     } 
 }
