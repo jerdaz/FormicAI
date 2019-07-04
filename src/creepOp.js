@@ -15,6 +15,7 @@ module.exports = class CreepOp extends Operation {
     constructor(creep, baseOp) {
         super();
         this._creep = creep;
+        creep.notifyWhenAttacked( false);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
