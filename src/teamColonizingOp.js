@@ -2,12 +2,12 @@ let U = require('./util');
 const c = require('./constants');
 let CreepTeamOp = require('./teamOp');
 let SpawningOp = require('./spawningOp');
-let Map = require('./map');
+let MapOp = require('./mapOp');
 /**@typedef {import('./baseOp')} BaseOp  */
 
 module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
     /**@param {BaseOp | undefined} baseOp */
-    /**@param {Map} map */
+    /**@param {MapOp} map */
     constructor(baseOp, map) {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */

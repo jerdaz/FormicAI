@@ -14,6 +14,7 @@ module.exports = class ShardOp extends Operation {
         this._main = main
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
+        /**@type {MapOp} */
         this._map = new MapOp(this);
         /**@type {number} */
         this._maxCPU = Memory.maxCPU;
