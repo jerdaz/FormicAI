@@ -35,8 +35,9 @@ module.exports = class MapOp {
     /**@param {String} roomName */
     /**@param {number} minLevel */
     /**@param {boolean} hasSpawn */
+    /**@param {number | undefined} lastSeenHostile */
     /**@returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = false) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = 0) {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {
                 let base = this._shardOp.getBase(baseDist.roomName);
@@ -45,11 +46,13 @@ module.exports = class MapOp {
         } else {
             let closestBase = {roomName: '', dist:10000}
             for (let baseName in this._baseDist) {
-                let route = Game.map.findRoute(roomName, baseName);
-                if (route instanceof Array && route.length < closestBase.dist) {
-                    closestBase.roomName = baseName;
-                    closestBase.dist = route.length;
-                }  
+                if (lastSeenHostile && (Game.time - this._scoutInfo[baseName].lastSeenHostile || 0 ) > lastSeenHostile) {
+                    let route = Game.map.findRoute(roomName, baseName);
+                    if (route instanceof Array && route.length < closestBase.dist) {
+                        closestBase.roomName = baseName;
+                        closestBase.dist = route.length;
+                    }  
+                }
             }
             return closestBase.roomName;
         }
