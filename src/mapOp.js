@@ -24,7 +24,7 @@ module.exports = class MapOp extends Operation {
                 if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0}
                 let room = Game.rooms[roomName];
                 let hostiles = room.find(FIND_HOSTILE_CREEPS);
-                if (hostiles) this._scoutInfo[roomName].lastSeenHostile = Game.time;
+                if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
             }
         }
     }
