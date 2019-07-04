@@ -21,6 +21,7 @@ module.exports = class MapOp extends Operation {
     _strategy() {
         if (U.chance(10)) {
             for(let roomName in Game.rooms) {
+                if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0}
                 let room = Game.rooms[roomName];
                 let hostiles = room.find(FIND_HOSTILE_CREEPS);
                 if (hostiles) this._scoutInfo[roomName].lastSeenHostile = Game.time;
