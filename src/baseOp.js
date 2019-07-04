@@ -267,8 +267,10 @@ module.exports = class BaseOp extends Operation{
         let roomTerrain = base.getTerrain();
         do {
             validSpot = true;
-            spawnX = (spawnX + _.random(-1, 1) - 2 ) % 46 + 2;
-            spawnY = (spawnY + _.random(-1, 1) - 2 ) % 46 + 2;
+            spawnX = spawnX + _.random(-1, 1) ;
+            spawnY = spawnY + _.random(-1, 1) ;
+            if (spawnX <4 || spawnX > 45) spawnX = 25;
+            if (spawnY <4 || spawnY > 45) spawnY = 25;
 
             for (let nx=-2;nx<=2;nx++) {
                 for (let ny=-2;ny<=2;ny++) {
