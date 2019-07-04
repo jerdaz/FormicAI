@@ -24,4 +24,9 @@ module.exports = {
     DIRECTIVE_NONE: 0,
     DIRECTIVE_COLONIZE: 1,
 
+    TICKS_HOUR: 1000,
+    TICKS_DAY: 1000 * 24,
+    TICKS_WEEK: 1000 * 24 * 7,
+    TICKS_MONTH: 1000 * 24 * 30,
+    TICKS_YEAR:  1000 * 24 * 365,
 }

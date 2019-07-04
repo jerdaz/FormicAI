@@ -18,12 +18,18 @@ module.exports = class MapOp {
     _strategy() {
         if (U.chance(10)) {
             let baseOps = this._shardOp.getBaseOps();
-            for(let baseName in baseOps) {
-                let baseOp = baseOps[baseName];
-                let hostiles = baseOp.getBase().find(FIND_HOSTILE_CREEPS);
-                if (hostiles) this._scoutInfo[baseName].lastSeenHostile = Game.time;
+            for(let roomName in Game.rooms) {
+                let room = Game.rooms[roomName];
+                let hostiles = room.find(FIND_HOSTILE_CREEPS);
+                if (hostiles) this._scoutInfo[roomName].lastSeenHostile = Game.time;
             }
         }
+    }
+
+    /**@param {String} roomName */
+    getLastHostile(roomName) {
+        if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].lastSeenHostile;
+        else return undefined;
     }
 
     /**@param {String} roomName */
