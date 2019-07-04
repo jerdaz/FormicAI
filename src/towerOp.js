@@ -21,19 +21,20 @@ module.exports = class TowerOp extends Operation {
     }
 
     _command() {
-        let hostile = this._getInvader()
+        let hostile = this._getInvader();
+        let room = this._baseOp.getBase();
+        var creepsHit = room.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
+        var structuresHit = room.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * this._baseOp.getLevel())}});
         for (let tower of this._towers) {
             if (hostile) {
                 tower.attack(hostile);
                 continue;
             }
-            var creepsHit = tower.room.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
             if (creepsHit) {
                 let creep = tower.pos.findClosestByRange(creepsHit)
                 if (creep) tower.heal(creep);
                 continue;
             }
-            var structuresHit = tower.room.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * this._baseOp.getLevel())}});
             if (structuresHit) {
                 var target = structuresHit[0];
                 for(var i = 1;i<structuresHit.length;i++) if (target.hits > structuresHit[i].hits) target = structuresHit[i];

@@ -4,7 +4,7 @@ let CreepTeamOp = require('./teamOp');
 
 module.exports = class CreepFillerOp extends CreepTeamOp {
     _strategy() {
-        this._spawningOp.ltRequestSpawn(c.OPERATION_FILLING, {body:[MOVE,CARRY,WORK]}, 2)
+        if (this._baseOp) this._baseOp.ltRequestSpawn(c.OPERATION_FILLING, {body:[MOVE,CARRY,WORK]}, 2)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
@@ -15,10 +15,14 @@ module.exports = class CreepFillerOp extends CreepTeamOp {
             {
                 let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE)
                 let dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
-                                return  (o.energy < o.energyCapacity)
-                                        && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER);
-                                }})
-                            
+                    return  (o.energy < o.energyCapacity)
+                            && (o.structureType == STRUCTURE_TOWER);
+                    }})
+                if (!dest) dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
+                    return  (o.energy < o.energyCapacity)
+                            && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION);
+                    }})
+                                    
                 if (source && dest) creepOp.instructTransfer(source, dest);
             }
         }

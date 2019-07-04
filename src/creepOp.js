@@ -11,7 +11,7 @@ const STATE_CLAIMING = 4;
 
 module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
-    /**@param {BaseOp} baseOp */
+    /**@param {BaseOp | undefined} baseOp */
     constructor(creep, baseOp) {
         super();
         this._creep = creep;
@@ -57,8 +57,10 @@ module.exports = class CreepOp extends Operation {
 
         switch (this._instruct) {
             case c.COMMAND_NONE:
-                if (this._creep.pos.roomName != this._baseOp.getName()) {
-                    this.instructMoveTo(this._baseOp.getBaseCenter());
+                if (this._baseOp) {
+                    if (this._creep.pos.roomName != this._baseOp.getName()) {
+                        this.instructMoveTo(this._baseOp.getBaseCenter());
+                    }
                 }
                 break;
         }      
@@ -128,5 +130,10 @@ module.exports = class CreepOp extends Operation {
 
     getInstr() {
         return this._instruct;
+    }
+
+    /**@param {Number} teamOp */
+    setOperation(teamOp) {
+        this._creep.memory.operation = teamOp;
     }
 }
