@@ -2,14 +2,14 @@ let U = require('./util');
 let c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
-let Map = require('./map');
+let MapOp = require('./mapOp');
 
 module.exports = class ShardOp extends Operation {
     constructor() {
         super();
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
-        this._map = new Map(this);
+        this._map = new MapOp(this);
         /**@type {number} */
         this._maxCPU = Game.cpu.bucket;
         this.initTick();
@@ -125,5 +125,9 @@ module.exports = class ShardOp extends Operation {
     /**@returns {BaseOp} */
     getBaseOp(roomName) {
         return this._baseOps[roomName];
+    }
+
+    getBaseOps() {
+        return this._baseOps;
     }
 }

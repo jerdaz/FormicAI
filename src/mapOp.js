@@ -3,12 +3,27 @@ let c = require('./constants');
 let BaseOp = require('./baseOp');
 /** @typedef {import('./shardOp')} ShardOp */
 
-module.exports = class Map {
+/** @typedef {{[roomName:string]: {lastSeenHostile:number}}} ScoutInfo*/
+
+module.exports = class MapOp {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
         this._shardOp = shardOp
         /**@type {{[roomName:string]:{roomName:string, dist:number}[]}} */
         this._baseDist;
+        /**@type {ScoutInfo} */
+        this._scoutInfo = {};
+    }
+
+    _strategy() {
+        if (U.chance(10)) {
+            let baseOps = this._shardOp.getBaseOps();
+            for(let baseName in baseOps) {
+                let baseOp = baseOps[baseName];
+                let hostiles = baseOp.getBase().find(FIND_HOSTILE_CREEPS);
+                if (hostiles) this._scoutInfo[baseName].lastSeenHostile = Game.time;
+            }
+        }
     }
 
     /**@param {String} roomName */
