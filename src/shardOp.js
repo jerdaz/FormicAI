@@ -35,7 +35,7 @@ module.exports = class ShardOp extends Operation {
             let creep = U.getCreep(creepName);
             if (creep) {
                 if (creep.hits > 0 && creep.spawning == false) creepsByBase[roomName].push (creep);
-                else if (creep.memory) delete creep.memory;
+                else if (creep.memory) delete Memory.creeps[creep.name];
             }
         }
 
@@ -136,6 +136,11 @@ module.exports = class ShardOp extends Operation {
         while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) / maxBases * cpuRange) {
             let base = /**@type {Base}*/ (bases.pop())
             if (++baseCount <= maxBases) this._baseOps[base.name].run();
+            }
+        } else { // not running cpu bound, run all bases
+            for (let roomName in this._baseOps) {
+                this._baseOps[roomName].run();
+            }
         }
 
         this._teamShardColonizing.run();
