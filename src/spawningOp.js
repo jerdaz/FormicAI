@@ -168,7 +168,5 @@ module.exports = class SpawnOp extends Operation {
     
         if (result.length>= minLength) return result;
         else return [];
-
-
     }
 }
