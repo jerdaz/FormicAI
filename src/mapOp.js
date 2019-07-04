@@ -1,14 +1,16 @@
 let U = require('./util');
 let c = require('./constants');
+let Operation = require('./operation');
 /** @typedef {import('./shardOp')} ShardOp */
 /** @typedef {import('./baseOp')} BaseOp */
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
-module.exports = class MapOp {
+module.exports = class MapOp extends Operation {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
+        super();
         this._shardOp = shardOp
         /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
@@ -46,7 +48,8 @@ module.exports = class MapOp {
         } else {
             let closestBase = {roomName: '', dist:10000}
             for (let baseName in this._baseDist) {
-                if (lastSeenHostile && (Game.time - this._scoutInfo[baseName].lastSeenHostile || 0 ) > lastSeenHostile) {
+
+                if (!(lastSeenHostile && this._scoutInfo[baseName] && (Game.time - this._scoutInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
                     let route = Game.map.findRoute(roomName, baseName);
                     if (route instanceof Array && route.length < closestBase.dist) {
                         closestBase.roomName = baseName;

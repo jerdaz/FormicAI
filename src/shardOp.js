@@ -12,10 +12,10 @@ module.exports = class ShardOp extends Operation {
     constructor(main) {
         super();
         this._main = main
-        /** @type {{[key:string]: BaseOp }} */
-        this._baseOps = {};
         /**@type {MapOp} */
         this._map = new MapOp(this);
+        /** @type {{[key:string]: BaseOp }} */
+        this._baseOps = {};
         /**@type {number} */
         this._maxCPU = Memory.maxCPU;
         this._maxShardBases = Game.gcl.level
@@ -139,6 +139,7 @@ module.exports = class ShardOp extends Operation {
         }
 
         this._teamShardColonizing.run();
+        this._map.run();
     }
 
     

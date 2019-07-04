@@ -48,7 +48,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                     if (dest == undefined && room.controller && room.controller.my) dest = room.controller;
                     let targetRoom ;
                     if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
-                    else targetRoom = this._map.findClosestBaseByPath(room.name,1, false, c.TICKS_DAY);
+                    else targetRoom = this._map.findClosestBaseByPath(room.name,1, false, c.TICKS_HOUR);
                     if (!targetRoom) continue;
                     if (room.name!= targetRoom) creepOp.instructMoveTo(new RoomPosition(25,25, targetRoom));
                     else {
