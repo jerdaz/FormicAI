@@ -66,7 +66,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                         let roomNames = [];
                         for (let exit in exits) if (exits[exit] != lastRoomName) roomNames.push(exits[exit]);
                         roomNames.sort((a,b) => {
-                                return this._map.getLastSeen(a) - this._map.getLastSeen(b);
+                                return this._map.getLastSeen(b) - this._map.getLastSeen(a) + Math.random() - 0.5;
                             })
                         /**@type {string | undefined} */
                         let destRoomName
