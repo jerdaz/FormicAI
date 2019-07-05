@@ -64,16 +64,10 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                     else if (room.name != lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
                         let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                         let roomNames = [];
-                        if (_.size(exits) > 1 ) {
-                            for (let exit in exits) {
-                                if (exits[exit] == lastRoomName) delete exits[exit];
-                                let lastHostile = this._map.getLastHostile(exits[exit]);
-                            }
-                            for (let exit in exits) roomNames.push(exits[exit])
-                            roomNames.sort((a,b) => {
-                                 return this._map.getLastSeen(a) - this._map.getLastSeen(b);
-                                })
-                        }
+                        for (let exit in exits) if (exits[exit] != lastRoomName) roomNames.push(exits[exit]);
+                        roomNames.sort((a,b) => {
+                                return this._map.getLastSeen(a) - this._map.getLastSeen(b);
+                            })
                         /**@type {string | undefined} */
                         let destRoomName
                         if (roomNames.length > 0) destRoomName = roomNames.pop();
