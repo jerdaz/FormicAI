@@ -95,7 +95,7 @@ module.exports = class CreepOp extends Operation {
                 creep.moveTo(source, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
-                else throw Error('Cannot retrieve from object ' + source);
+                else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;
@@ -103,7 +103,7 @@ module.exports = class CreepOp extends Operation {
                     creep.moveTo(dest, {range:1});
                     if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
                     else if (dest instanceof ConstructionSite) creep.build(dest);
-                    else throw Error('Cannot deliver to object ' + dest);
+                    else throw Error('Cannot deliver to object ' + dest + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 }
                 break;
             case STATE_MOVING:
