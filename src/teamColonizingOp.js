@@ -62,23 +62,32 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                         creepOp.instructClaimController(room.controller);
                     }
                     else if (room.name != lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
-                        let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
-                        let roomNames = [];
-                        for (let exit in exits) if (exits[exit] != lastRoomName) roomNames.push(exits[exit]);
-                        roomNames.sort((a,b) => {
-                                return this._map.getLastSeen(b) - this._map.getLastSeen(a) + Math.random() - 0.5;
-                            })
                         /**@type {string | undefined} */
                         let destRoomName
-                        if (roomNames.length > 0) destRoomName = roomNames.pop();
-                        else destRoomName = lastRoomName
-                        let exit_side = 0;
-                        if (destRoomName) exit_side = room.findExitTo(destRoomName);
-                        let dest;
-                        if (exit_side>0) {
-                            dest = /**@type {RoomPosition} */(creepOp.getPos().findClosestByPath(/**@type {any}*/ (exit_side)));
-                            if (dest) creepOp.instructMoveTo(dest)
+                        /**@type {Structure[]}*/
+                        let portals = [];
+                        if (lastRoomName) portals = creep.room.find(FIND_STRUCTURES, {filter: (o) => { return o.structureType == STRUCTURE_PORTAL && !(o.destination instanceof RoomPosition) }});
+                        if (portals.length>0) {
+                            let portal = _.sample(portals)
+                            if (portal) creepOp.instructMoveTo(portal.pos)
                             this._lastRoomName[creep.name] = room.name;
+                        } else {
+                            let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
+                            let roomNames = [];
+                            for (let exit in exits) if (exits[exit] != lastRoomName) roomNames.push(exits[exit]);
+                            roomNames.sort((a,b) => {
+                                    return this._map.getLastSeen(b) - this._map.getLastSeen(a) + Math.random() - 0.5;
+                                })
+                            if (roomNames.length > 0) destRoomName = roomNames.pop();
+                            else destRoomName = lastRoomName
+                            let exit_side = 0;
+                            if (destRoomName) exit_side = room.findExitTo(destRoomName);
+                            let dest;
+                            if (exit_side>0) {
+                                dest = /**@type {RoomPosition} */(creepOp.getPos().findClosestByPath(/**@type {any}*/ (exit_side)));
+                                if (dest) creepOp.instructMoveTo(dest)
+                                this._lastRoomName[creep.name] = room.name;
+                            }
                         }
                     }
                 }

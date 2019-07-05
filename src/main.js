@@ -4,7 +4,7 @@ let Operation = require('./operation');
 let ShardOp = require('./shardOp');
 let Debug = require('./debug');
 
-/**@typedef {{timeStamp: Date, shards: {request: number}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
 
 class Main extends Operation {
     constructor() {
@@ -71,16 +71,18 @@ class Main extends Operation {
                 }
             }
            // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
-            this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
+            // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
         }
 
         // check for shard requests
         if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
             let interShardMem = this._loadInterShardMem();
+            let totalBases = 0;
             for (let i=0; i < interShardMem.shards.length; i++) {
+                if (interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
                 if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
                     let shardRequest = interShardMem.shards[i];
-                    if (shardRequest.request > c.SHARDREQUEST_NONE) {
+                    if (shardRequest.request == c.SHARDREQUEST_BUILDER) {
                         this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
                         shardRequest.request = c.SHARDREQUEST_NONE;
                         this._writeInterShardMem(interShardMem);
@@ -88,6 +90,7 @@ class Main extends Operation {
                     }
                 }
             }
+            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount() + 1)
         }
     }
 
@@ -116,8 +119,8 @@ class Main extends Operation {
         for (let shard of this._shards) {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
-                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE};
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER};
+                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.getBaseCount()};
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: this._shardOp.getBaseCount()};
             }
         }
         return interShardMem;
