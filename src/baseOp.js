@@ -147,6 +147,7 @@ module.exports = class BaseOp extends Operation{
     _strategy() {
         if (U.chance(10)) {
             this._planBase();
+            if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim;
         }
     }
 

@@ -67,7 +67,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
                             for (let exit in exits) {
                                 if (exits[exit] == lastRoomName) delete exits[exit];
                                 let lastHostile = this._map.getLastHostile(exits[exit]);
-                                if (lastHostile && Game.time - lastHostile < c.TICKS_DAY) delete exits[exit];
+                                if (lastHostile && Game.time - lastHostile < c.TICKS_WEEK) delete exits[exit];
                             }
                         }
                         /**@type {string | undefined} */
