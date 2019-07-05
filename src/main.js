@@ -80,7 +80,7 @@ class Main extends Operation {
             for (let i=0; i < interShardMem.shards.length; i++) {
                 if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
                     let shardRequest = interShardMem.shards[i];
-                    if (shardRequest.request >= c.SHARDREQUEST_NONE) {
+                    if (shardRequest.request > c.SHARDREQUEST_NONE) {
                         this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
                         shardRequest.request = c.SHARDREQUEST_NONE;
                         this._writeInterShardMem(interShardMem);
