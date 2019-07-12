@@ -2,24 +2,30 @@ let U = require('./util');
 let c = require('./constants');
 let Operation = require('./operation');
 let BaseOp = require('./baseOp');
-let Map = require('./map');
+let MapOp = require('./mapOp');
+let TeamColonizingOp = require('./teamColonizingOp')
+/** @typedef {import('./main').Main} MainOp */
 
-const CPU_MAX_BUCKET = 10000;
-const CPU_RESERVE = 500;
 
 module.exports = class ShardOp extends Operation {
-    constructor() {
+    /**@param {MainOp} main */
+    constructor(main) {
         super();
+        this._main = main
+        /**@type {MapOp} */
+        this._map = new MapOp(this);
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
-        this._map = new Map(this);
         /**@type {number} */
-        this._maxCPU = Game.cpu.bucket;
+        this._maxCPU = Memory.maxCPU;
+        this._maxShardBases = Game.gcl.level
+        this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
         this.initTick();
     }
 
     initTick(){
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
+        Memory.maxCPU = this._maxCPU
 
         /**@type {{[baseName:string]:Creep[]}} */
         let creepsByBase = {};
@@ -53,18 +59,39 @@ module.exports = class ShardOp extends Operation {
         if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
         this._baseOps = newBaseOps;
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
+
+        //init shard colonization
+        let creeps = []
+        for (let baseName in creepsByBase) if (baseName.startsWith('shard')) {
+            for(let creep of creepsByBase[baseName]) creeps.push(creep);
+            delete creepsByBase[baseName]
+        }
+        this._teamShardColonizing.initTick(creeps)
+
         // kill all creeps of dead bases.
         for (let baseName in creepsByBase) {
             for (let creep of creepsByBase[baseName]) {
                 creep.suicide();
             }
         }
+
+    }
+
+    /**@param {number} max */
+    setDirectiveMaxBases(max){
+        this._maxShardBases = max;
     }
 
     /**@param {String} roomName */
     requestBuilder(roomName){
         let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
+    }
+
+    /**@param {string} shard */
+    /**@param {number} requestType} */
+    requestShardColonization(shard, requestType) {
+        for(let baseOp in this._baseOps) this._baseOps[baseOp].requestShardColonization(shard, requestType);
     }
 
     _support() {
@@ -78,33 +105,48 @@ module.exports = class ShardOp extends Operation {
 
 
     _strategy(){
-        if (U.chance(100)) {
+        if (U.chance(100) || this._firstRun) {
             let directive = c.DIRECTIVE_NONE;
-            if (Game.cpu.bucket >= CPU_MAX_BUCKET && Game.gcl.level > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
+            if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
             for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
+
+            if (_.isEmpty(this._baseOps)) this._main.requestCreep(c.SHARDREQUEST_COLONIZER);
+            else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._main.requestCreep(c.SHARDREQUEST_BUILDER)
+            else this._main.requestCreep(c.SHARDREQUEST_NONE);
+
+            if (_.size(this._baseOps) > this._maxShardBases) {
+                let bases = [];
+                for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+                bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+                
+                for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
+            }
         }
     }
 
     _command(){
-        //running cpu bound run bases in level order
-        if (Game.cpu.bucket < CPU_MAX_BUCKET - CPU_RESERVE) {
-            let cpuRange = CPU_MAX_BUCKET - 2* CPU_RESERVE
-            /**@type {Base[]} */
-            let bases = [];
-            let maxBases = _.size(this._baseOps)
-            for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
-            bases.sort ((a,b) => {return a.controller.level - b.controller.level});
-            while (bases.length > 0 && Game.cpu.bucket > CPU_RESERVE + (maxBases - bases.length) / maxBases * cpuRange) {
-                let base = /**@type {Base}*/ (bases.pop())
-                this._baseOps[base.name].run();
-            }
-        } else { // not running cpu bound, run all bases
-            for (let roomName in this._baseOps) {
-                this._baseOps[roomName].run();
-            }
+        let cpuReserve = this._maxCPU / 20;
+        let cpuRange = this._maxCPU - 2* cpuReserve
+        /**@type {Base[]} */
+        let bases = [];
+        let maxBases = _.size(this._baseOps)
+        for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+        bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+        let baseCount = 0;
+        while (bases.length > 0 && Game.cpu.bucket > cpuReserve + (maxBases - bases.length) / maxBases * cpuRange) {
+            let base = /**@type {Base}*/ (bases.pop())
+            if (++baseCount <= maxBases) this._baseOps[base.name].run();
         }
+
+        this._teamShardColonizing.run();
+        this._map.run();
     }
 
+    
+
+    getMap(){
+        return this._map;
+    }
 
     /**@param {string} roomName */
     /**@returns {Room} returns room with RoomName */
@@ -127,5 +169,10 @@ module.exports = class ShardOp extends Operation {
     /**@returns {BaseOp} */
     getBaseOp(roomName) {
         return this._baseOps[roomName];
+    }
+
+    /**@returns {Number} */
+    getBaseCount() {
+        return _.size(this._baseOps);
     }
 }

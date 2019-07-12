@@ -11,10 +11,11 @@ const STATE_CLAIMING = 4;
 
 module.exports = class CreepOp extends Operation {
     /**@param {Creep} creep */
-    /**@param {BaseOp} baseOp */
+    /**@param {BaseOp | undefined} baseOp */
     constructor(creep, baseOp) {
         super();
         this._creep = creep;
+        creep.notifyWhenAttacked( false);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -57,8 +58,10 @@ module.exports = class CreepOp extends Operation {
 
         switch (this._instruct) {
             case c.COMMAND_NONE:
-                if (this._creep.pos.roomName != this._baseOp.getName()) {
-                    this.instructMoveTo(this._baseOp.getBaseCenter());
+                if (this._baseOp) {
+                    if (this._creep.pos.roomName != this._baseOp.getName()) {
+                        this.instructMoveTo(this._baseOp.getBaseCenter());
+                    }
                 }
                 break;
         }      
@@ -92,7 +95,7 @@ module.exports = class CreepOp extends Operation {
                 creep.moveTo(source, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
-                else throw Error('Cannot retrieve from object ' + source);
+                else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;
@@ -100,7 +103,7 @@ module.exports = class CreepOp extends Operation {
                     creep.moveTo(dest, {range:1});
                     if      (dest instanceof Structure) creep.transfer(dest, RESOURCE_ENERGY);
                     else if (dest instanceof ConstructionSite) creep.build(dest);
-                    else throw Error('Cannot deliver to object ' + dest);
+                    else throw Error('Cannot deliver to object ' + dest + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 }
                 break;
             case STATE_MOVING:
@@ -128,5 +131,10 @@ module.exports = class CreepOp extends Operation {
 
     getInstr() {
         return this._instruct;
+    }
+
+    /**@param {Number} teamOp */
+    setOperation(teamOp) {
+        this._creep.memory.operation = teamOp;
     }
 }
