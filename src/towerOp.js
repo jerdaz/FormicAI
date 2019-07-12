@@ -30,12 +30,12 @@ module.exports = class TowerOp extends Operation {
                 tower.attack(hostile);
                 continue;
             }
-            if (creepsHit) {
+            if (creepsHit.length>0) {
                 let creep = tower.pos.findClosestByRange(creepsHit)
                 if (creep) tower.heal(creep);
                 continue;
             }
-            if (structuresHit) {
+            if (structuresHit.length>0) {
                 var target = structuresHit[0];
                 for(var i = 1;i<structuresHit.length;i++) if (target.hits > structuresHit[i].hits) target = structuresHit[i];
                 tower.repair(target);

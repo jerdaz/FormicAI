@@ -70,7 +70,7 @@ module.exports = class SpawnOp extends Operation {
             let base = this._baseOp.getBase();
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
+                && this._baseOp.getChildOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -125,7 +125,7 @@ module.exports = class SpawnOp extends Operation {
         for (let opType = 1; opType <= c.OPERATION_MAX; opType++){
             let spawnRequest = spawnRequests[opType];
             if (spawnRequest) {
-                let teamOp = this._baseOp.getSubTeamOp(opType);
+                let teamOp = this._baseOp.getChildOp(opType);
                 let nCreeps = 0;
                 if (teamOp) nCreeps = teamOp.getCreepCount();
                 if (spawnRequest.count > nCreeps) {

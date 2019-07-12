@@ -34,6 +34,11 @@ class Main extends Operation {
         catch (err) {}
     }
 
+    get type() {
+        return c.OPERATION_MAIN;
+    }
+
+
     _strategy() {
         // run cross shard strategy about once every 10.000 ticks
         if(U.chance(10000) || this._firstRun) {

@@ -1,13 +1,13 @@
 let U = require('./util');
 let c = require('./constants');
-let SubOp = require('./operation').SubOp;
+let ChildOp = require('./operation').ChildOp;
 let BaseOp = require('./baseOp');
 let MapOp = require('./mapOp').MapOp;
 let TeamColonizingOp = require('./teamColonizingOp')
 /** @typedef {import('./main').Main} MainOp */
 
 
-class ShardOp extends SubOp {
+class ShardOp extends ChildOp {
     /**@param {MainOp} main */
     constructor(main) {
         super(main);
@@ -22,6 +22,8 @@ class ShardOp extends SubOp {
         this._maxShardBases = Game.gcl.level
         this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
     }
+
+    get type() {return c.OPERATION_SHARD}
 
     initTick(){
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
@@ -49,7 +51,7 @@ class ShardOp extends SubOp {
                     this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
                     updateMap = true;
                 }
-                this._baseOps[roomName].initTick(/**@type {Base} */ (room), creepsByBase[room.name]);
+                this._baseOps[roomName].initTickBase(/**@type {Base} */ (room), creepsByBase[room.name]);
                 newBaseOps[roomName] = this._baseOps[roomName];
                 delete creepsByBase[room.name];
             }
@@ -175,13 +177,12 @@ class ShardOp extends SubOp {
     }
 }
 
-class ShardChildOp extends SubOp {
+class ShardChildOp extends ChildOp {
     /**@param {ShardOp}  shardOp */
-    /**@param {MapOp} mapOp */
-    constructor(shardOp, mapOp) {
+    constructor(shardOp) {
         super(shardOp);
         this._parent = shardOp;
-        this._mapOp = mapOp;
+        this._map = shardOp._map;
     }
 }
 

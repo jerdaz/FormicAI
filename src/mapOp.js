@@ -1,13 +1,13 @@
 let U = require('./util');
 let c = require('./constants');
-let SubOp = require('./operation').SubOp;
+let ChildOp = require('./operation').ChildOp;
 let ShardOp = require('./shardOp').ShardOp;
 /** @typedef {import('./baseOp')} BaseOp */
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
-class MapOp extends SubOp {
+class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
         super(shardOp);
@@ -17,6 +17,8 @@ class MapOp extends SubOp {
         /**@type {ScoutInfo} */
         this._scoutInfo = {};
     }
+
+    get type() {return c.OPERATION_MAP}
 
     _strategy() {
         if (U.chance(10)) {

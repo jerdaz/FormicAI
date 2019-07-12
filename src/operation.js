@@ -10,14 +10,23 @@ class Operation {
     constructor() {
         this._id = idIndex++;
         this._firstRun = true;
-        /**@type {Operation[]} */
+        /**@type {ChildOp[][]} */
         this._childOps = []
         /**@type {Debug} */
         this._debug = /** @type {any}*/(Game).debug;
     }
 
+    get type() {
+        return c.OPERATION_NONE;
+    }
+
+    get childOps() {
+        return this._childOps;
+    }
+
+
     initTick() {
-        for(let childOp of this._childOps) childOp.initTick();
+        for(let childOps of this._childOps) for(let childOp of childOps) childOp.initTick();
     }
 
     run() {
@@ -36,18 +45,18 @@ class Operation {
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
-        for (let subOp of this._childOps) {
+        for (let childOps of this._childOps) for (let childOp of childOps) {
             try {
-                subOp.run();
+                childOp.run();
             } catch(err) {this._debug.logError(err)}
         }
         if (this._firstRun) this._firstRun = false;
         if(this._debug.verbose) this._debug.logState('end', this)
     }
 
-    /**@param {Operation} childOp */
+    /**@param {ChildOp} childOp */
     _addChildOp(childOp) {
-        this._childOps.push(childOp);
+        this._childOps[childOp.type].push(childOp);
     }
 
     _support() {}
@@ -55,7 +64,7 @@ class Operation {
     _command() {}
 }
 
-class SubOp extends Operation{
+class ChildOp extends Operation{
     /**@param {Operation} parent */
     constructor(parent) {
         super()
@@ -65,5 +74,5 @@ class SubOp extends Operation{
 
 
 module.exports.Operation = Operation;
-module.exports.SubOp = SubOp;
+module.exports.ChildOp = ChildOp;
 
