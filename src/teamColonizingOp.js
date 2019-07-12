@@ -2,7 +2,7 @@ let U = require('./util');
 const c = require('./constants');
 let CreepTeamOp = require('./teamOp');
 let SpawningOp = require('./spawningOp');
-let MapOp = require('./mapOp');
+let MapOp = require('./mapOp').MapOp;
 /**@typedef {import('./baseOp')} BaseOp  */
 
 module.exports = class CreepTeamColonizingOp extends CreepTeamOp {

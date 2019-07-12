@@ -1,13 +1,13 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./operation').Operation;
+let SubOp = require('./operation').SubOp;
 let BaseOp = require('./baseOp');
-let MapOp = require('./mapOp');
+let MapOp = require('./mapOp').MapOp;
 let TeamColonizingOp = require('./teamColonizingOp')
 /** @typedef {import('./main').Main} MainOp */
 
 
-class ShardOp extends Operation {
+class ShardOp extends SubOp {
     /**@param {MainOp} main */
     constructor(main) {
         super(main);
@@ -138,7 +138,6 @@ class ShardOp extends Operation {
         }
 
         this._teamShardColonizing.run();
-        this._map.run();
     }
 
     
@@ -176,4 +175,15 @@ class ShardOp extends Operation {
     }
 }
 
+class ShardChildOp extends SubOp {
+    /**@param {ShardOp}  shardOp */
+    /**@param {MapOp} mapOp */
+    constructor(shardOp, mapOp) {
+        super(shardOp);
+        this._parent = shardOp;
+        this._mapOp = mapOp;
+    }
+}
+
 module.exports.ShardOp = ShardOp;
+module.exports.ShardChildOp = ShardChildOp;

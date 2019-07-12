@@ -8,7 +8,7 @@ let Debug = require('./debug');
 
 class Main extends Operation {
     constructor() {
-        super(undefined);
+        super();
         U.l('INIT MAIN');
         for (let memObj in Memory) {
             // @ts-ignore

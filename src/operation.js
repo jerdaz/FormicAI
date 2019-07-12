@@ -6,12 +6,10 @@ const c = require('./constants');
 let idIndex = 0;
 
 
-module.exports.Operation = class Operation {
-    /**@param {Operation | undefined} parent */
-    constructor(parent) {
+class Operation {
+    constructor() {
         this._id = idIndex++;
         this._firstRun = true;
-        this._parent = parent;
         /**@type {Operation[]} */
         this._childOps = []
         /**@type {Debug} */
@@ -56,3 +54,16 @@ module.exports.Operation = class Operation {
     _strategy() {}
     _command() {}
 }
+
+class SubOp extends Operation{
+    /**@param {Operation} parent */
+    constructor(parent) {
+        super()
+        this._parent = parent;
+    }
+}
+
+
+module.exports.Operation = Operation;
+module.exports.SubOp = SubOp;
+
