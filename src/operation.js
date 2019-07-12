@@ -56,6 +56,7 @@ class Operation {
 
     /**@param {ChildOp} childOp */
     _addChildOp(childOp) {
+        if (this._childOps[childOp.type] == undefined) this._childOps[childOp.type] = [];
         this._childOps[childOp.type].push(childOp);
     }
 
