@@ -1,13 +1,13 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
+let Operation = require('./operation').Operation;
 let TeamFillingOp = require('./teamFillingOp');
 let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
 let TeamColonizingOp = require('./teamColonizingOp');
 let SpawningOp = require ('./spawningOp');
 let TowerOp = require('./towerOp');
-/** @typedef {import('./shardOp')} ShardOp */
+let ShardOp = require('./shardOp').ShardOp;
 /** @typedef {import ('./teamOp')} TeamOp */
 
 module.exports = class BaseOp extends Operation{

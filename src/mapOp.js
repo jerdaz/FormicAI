@@ -1,7 +1,7 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./operation');
-/** @typedef {import('./shardOp')} ShardOp */
+let Operation = require('./operation').Operation;
+let ShardOp = require('./shardOp').ShardOp;
 /** @typedef {import('./baseOp')} BaseOp */
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/

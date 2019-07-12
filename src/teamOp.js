@@ -1,6 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
+let Operation = require('./operation').Operation;
 let CreepOp = require('./creepOp');
 let SpawningOp = require('./spawningOp');
 /**@typedef {import('./baseOp')} BaseOp  */

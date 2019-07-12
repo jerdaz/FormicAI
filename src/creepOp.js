@@ -1,6 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
+let Operation = require('./operation').Operation;
 /**@typedef {import('./baseOp')} BaseOp  */
 
 const STATE_NONE = 0;

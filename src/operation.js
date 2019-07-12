@@ -6,14 +6,20 @@ const c = require('./constants');
 let idIndex = 0;
 
 
-module.exports = class Operation {
-    constructor() {
+module.exports.Operation = class Operation {
+    /**@param {Operation | undefined} parent */
+    constructor(parent) {
         this._id = idIndex++;
         this._firstRun = true;
+        this._parent = parent;
         /**@type {Operation[]} */
-        this._subOps = []
+        this._childOps = []
         /**@type {Debug} */
         this._debug = /** @type {any}*/(Game).debug;
+    }
+
+    initTick() {
+        for(let childOp of this._childOps) childOp.initTick();
     }
 
     run() {
@@ -32,7 +38,7 @@ module.exports = class Operation {
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
-        for (let subOp of this._subOps) {
+        for (let subOp of this._childOps) {
             try {
                 subOp.run();
             } catch(err) {this._debug.logError(err)}
@@ -41,9 +47,9 @@ module.exports = class Operation {
         if(this._debug.verbose) this._debug.logState('end', this)
     }
 
-    /**@param {Operation} subOp */
-    _addSubOp(subOp) {
-        this._subOps.push(subOp);
+    /**@param {Operation} childOp */
+    _addChildOp(childOp) {
+        this._childOps.push(childOp);
     }
 
     _support() {}

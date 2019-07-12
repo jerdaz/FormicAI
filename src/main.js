@@ -1,14 +1,14 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./operation');
-let ShardOp = require('./shardOp');
+let Operation = require('./operation').Operation;
+let ShardOp = require('./shardOp').ShardOp;
 let Debug = require('./debug');
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
 
 class Main extends Operation {
     constructor() {
-        super();
+        super(undefined);
         U.l('INIT MAIN');
         for (let memObj in Memory) {
             // @ts-ignore
@@ -16,6 +16,7 @@ class Main extends Operation {
         }
         InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
+        this._addChildOp(this._shardOp);
 
         // populate shard names (by trial and error!!)
         /**@type {String[]} */
@@ -31,10 +32,6 @@ class Main extends Operation {
             }
         }
         catch (err) {}
-    }
-
-    initTick() {
-        this._shardOp.initTick();
     }
 
     _strategy() {
@@ -93,10 +90,6 @@ class Main extends Operation {
             if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount() + 1)
         }
     }
-
-    _command() {
-        this._shardOp.run();
-    };
 
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){
