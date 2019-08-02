@@ -4,7 +4,7 @@ let TeamFillingOp = require('./teamFillingOp');
 let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
 let TeamColonizingOp = require('./teamColonizingOp');
-let SpawningOp = require ('./spawningOp');
+let SpawningOp = require ('./spawningOp').SpawningOp;
 let TowerOp = require('./towerOp').TowerOp;
 let ShardOp = require('./shardOp').ShardOp;
 let ShardChildOp = require('./shardOp').ShardChildOp;
@@ -25,7 +25,7 @@ class BaseOp extends ShardChildOp{
         /**@type {Creep[][]} */
         this._teamCreeps = [];
 
-        this._addChildOp(new SpawningOp(this));
+        this._addChildOp(new SpawningOp(this, this));
         this._addChildOp(new TowerOp(this, this));
         this._addChildOp(new TeamFillingOp(this));
         this._addChildOp(new TeamBuildingOp(this));
@@ -46,8 +46,7 @@ class BaseOp extends ShardChildOp{
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {TeamFillingOp} */(this.childOps[c.OPERATION_FILLING][0]) };
     get buildingOp() {return /**@type {TeamBuildingOp} */(this.childOps[c.OPERATION_BUILDING][0]) };
-    get spawningOp() {return /**@type {SpawningOp} */(this.childOps[c.OPERATION_SPAWNING][0]) };
-    
+    get spawningOp() {return /**@type {SpawningOp} */(this.childOps[c.OPERATION_SPAWNING][0]) };    
 
     /**@param {Base} base */
     /**@param {Creep[]} creeps */
@@ -104,14 +103,6 @@ class BaseOp extends ShardChildOp{
     }
 
 
-
-    /**@param {number} opType */
-    /**@param {CreepTemplate} template */
-    /**@param {number} count */
-    ltRequestSpawn(opType, template, count) {
-        this.spawningOp.ltRequestSpawn(opType, template, count);
-    }
-
     /**@param {string} roomName */
     requestBuilder(roomName) {
         this.spawningOp.requestBuilder(roomName);
@@ -153,7 +144,7 @@ class BaseOp extends ShardChildOp{
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
         else if (nSpawns == 0 && this.buildingOp.getCreepCount() == 0) {
-            this._parent.requestBuilder(room.name);
+            this._shardOp.requestBuilder(room.name);
         }
     }
         
@@ -257,18 +248,17 @@ class BaseOp extends ShardChildOp{
         return result;
     } 
 
-    getShardOp() {
-        return this._shardOp;
-    }
 }
 
 class BaseChildOp extends ShardChildOp {
     /**@param {Operation} parent */
     /**@param {BaseOp}  baseOp */
     constructor(parent, baseOp) {
-        super(parent, baseOp.getShardOp());
+        super(parent, baseOp.shardOp;
         this._baseOp = baseOp;
     }
+
+    get baseOp() {return this._baseOp}
 }
 
 module.exports.BaseOp = BaseOp;

@@ -1,21 +1,22 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation').Operation;
-/**@typedef {import('./baseOp')} BaseOp  */
+const BaseChildOp = require('./baseOp').BaseChildOp;
+const BaseOp = require('./baseOp').BaseOp;
+const Operation = require('./operation').Operation;
+const TeamOp = require('./teamOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
 
-module.exports = class SpawnOp extends Operation {
-    /**@param {StructureSpawn[]} spawns */
+class SpawningOp extends BaseChildOp {
+    /**@param {Operation} parent */
     /**@param {BaseOp} baseOp */
-    constructor(spawns, baseOp) {
-        super();
-        this._spawns = spawns;
-        /**@type {BaseOp} */
-        this._baseOp = baseOp;
-        /**@type {{count:number, template:CreepTemplate}[]} */
-        this._spawnRequests = [];
+    constructor(parent, baseOp) {
+        super(parent, baseOp);
+        /**@type {StructureSpawn[]} */
+        this._spawns = [];
+        /**@type {{[index:string] : {teamOp:TeamOp, count:number, template:CreepTemplate}}} */
+        this._spawnRequests = {};
         this._builderRequest = '';
         this._shardColonizer = '';
         this._shardColBuilder = '';
@@ -24,16 +25,15 @@ module.exports = class SpawnOp extends Operation {
         this._spawnPrio = [];
     }
 
-    /**@param {StructureSpawn[]} spawns */
-    initTick(spawns) {
-        this._spawns = spawns;
+    initTick() {
+        this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
     }
 
-    /**@param {number} opType */
+    /**@param {TeamOp} teamOp */
     /**@param {CreepTemplate} template */
     /**@param {number} count */
-    ltRequestSpawn(opType, template, count) {
-        this._spawnRequests[opType] = {count:count, template: template};
+    ltRequestSpawn(teamOp, template, count) {
+        this._spawnRequests[teamOp.id] = {teamOp:teamOp, count:count, template: template};
     }
 
     /**@param {string} roomName */
@@ -70,7 +70,7 @@ module.exports = class SpawnOp extends Operation {
             let base = this._baseOp.getBase();
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.getChildOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
+                && this._baseOp.fillingOp.getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -122,15 +122,14 @@ module.exports = class SpawnOp extends Operation {
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
-        for (let opType = 1; opType <= c.OPERATION_MAX; opType++){
-            let spawnRequest = spawnRequests[opType];
-            if (spawnRequest) {
-                let teamOp = this._baseOp.getChildOp(opType);
-                let nCreeps = 0;
-                if (teamOp) nCreeps = teamOp.getCreepCount();
-                if (spawnRequest.count > nCreeps) {
-                    spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, template:spawnRequest.template})
-                }
+        for (let spawnRequestId in this._spawnRequests) {
+            let spawnRequest = spawnRequests[spawnRequestId];
+            let teamOp = spawnRequest.teamOp;
+            let nCreeps = 0;
+            if (teamOp) nCreeps = teamOp.getCreepCount();
+            if (spawnRequest.count > nCreeps) {
+                let opType = teamOp.type;
+                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, template:spawnRequest.template})
             }
         }
 
@@ -170,3 +169,5 @@ module.exports = class SpawnOp extends Operation {
         else return [];
     }
 }
+
+module.exports.SpawningOp = SpawningOp;

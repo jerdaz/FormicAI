@@ -24,6 +24,8 @@ class Operation {
         return this._childOps;
     }
 
+    get id() {return this._id}
+
 
     initTick() {
         for(let childOps of this._childOps) for(let childOp of childOps) childOp.initTick();

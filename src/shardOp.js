@@ -186,6 +186,8 @@ class ShardChildOp extends ChildOp {
         this._shardOp = shardOp;
         this._map = shardOp._map;
     }
+
+    get shardOp() {return this._shardOp};
 }
 
 module.exports.ShardOp = ShardOp;

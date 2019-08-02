@@ -3,7 +3,6 @@ const c = require('./constants');
 const BaseChildOp = require('./baseOp').BaseChildOp;
 const BaseOp = require('./baseOp').BaseOp;
 const Operation = require('./operation').Operation;
-/**@typedef {import('./baseOp')} BaseOp  */
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
