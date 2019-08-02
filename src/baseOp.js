@@ -5,17 +5,18 @@ let TeamUpgradingOp = require('./teamUpgradingOp');
 let TeamBuildingOp = require('./teamBuildingOp');
 let TeamColonizingOp = require('./teamColonizingOp');
 let SpawningOp = require ('./spawningOp');
-let TowerOp = require('./towerOp');
+let TowerOp = require('./towerOp').TowerOp;
 let ShardOp = require('./shardOp').ShardOp;
 let ShardChildOp = require('./shardOp').ShardChildOp;
+let Operation = require('./operation').Operation;
 /** @typedef {import ('./teamOp')} TeamOp */
 
-module.exports = class BaseOp extends ShardChildOp{
+class BaseOp extends ShardChildOp{
     /** @param {Base} base */
     /** @param {Creep[]} creeps */
     /** @param {ShardOp} shardOp */
     constructor (base, creeps, shardOp) {
-        super(shardOp);
+        super(shardOp, shardOp);
 
         /**@type {Base} */
         this._base = base;
@@ -25,7 +26,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._teamCreeps = [];
 
         this._addChildOp(new SpawningOp(this));
-        this._addChildOp(new TowerOp(this));
+        this._addChildOp(new TowerOp(this, this));
         this._addChildOp(new TeamFillingOp(this));
         this._addChildOp(new TeamBuildingOp(this));
         this._addChildOp(new TeamUpgradingOp(this));
@@ -255,4 +256,20 @@ module.exports = class BaseOp extends ShardChildOp{
         let result = new RoomPosition(spawnX, spawnY, base.name);
         return result;
     } 
+
+    getShardOp() {
+        return this._shardOp;
+    }
 }
+
+class BaseChildOp extends ShardChildOp {
+    /**@param {Operation} parent */
+    /**@param {BaseOp}  baseOp */
+    constructor(parent, baseOp) {
+        super(parent, baseOp.getShardOp());
+        this._baseOp = baseOp;
+    }
+}
+
+module.exports.BaseOp = BaseOp;
+module.exports.BaseChildOp = BaseChildOp;

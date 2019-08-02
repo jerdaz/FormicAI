@@ -2,7 +2,7 @@ let U = require('./util');
 let c = require('./constants');
 let ChildOp = require('./operation').ChildOp;
 let ShardOp = require('./shardOp').ShardOp;
-/** @typedef {import('./baseOp')} BaseOp */
+let BaseOp = require('./baseOp').BaseOp
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */

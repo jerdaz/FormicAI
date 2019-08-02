@@ -1,9 +1,10 @@
 let U = require('./util');
 let c = require('./constants');
 let ChildOp = require('./operation').ChildOp;
-let BaseOp = require('./baseOp');
+let BaseOp = require('./baseOp').BaseOp;
 let MapOp = require('./mapOp').MapOp;
 let TeamColonizingOp = require('./teamColonizingOp')
+let Operation = require('./operation').Operation;
 /** @typedef {import('./main').Main} MainOp */
 
 
@@ -179,9 +180,10 @@ class ShardOp extends ChildOp {
 
 class ShardChildOp extends ChildOp {
     /**@param {ShardOp}  shardOp */
-    constructor(shardOp) {
-        super(shardOp);
-        this._parent = shardOp;
+    /**@param {Operation}  parent */
+    constructor(parent, shardOp) {
+        super(parent);
+        this._shardOp = shardOp;
         this._map = shardOp._map;
     }
 }

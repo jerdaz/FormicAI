@@ -1,23 +1,23 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation').Operation;
+const BaseChildOp = require('./baseOp').BaseChildOp;
+const BaseOp = require('./baseOp').BaseOp;
+const Operation = require('./operation').Operation;
 /**@typedef {import('./baseOp')} BaseOp  */
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
-module.exports = class TowerOp extends Operation {
-    /**@param {StructureTower[]} towers */
+class TowerOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
-    constructor(towers, baseOp) {
-        super();
-        this._towers = towers;
-        /**@type {BaseOp} */
-        this._baseOp = baseOp;
+    /**@param {Operation} parent */
+    constructor(parent, baseOp) {
+        super(parent, baseOp);
+        /**@type {StructureTower[]} */
+        this._towers = [];
     }
 
-    /**@param {StructureTower[]} towers */
-    initTick(towers) {
-        this._towers = towers;
+    initTick() {
+        this._towers = /**@type {StructureTower[]}*/ (this._baseOp.getMyStructures(STRUCTURE_TOWER));
     }
 
     _command() {
@@ -61,3 +61,5 @@ module.exports = class TowerOp extends Operation {
         return target;
     }
 }
+
+module.exports.TowerOp = TowerOp;
