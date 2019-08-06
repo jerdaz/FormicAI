@@ -80,7 +80,7 @@ class SpawningOp extends BaseChildOp {
                             let spawnItem = spawnList.pop();
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
-                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
+                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999) )
                                 if (result != OK) spawnList.push(spawnItem);
                             }
                         }

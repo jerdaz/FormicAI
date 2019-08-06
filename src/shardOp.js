@@ -22,6 +22,8 @@ class ShardOp extends ChildOp {
         this._maxCPU = Memory.maxCPU;
         this._maxShardBases = Game.gcl.level
         this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
+        /**@type {{[key:string] : Creep[]}} */
+        this._creepsByOperationId = {};
     }
 
     get type() {return c.OPERATION_SHARD}
@@ -31,16 +33,16 @@ class ShardOp extends ChildOp {
         Memory.maxCPU = this._maxCPU
 
         /**@type {{[baseName:string]:Creep[]}} */
-        let creepsByBase = {};
+        let creepsByOperationId = {};
         for (let creepName in Game.creeps) {
-            let roomName = creepName.split('_')[0];
-            if (creepsByBase[roomName] == undefined) creepsByBase[roomName] = [];
             let creep = U.getCreep(creepName);
-            if (creep) {
-                if (creep.hits > 0 && creep.spawning == false) creepsByBase[roomName].push (creep);
-                else if (creep.memory) delete Memory.creeps[creep.name];
-            }
+            let operationId = creep.memory.operationId;
+            if (operationId == undefined) continue;
+            if (creepsByOperationId[operationId] == undefined) creepsByOperationId[operationId] = [];
+            if (creep.hits > 0 && creep.spawning == false) creepsByOperationId[operationId].push (creep);
+            else if (creep.memory) delete Memory.creeps[creep.name];
         }
+        this._creepsByOperationId = creepsByOperationId;
 
         let updateMap = false;
         /** @type {{[key:string]: BaseOp }} */
@@ -49,12 +51,12 @@ class ShardOp extends ChildOp {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
                 if (!this._baseOps[room.name]) {
-                    this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByBase[room.name], this);
+                    this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByOperationId[room.name], this);
                     updateMap = true;
                 }
-                this._baseOps[roomName].initTickBase(/**@type {Base} */ (room), creepsByBase[room.name]);
+                this._baseOps[roomName].initTick);
                 newBaseOps[roomName] = this._baseOps[roomName];
-                delete creepsByBase[room.name];
+                // delete creepsByOperationId[room.name];
             }
         }
         if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
@@ -62,19 +64,13 @@ class ShardOp extends ChildOp {
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
 
         //init shard colonization
-        let creeps = []
-        for (let baseName in creepsByBase) if (baseName.startsWith('shard')) {
-            for(let creep of creepsByBase[baseName]) creeps.push(creep);
-            delete creepsByBase[baseName]
-        }
-        this._teamShardColonizing.initTick(creeps);
+        // let creeps = []
+        // for (let baseName in creepsByOperationId) if (baseName.startsWith('shard')) {
+        //     for(let creep of creepsByOperationId[baseName]) creeps.push(creep);
+        //     delete creepsByOperationId[baseName]
+        // }
+        // this._teamShardColonizing.initTick(creeps);
 
-        // kill all creeps of dead bases.
-        for (let baseName in creepsByBase) {
-            for (let creep of creepsByBase[baseName]) {
-                creep.suicide();
-            }
-        }
         super.initTick();
     }
 
