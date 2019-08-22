@@ -13,17 +13,13 @@ let Operation = require('./operation').Operation;
 
 class BaseOp extends ShardChildOp{
     /** @param {Base} base */
-    /** @param {Creep[]} creeps */
     /** @param {ShardOp} shardOp */
-    constructor (base, creeps, shardOp) {
+    constructor (base, shardOp) {
         super(shardOp, shardOp);
 
         /**@type {Base} */
         this._base = base;
         this._directive = c.DIRECTIVE_NONE;
-
-        /**@type {Creep[][]} */
-        this._teamCreeps = [];
 
         this._addChildOp(new SpawningOp(this, this));
         this._addChildOp(new TowerOp(this, this));
@@ -32,12 +28,8 @@ class BaseOp extends ShardChildOp{
         this._addChildOp(new TeamUpgradingOp(this));
         this._addChildOp(new TeamColonizingOp(this));
 
-
-        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
-        let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES)[0];
-        if (firstSpawn) this._centerPos = firstSpawn.pos;
-        else if (firstConstructionSite) this._centerPos = firstConstructionSite.pos;
-        else this._centerPos = this._getBaseCenter();
+        // determine out center of the base
+        this._centerPos = this._getBaseCenter();
 
         this._fillerEmergency = false;
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
@@ -48,23 +40,6 @@ class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {TeamBuildingOp} */(this.childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this.childOps[c.OPERATION_SPAWNING][0]) };    
 
-    /**@param {Base} base */
-    /**@param {Creep[]} creeps */
-    initTickBase(base, creeps) {
-        this._base = base;
-
-        /**@type {Creep[][]} */
-        let teamCreeps = [];
-        if (creeps) {
-            for (let creep of creeps) {
-                let opType = creep.memory.operation || parseInt(creep.name.split('_')[1]);
-                if (!teamCreeps[opType]) teamCreeps[opType] = [];
-                teamCreeps[opType].push(creep);
-            }
-        }
-        this._teamCreeps = teamCreeps;
-        this.initTick();
-    }
 
     hasSpawn() {
         return this.getMyStructures(STRUCTURE_SPAWN).length > 0;
@@ -205,6 +180,11 @@ class BaseOp extends ShardChildOp{
     }
 
     _getBaseCenter() {
+        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
+        let firstConstructionSite = this._base.find(FIND_MY_CONSTRUCTION_SITES)[0];
+        if (firstSpawn) return firstSpawn.pos;
+        else if (firstConstructionSite) return firstConstructionSite.pos;
+
         let base = this._base;
         let x = 0;
         let y = 0;
@@ -254,8 +234,9 @@ class BaseChildOp extends ShardChildOp {
     /**@param {Operation} parent */
     /**@param {BaseOp}  baseOp */
     constructor(parent, baseOp) {
-        super(parent, baseOp.shardOp;
+        super(parent, baseOp.shardOp, baseOp);
         this._baseOp = baseOp;
+        this._baseName = baseOp.getName();
     }
 
     get baseOp() {return this._baseOp}

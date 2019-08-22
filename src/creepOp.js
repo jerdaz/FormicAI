@@ -1,6 +1,9 @@
 let U = require('./util');
 const c = require('./constants');
 let Operation = require('./operation').Operation;
+let BaseOp = require('./baseOp').BaseOp;
+let ShardOp = require('./shardOp').ShardOp;
+let ShardChildOp = require('./shardOp').ShardChildOp;
 /**@typedef {import('./baseOp')} BaseOp  */
 
 const STATE_NONE = 0;
@@ -9,13 +12,12 @@ const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
 
-module.exports = class CreepOp extends Operation {
-    /**@param {Creep} creep */
-    /**@param {BaseOp | undefined} baseOp */
-    constructor(creep, baseOp) {
-        super();
-        this._creep = creep;
-        creep.notifyWhenAttacked( false);
+class CreepOp extends ShardChildOp {
+    /**@param {ShardOp}  shardOp */
+    /**@param {Operation}  parent */
+    /**@param {BaseOp} [baseOp] */
+    constructor(parent, shardOp, baseOp) {
+        super(parent, shardOp);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -25,8 +27,9 @@ module.exports = class CreepOp extends Operation {
     }
 
     /**@param {Creep} creep */
-    initTick(creep) {
+    setCreep(creep) {
         this._creep = creep;
+        if (this._firstRun) creep.notifyWhenAttacked( false);
     }
 
     /**@param {Source} source */
@@ -55,6 +58,7 @@ module.exports = class CreepOp extends Operation {
 
 
     _strategy() {
+        if (this._creep == undefined ) throw Error('creep undefined');
 
         switch (this._instruct) {
             case c.COMMAND_NONE:
@@ -68,6 +72,8 @@ module.exports = class CreepOp extends Operation {
     }
     
     _command() {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
         let source = U.getObj(this._sourceId);
         let dest = U.getObj(this._destId);
         let creep = this._creep;
@@ -118,6 +124,8 @@ module.exports = class CreepOp extends Operation {
     }
 
     getPos() {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
         return this._creep.pos;
     }
 
@@ -126,6 +134,8 @@ module.exports = class CreepOp extends Operation {
     }
 
     getRoom() {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
         return this._creep.room;
     }
 
@@ -133,8 +143,12 @@ module.exports = class CreepOp extends Operation {
         return this._instruct;
     }
 
-    /**@param {Number} teamOp */
-    setOperation(teamOp) {
-        this._creep.memory.operation = teamOp;
+    /**@param {Number} opType */
+    setOperation(opType) {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
+        this._creep.memory.operationType = opType;
     }
 }
+
+module.exports.CreepOp = CreepOp;

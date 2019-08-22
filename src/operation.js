@@ -62,6 +62,12 @@ class Operation {
         this._childOps[childOp.type].push(childOp);
     }
 
+    /**@param {ChildOp} childOp */
+    _removeChildOp(childOp) {
+        this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
+    }
+
+
     _support() {}
     _strategy() {}
     _command() {}

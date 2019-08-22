@@ -5,6 +5,7 @@ let BaseOp = require('./baseOp').BaseOp;
 let MapOp = require('./mapOp').MapOp;
 let TeamColonizingOp = require('./teamColonizingOp')
 let Operation = require('./operation').Operation;
+let CreepOp = require('./creepOp').CreepOp;
 /** @typedef {import('./main').Main} MainOp */
 
 
@@ -24,25 +25,26 @@ class ShardOp extends ChildOp {
         this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
         /**@type {{[key:string] : Creep[]}} */
         this._creepsByOperationId = {};
+        /**@type {{[baseName:string] : ShardChildOp[]}} */
+        this._OperationIdByRoomByOpType = {};
     }
 
     get type() {return c.OPERATION_SHARD}
 
+    get name() {return Game.shard.name};
+
     initTick(){
+
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
         Memory.maxCPU = this._maxCPU
 
-        /**@type {{[baseName:string]:Creep[]}} */
-        let creepsByOperationId = {};
         for (let creepName in Game.creeps) {
             let creep = U.getCreep(creepName);
-            let operationId = creep.memory.operationId;
-            if (operationId == undefined) continue;
-            if (creepsByOperationId[operationId] == undefined) creepsByOperationId[operationId] = [];
-            if (creep.hits > 0 && creep.spawning == false) creepsByOperationId[operationId].push (creep);
-            else if (creep.memory) delete Memory.creeps[creep.name];
+            let roomName = creep.memory.baseName || creepName.split('_')[0];
+            let opType = creep.memory.operationType || parseInt(creepName.split('_')[1]);
+            if (creep.hits> 0) this._OperationIdByRoomByOpType[roomName][opType].initCreep(creep)
+            else delete Memory.creeps[creepName];
         }
-        this._creepsByOperationId = creepsByOperationId;
 
         let updateMap = false;
         /** @type {{[key:string]: BaseOp }} */
@@ -51,27 +53,17 @@ class ShardOp extends ChildOp {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
                 if (!this._baseOps[room.name]) {
-                    this._baseOps[room.name] = new BaseOp(this.getBase(room.name), creepsByOperationId[room.name], this);
+                    this._baseOps[room.name] = new BaseOp(this.getBase(room.name), this);
                     updateMap = true;
                 }
-                this._baseOps[roomName].initTick);
+                this._baseOps[roomName].initTick();
                 newBaseOps[roomName] = this._baseOps[roomName];
-                // delete creepsByOperationId[room.name];
             }
         }
         if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
         this._baseOps = newBaseOps;
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
-
-        //init shard colonization
-        // let creeps = []
-        // for (let baseName in creepsByOperationId) if (baseName.startsWith('shard')) {
-        //     for(let creep of creepsByOperationId[baseName]) creeps.push(creep);
-        //     delete creepsByOperationId[baseName]
-        // }
-        // this._teamShardColonizing.initTick(creeps);
-
-        super.initTick();
+        super.initTick()
     }
 
     /**@param {number} max */
@@ -172,18 +164,62 @@ class ShardOp extends ChildOp {
     getBaseCount() {
         return _.size(this._baseOps);
     }
+
+    //add's an operation to the basename/optype to operation map.
+    /**@param {ShardChildOp} shardChildOp */
+    /**@param {string} baseName */
+    /**@param {Number} opType */
+    addOperation(shardChildOp, baseName, opType) {
+        let x = this._OperationIdByRoomByOpType;
+        if (x[baseName] == undefined) x[baseName] = [];
+        x[baseName][opType] = shardChildOp;
+    }
 }
 
 class ShardChildOp extends ChildOp {
     /**@param {ShardOp}  shardOp */
     /**@param {Operation}  parent */
-    constructor(parent, shardOp) {
+    /**@param {BaseOp} [baseOp] */
+    constructor(parent, shardOp, baseOp) {
         super(parent);
         this._shardOp = shardOp;
         this._map = shardOp._map;
+        this._baseOp = baseOp;
+        /**@type {{[creepName:string]:CreepOp}} */
+        this._creepOps = {}
+        let baseName = '';
+        if (baseOp) baseName = baseOp.getName();
+        else baseName = shardOp.name;
+        shardOp.addOperation(this, baseName, this.type)
+    }
+
+    initTick() {
+        super.initTick();
+        //remove dead creeps from runtime
+        for (let creepName in this._creepOps) {
+            if (Game.creeps[creepName] == undefined) {
+                this._removeChildOp(this._creepOps[creepName])
+                delete this._creepOps[creepName];
+            }
+        }
+    }
+
+    /**@param {Creep} creep */
+    initCreep(creep) {
+        if (this._creepOps[creep.name] == undefined) {
+            this._creepOps[creep.name] = new CreepOp(this, this._shardOp, this._baseOp)
+            this._addChildOp(this._creepOps[creep.name])
+        }
+        this._creepOps[creep.name].setCreep(creep);
     }
 
     get shardOp() {return this._shardOp};
+
+    getCreepCount(){
+        let res = _.size(this._creepOps)
+        if (!res) res = 0;
+        return res;
+    }
 }
 
 module.exports.ShardOp = ShardOp;

@@ -25,6 +25,8 @@ class SpawningOp extends BaseChildOp {
         this._spawnPrio = [];
     }
 
+    get type() {return c.OPERATION_SPAWNING}
+
     initTick() {
         this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
     }

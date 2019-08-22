@@ -15,6 +15,9 @@ class TowerOp extends BaseChildOp {
         this._towers = [];
     }
 
+    get type() { return c.OPERATION_TOWER; }
+
+
     initTick() {
         this._towers = /**@type {StructureTower[]}*/ (this._baseOp.getMyStructures(STRUCTURE_TOWER));
     }
