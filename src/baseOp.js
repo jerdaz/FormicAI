@@ -1,15 +1,13 @@
 let U = require('./util');
 const c = require('./constants');
-let TeamFillingOp = require('./teamFillingOp');
-let TeamUpgradingOp = require('./teamUpgradingOp');
-let TeamBuildingOp = require('./teamBuildingOp');
-let TeamColonizingOp = require('./teamColonizingOp');
+let FillingOp = require('./FillingOp').FillingOp;
+let UpgradingOp = require('./upgradingOp').UpgradingOp;
+let BuildingOp = require('./buildingOp').BuildingOp;
 let SpawningOp = require ('./spawningOp').SpawningOp;
 let TowerOp = require('./towerOp').TowerOp;
 let ShardOp = require('./shardOp').ShardOp;
 let ShardChildOp = require('./shardOp').ShardChildOp;
-let Operation = require('./operation').Operation;
-/** @typedef {import ('./teamOp')} TeamOp */
+let ColonizingOp = require('./colonizingOp').ColonizingOp;
 
 class BaseOp extends ShardChildOp{
     /** @param {Base} base */
@@ -21,12 +19,12 @@ class BaseOp extends ShardChildOp{
         this._base = base;
         this._directive = c.DIRECTIVE_NONE;
 
-        this._addChildOp(new SpawningOp(this, this));
-        this._addChildOp(new TowerOp(this, this));
-        this._addChildOp(new TeamFillingOp(this));
-        this._addChildOp(new TeamBuildingOp(this));
-        this._addChildOp(new TeamUpgradingOp(this));
-        this._addChildOp(new TeamColonizingOp(this));
+        this._addChildOp(new SpawningOp(this));
+        this._addChildOp(new TowerOp(this));
+        this._addChildOp(new FillingOp(this));
+        this._addChildOp(new BuildingOp(this));
+        this._addChildOp(new UpgradingOp(this));
+        this._addChildOp(new ColonizingOp(this,shardOp, this));
 
         // determine out center of the base
         this._centerPos = this._getBaseCenter();
@@ -36,8 +34,8 @@ class BaseOp extends ShardChildOp{
     }
 
     get type() {return c.OPERATION_BASE}
-    get fillingOp() {return /**@type {TeamFillingOp} */(this.childOps[c.OPERATION_FILLING][0]) };
-    get buildingOp() {return /**@type {TeamBuildingOp} */(this.childOps[c.OPERATION_BUILDING][0]) };
+    get fillingOp() {return /**@type {FillingOp} */(this.childOps[c.OPERATION_FILLING][0]) };
+    get buildingOp() {return /**@type {BuildingOp} */(this.childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this.childOps[c.OPERATION_SPAWNING][0]) };    
 
 
@@ -231,10 +229,9 @@ class BaseOp extends ShardChildOp{
 }
 
 class BaseChildOp extends ShardChildOp {
-    /**@param {Operation} parent */
     /**@param {BaseOp}  baseOp */
-    constructor(parent, baseOp) {
-        super(parent, baseOp.shardOp, baseOp);
+    constructor(baseOp) {
+        super(baseOp, baseOp.shardOp, baseOp);
         this._baseOp = baseOp;
         this._baseName = baseOp.getName();
     }

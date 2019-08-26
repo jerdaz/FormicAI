@@ -2,20 +2,18 @@ let U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseOp').BaseChildOp;
 const BaseOp = require('./baseOp').BaseOp;
-const Operation = require('./operation').Operation;
-const TeamOp = require('./teamOp');
+const ShardChildOp = require('./shardOp').ShardChildOp
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
 
 class SpawningOp extends BaseChildOp {
-    /**@param {Operation} parent */
     /**@param {BaseOp} baseOp */
-    constructor(parent, baseOp) {
-        super(parent, baseOp);
+    constructor(baseOp) {
+        super(baseOp);
         /**@type {StructureSpawn[]} */
         this._spawns = [];
-        /**@type {{[index:string] : {teamOp:TeamOp, count:number, template:CreepTemplate}}} */
+        /**@type {{[index:string] : {operation:ShardChildOp, count:number, template:CreepTemplate}}} */
         this._spawnRequests = {};
         this._builderRequest = '';
         this._shardColonizer = '';
@@ -31,11 +29,11 @@ class SpawningOp extends BaseChildOp {
         this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
     }
 
-    /**@param {TeamOp} teamOp */
+    /**@param {ShardChildOp} operation */
     /**@param {CreepTemplate} template */
     /**@param {number} count */
-    ltRequestSpawn(teamOp, template, count) {
-        this._spawnRequests[teamOp.id] = {teamOp:teamOp, count:count, template: template};
+    ltRequestSpawn(operation, template, count) {
+        this._spawnRequests[operation.id] = {operation:operation, count:count, template: template};
     }
 
     /**@param {string} roomName */
@@ -126,7 +124,7 @@ class SpawningOp extends BaseChildOp {
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let teamOp = spawnRequest.teamOp;
+            let teamOp = spawnRequest.operation;
             let nCreeps = 0;
             if (teamOp) nCreeps = teamOp.getCreepCount();
             if (spawnRequest.count > nCreeps) {

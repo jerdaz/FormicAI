@@ -4,7 +4,6 @@ let Operation = require('./operation').Operation;
 let BaseOp = require('./baseOp').BaseOp;
 let ShardOp = require('./shardOp').ShardOp;
 let ShardChildOp = require('./shardOp').ShardChildOp;
-/**@typedef {import('./baseOp')} BaseOp  */
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;

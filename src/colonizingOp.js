@@ -1,18 +1,18 @@
 let U = require('./util');
 const c = require('./constants');
-let CreepTeamOp = require('./teamOp');
-let SpawningOp = require('./spawningOp');
-let MapOp = require('./mapOp').MapOp;
-/**@typedef {import('./baseOp')} BaseOp  */
+let ShardChildOp = require('./shardOp').ShardChildOp;
+let ShardOp = require('./shardOp').ShardOp;
+let Operation = require('./operation').Operation;
+let BaseOp = require('./baseOp').BaseOp;
 
-module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
-    /**@param {BaseOp | undefined} baseOp */
-    /**@param {MapOp} map */
-    constructor(baseOp, map) {
-        super(baseOp);
+class ColonizingOp extends ShardChildOp {
+    /**@param {ShardOp}  shardOp */
+    /**@param {Operation}  parent */
+    /**@param {BaseOp} [baseOp] */
+    constructor(parent, shardOp, baseOp) {
+        super(parent, shardOp, baseOp);
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
-        this._map = map;
     }
 
     _strategy() {
@@ -20,7 +20,7 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
         if (this._baseOp) {
             let nCreep = 0;
             if (this._baseOp.getDirective() == c.DIRECTIVE_COLONIZE && this._baseOp.getMaxSpawnEnergy() >= U.getCreepCost([MOVE,CLAIM])) nCreep = 1;
-            this._baseOp.ltRequestSpawn(c.OPERATION_COLONIZING, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
+            this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
         }
 
         for (let creepName in this._creepOps) {
@@ -95,3 +95,5 @@ module.exports = class CreepTeamColonizingOp extends CreepTeamOp {
         }
     }
 }
+
+module.exports.ColonizingOp = ColonizingOp;

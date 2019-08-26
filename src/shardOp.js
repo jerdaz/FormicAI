@@ -3,7 +3,7 @@ let c = require('./constants');
 let ChildOp = require('./operation').ChildOp;
 let BaseOp = require('./baseOp').BaseOp;
 let MapOp = require('./mapOp').MapOp;
-let TeamColonizingOp = require('./teamColonizingOp')
+let ColonizingOp = require('./colonizingOp').ColonizingOp;
 let Operation = require('./operation').Operation;
 let CreepOp = require('./creepOp').CreepOp;
 /** @typedef {import('./main').Main} MainOp */
@@ -22,7 +22,7 @@ class ShardOp extends ChildOp {
         /**@type {number} */
         this._maxCPU = Memory.maxCPU;
         this._maxShardBases = Game.gcl.level
-        this._teamShardColonizing = new TeamColonizingOp(undefined, this._map);
+        this._teamShardColonizing = new ColonizingOp(this, this);
         /**@type {{[key:string] : Creep[]}} */
         this._creepsByOperationId = {};
         /**@type {{[baseName:string] : ShardChildOp[]}} */

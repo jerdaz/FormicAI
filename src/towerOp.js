@@ -2,15 +2,13 @@ let U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseOp').BaseChildOp;
 const BaseOp = require('./baseOp').BaseOp;
-const Operation = require('./operation').Operation;
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
 class TowerOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
-    /**@param {Operation} parent */
-    constructor(parent, baseOp) {
-        super(parent, baseOp);
+    constructor(baseOp) {
+        super(baseOp);
         /**@type {StructureTower[]} */
         this._towers = [];
     }
