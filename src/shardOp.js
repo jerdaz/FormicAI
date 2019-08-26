@@ -6,8 +6,7 @@ let MapOp = require('./mapOp').MapOp;
 let ColonizingOp = require('./colonizingOp').ColonizingOp;
 let Operation = require('./operation').Operation;
 let CreepOp = require('./creepOp').CreepOp;
-/** @typedef {import('./main').Main} MainOp */
-
+let MainOp = require('./main').Main;
 
 class ShardOp extends ChildOp {
     /**@param {MainOp} main */
