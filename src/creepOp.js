@@ -21,6 +21,7 @@ module.exports = class CreepOp extends ChildOp {
         this._destPos;
         this._baseOp = baseOp;
     }
+    get type() {return c.OPERATION_CREEP}
 
     /**@param {Creep} creep */
     setCreep(creep) {

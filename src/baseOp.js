@@ -33,9 +33,9 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     get type() {return c.OPERATION_BASE}
-    get fillingOp() {return /**@type {FillingOp} */(this.childOps[c.OPERATION_FILLING][0]) };
-    get buildingOp() {return /**@type {BuildingOp} */(this.childOps[c.OPERATION_BUILDING][0]) };
-    get spawningOp() {return /**@type {SpawningOp} */(this.childOps[c.OPERATION_SPAWNING][0]) };    
+    get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
+    get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
+    get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
 
 
     hasSpawn() {

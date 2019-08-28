@@ -3,6 +3,8 @@ const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
 module.exports = class BuildingOp extends BaseChildOp {
+    get type() {return c.OPERATION_BUILDING}
+
     _strategy() {
         if (!this._baseOp) throw Error();
         let creepCount = 0;

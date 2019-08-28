@@ -10,19 +10,19 @@ module.exports = class ShardOp extends ChildOp {
     constructor(main) {
         super(main);
         this._parent = main;
-        /**@type {MapOp} */
-        this._map = new MapOp(this);
-        this._addChildOp(this._map);
+        /**@type {{[baseName:string] : ShardChildOp[]}} */
+        this._OperationIdByRoomByOpType = {};
+        /**@type {{[key:string] : Creep[]}} */
+        this._creepsByOperationId = {};
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
         /**@type {number} */
         this._maxCPU = Memory.maxCPU;
         this._maxShardBases = Game.gcl.level
+        /**@type {MapOp} */
+        this._map = new MapOp(this);
+        this._addChildOp(this._map);
         this._teamShardColonizing = new ColonizingOp(this, this);
-        /**@type {{[key:string] : Creep[]}} */
-        this._creepsByOperationId = {};
-        /**@type {{[baseName:string] : ShardChildOp[]}} */
-        this._OperationIdByRoomByOpType = {};
     }
 
     get type() {return c.OPERATION_SHARD}
@@ -34,14 +34,7 @@ module.exports = class ShardOp extends ChildOp {
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
         Memory.maxCPU = this._maxCPU
 
-        for (let creepName in Game.creeps) {
-            let creep = U.getCreep(creepName);
-            let roomName = creep.memory.baseName || creepName.split('_')[0];
-            let opType = creep.memory.operationType || parseInt(creepName.split('_')[1]);
-            if (creep.hits> 0) this._OperationIdByRoomByOpType[roomName][opType].initCreep(creep)
-            else delete Memory.creeps[creepName];
-        }
-
+        //construct and delete base suboperations
         let updateMap = false;
         /** @type {{[key:string]: BaseOp }} */
         let newBaseOps = {}
@@ -59,6 +52,21 @@ module.exports = class ShardOp extends ChildOp {
         if (_.size(this._baseOps) != _.size(newBaseOps)) updateMap = true;
         this._baseOps = newBaseOps;
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
+
+        //assign new creep objects to childshardops.
+        for (let creepName in Game.creeps) {
+            let creep = U.getCreep(creepName);
+            let roomName = creep.memory.baseName || creepName.split('_')[0];
+            let opType = creep.memory.operationType || parseInt(creepName.split('_')[1]);
+            if (creep.hits> 0) {
+                let subOp = this._OperationIdByRoomByOpType[roomName][opType]
+                if (subOp) subOp.initCreep(creep) 
+            }
+
+            else delete Memory.creeps[creepName];
+        }
+
+
         super.initTick()
     }
 

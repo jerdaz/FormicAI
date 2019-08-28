@@ -11,6 +11,8 @@ module.exports = class ColonizingOp extends ShardChildOp {
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
     }
+    
+    get type() {return c.OPERATION_COLONIZING}
 
     _strategy() {
         // if running under a base give spawn requests.

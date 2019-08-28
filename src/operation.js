@@ -27,7 +27,11 @@ module.exports = class Operation {
 
 
     initTick() {
-        for(let childOps of this._childOps) for(let childOp of childOps) childOp.initTick();
+        if (this._childOps.length > 0) {
+            for(let childOps of this._childOps) {
+                if (childOps) for(let childOp of childOps) childOp.initTick();
+            }
+        }
     }
 
     run() {
@@ -46,7 +50,7 @@ module.exports = class Operation {
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
-        for (let childOps of this._childOps) for (let childOp of childOps) {
+        for (let childOps of this._childOps) if(childOps) for (let childOp of childOps) {
             try {
                 childOp.run();
             } catch(err) {this._debug.logError(err)}
