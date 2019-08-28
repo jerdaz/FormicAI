@@ -1,11 +1,11 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let CreepTeamOp = require('./teamOp');
+const BaseChildOp = require('./baseChildOp');
 
-module.exports = class CreepUpgraderOp extends CreepTeamOp {
+module.exports = class UpgradingOp extends BaseChildOp {
     _strategy() {
         if(!this._baseOp) throw Error();
-        this._baseOp.ltRequestSpawn(c.OPERATION_UPGRADING, {body:[MOVE,CARRY,WORK]}, 8)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];

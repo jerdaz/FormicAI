@@ -16,6 +16,7 @@ class Main extends Operation {
         }
         InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
+        this._addChildOp(this._shardOp);
 
         // populate shard names (by trial and error!!)
         /**@type {String[]} */
@@ -33,9 +34,7 @@ class Main extends Operation {
         catch (err) {}
     }
 
-    initTick() {
-        this._shardOp.initTick();
-    }
+    get type() { return c.OPERATION_MAIN; }
 
     _strategy() {
         // run cross shard strategy about once every 10.000 ticks
@@ -94,10 +93,6 @@ class Main extends Operation {
         }
     }
 
-    _command() {
-        this._shardOp.run();
-    };
-
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){
         if(shardMem == undefined) throw Error()
@@ -137,8 +132,8 @@ class Main extends Operation {
 let debug = new Debug;
 /**@type {any}*/(Game).debug = debug;
 let main = new Main;
-module.exports.Main = Main;
 
+module.exports.mainOp = Main;
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = main;

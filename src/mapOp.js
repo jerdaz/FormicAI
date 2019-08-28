@@ -1,22 +1,22 @@
-let U = require('./util');
-let c = require('./constants');
-let Operation = require('./operation');
-/** @typedef {import('./shardOp')} ShardOp */
-/** @typedef {import('./baseOp')} BaseOp */
+const U = require('./util');
+const c = require('./constants');
+const ChildOp = require('./childOp');
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
-module.exports = class MapOp extends Operation {
+module.exports = class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
-        super();
-        this._shardOp = shardOp
+        super(shardOp);
+        this._parent = shardOp;
         /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
         /**@type {ScoutInfo} */
         this._scoutInfo = {};
     }
+
+    get type() {return c.OPERATION_MAP}
 
     _strategy() {
         if (U.chance(10)) {
@@ -50,8 +50,8 @@ module.exports = class MapOp extends Operation {
     findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = 0) {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {
-                let base = this._shardOp.getBase(baseDist.roomName);
-                if (base.controller.level >= minLevel && (hasSpawn == false || this._shardOp.getBaseOp(base.name).hasSpawn() )) return base.name;
+                let base = this._parent.getBase(baseDist.roomName);
+                if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).hasSpawn() )) return base.name;
             }
         } else {
             let closestBase = {roomName: '', dist:10000}
@@ -113,3 +113,4 @@ module.exports = class MapOp extends Operation {
         return Game.map.describeExits(roomName);
     }
 }
+

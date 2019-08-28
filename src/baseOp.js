@@ -1,69 +1,42 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
-let TeamFillingOp = require('./teamFillingOp');
-let TeamUpgradingOp = require('./teamUpgradingOp');
-let TeamBuildingOp = require('./teamBuildingOp');
-let TeamColonizingOp = require('./teamColonizingOp');
-let SpawningOp = require ('./spawningOp');
-let TowerOp = require('./towerOp');
-/** @typedef {import('./shardOp')} ShardOp */
-/** @typedef {import ('./teamOp')} TeamOp */
+const FillingOp = require('./fillingOp');
+const UpgradingOp = require('./upgradingOp');
+const BuildingOp = require('./buildingOp');
+const SpawningOp = require ('./spawningOp');
+const TowerOp = require('./towerOp');
+const ShardChildOp = require('./shardChildOp');
+const ColonizingOp = require('./colonizingOp');
 
-module.exports = class BaseOp extends Operation{
+module.exports = class BaseOp extends ShardChildOp{
     /** @param {Base} base */
-    /** @param {Creep[]} creeps */
     /** @param {ShardOp} shardOp */
-    constructor (base, creeps, shardOp) {
-        super();
-        this._shardOp = shardOp;
+    constructor (base, shardOp) {
+        super(shardOp, shardOp);
 
         /**@type {Base} */
         this._base = base;
         this._directive = c.DIRECTIVE_NONE;
 
-        /**@type {SpawningOp}} */
-        this._spawningOp = new SpawningOp(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)), this);
-        /**@type {TowerOp}} */
-        this._towerOp = new TowerOp(/**@type {StructureTower[]} */(this.getMyStructures(STRUCTURE_TOWER)), this);
-        /**@type {TeamFillingOp} */
-        this._teamFillingOp = new TeamFillingOp(this);
-        /**@type {TeamBuildingOp} */
-        this._teamBuildingOp = new TeamBuildingOp(this);
-        /**@type {TeamUpgradingOp} */
-        this._teamUpgradingOp = new TeamUpgradingOp(this);
-        /**@type {TeamColonizingOp} */
-        this._teamColonizingOp = new TeamColonizingOp(this, this._shardOp.getMap());
-        
-        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
-        if (firstSpawn) this._centerPos = firstSpawn.pos;
-        else this._centerPos = this._getBaseCenter();
+        this._addChildOp(new SpawningOp(this));
+        this._addChildOp(new TowerOp(this));
+        this._addChildOp(new FillingOp(this));
+        this._addChildOp(new BuildingOp(this));
+        this._addChildOp(new UpgradingOp(this));
+        this._addChildOp(new ColonizingOp(this,shardOp, this));
+
+        // determine out center of the base
+        this._centerPos = this._getBaseCenter();
 
         this._fillerEmergency = false;
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
-        this.initTick(base, creeps);
     }
 
-    /**@param {Base} base */
-    /**@param {Creep[]} creeps */
-    initTick(base, creeps) {
-        this._base = base;
-        this._spawningOp.initTick(/**@type {StructureSpawn[]} */(this.getMyStructures(STRUCTURE_SPAWN)))
-        this._towerOp.initTick(/**@type {StructureTower[]} */(this.getMyStructures(STRUCTURE_TOWER)) )
-        /**@type {Creep[][]} */
-        let teamCreeps = [];
-        if (creeps) {
-            for (let creep of creeps) {
-                let opType = creep.memory.operation || parseInt(creep.name.split('_')[1]);
-                if (!teamCreeps[opType]) teamCreeps[opType] = [];
-                teamCreeps[opType].push(creep);
-            }
-        }
-        this._teamFillingOp.initTick(teamCreeps[c.OPERATION_FILLING]);
-        this._teamUpgradingOp.initTick(teamCreeps[c.OPERATION_UPGRADING]);
-        this._teamBuildingOp.initTick(teamCreeps[c.OPERATION_BUILDING]);
-        this._teamColonizingOp.initTick(teamCreeps[c.OPERATION_COLONIZING]);
-    }
+    get type() {return c.OPERATION_BASE}
+    get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
+    get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
+    get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
+
 
     hasSpawn() {
         return this.getMyStructures(STRUCTURE_SPAWN).length > 0;
@@ -97,51 +70,20 @@ module.exports = class BaseOp extends Operation{
     }
 
     getMaxSpawnEnergy() {
-        if (this._teamFillingOp.getCreepCount() == 0) return this._base.energyAvailable;
+        if (this.fillingOp.getCreepCount() == 0) return this._base.energyAvailable;
         else return this._base.energyCapacityAvailable;
     }
 
-    /**@param {number} opType */
-    /**@returns {TeamOp} */
-    getSubTeamOp(opType) {
-        /**@type {TeamOp} */
-        let ret;
-        switch (opType) {
-            case c.OPERATION_BUILDING:
-                ret = this._teamBuildingOp;
-                break;
-            case c.OPERATION_FILLING:
-                ret = this._teamFillingOp;
-                break;
-            case c.OPERATION_UPGRADING:
-                ret = this._teamUpgradingOp;
-                break;
-            case c.OPERATION_COLONIZING:
-                ret = this._teamColonizingOp;
-                break;
-            default:
-                throw Error();
-                break;
-        }
-        return ret;
-    }
-
-    /**@param {number} opType */
-    /**@param {CreepTemplate} template */
-    /**@param {number} count */
-    ltRequestSpawn(opType, template, count) {
-        this._spawningOp.ltRequestSpawn(opType, template, count);
-    }
 
     /**@param {string} roomName */
     requestBuilder(roomName) {
-        this._spawningOp.requestBuilder(roomName);
+        this.spawningOp.requestBuilder(roomName);
     }
 
     /**@param {string} shard */
     /**@param {number} requestType} */
     requestShardColonization(shard, requestType) {
-        this._spawningOp.requestShardColonizers(shard, requestType);
+        this.spawningOp.requestShardColonizers(shard, requestType);
     }
 
     _strategy() {
@@ -151,14 +93,6 @@ module.exports = class BaseOp extends Operation{
         }
     }
 
-    _command() {
-        this._teamFillingOp.run();
-        this._teamBuildingOp.run();
-        this._teamUpgradingOp.run();
-        this._teamColonizingOp.run();
-        this._towerOp.run();
-        this._spawningOp.run();
-    }    
     
     _planBase() {
         let room = this._base;
@@ -181,7 +115,7 @@ module.exports = class BaseOp extends Operation{
             if (pos) pos.createConstructionSite(STRUCTURE_TOWER);
             else console.log('WARNING: Cannot find building spot in room ' + room.name);
         }
-        else if (nSpawns == 0 && this._teamBuildingOp.getCreepCount() == 0) {
+        else if (nSpawns == 0 && this.buildingOp.getCreepCount() == 0) {
             this._shardOp.requestBuilder(room.name);
         }
     }
@@ -243,6 +177,11 @@ module.exports = class BaseOp extends Operation{
     }
 
     _getBaseCenter() {
+        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
+        let firstConstructionSite = this._base.find(FIND_MY_CONSTRUCTION_SITES)[0];
+        if (firstSpawn) return firstSpawn.pos;
+        else if (firstConstructionSite) return firstConstructionSite.pos;
+
         let base = this._base;
         let x = 0;
         let y = 0;
@@ -285,4 +224,5 @@ module.exports = class BaseOp extends Operation{
         let result = new RoomPosition(spawnX, spawnY, base.name);
         return result;
     } 
+
 }
