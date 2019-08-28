@@ -1,12 +1,11 @@
 let U = require('./util')
 const c = require('./constants');
-/** @typedef {import('./debug')} Debug */
 
 //unique id of Operation
 let idIndex = 0;
 
 
-class Operation {
+module.exports = class Operation {
     constructor() {
         this._id = idIndex++;
         this._firstRun = true;
@@ -73,15 +72,4 @@ class Operation {
     _command() {}
 }
 
-class ChildOp extends Operation{
-    /**@param {Operation} parent */
-    constructor(parent) {
-        super()
-        this._parent = parent;
-    }
-}
-
-
-module.exports.Operation = Operation;
-module.exports.ChildOp = ChildOp;
 

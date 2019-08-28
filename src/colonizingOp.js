@@ -5,7 +5,7 @@ let ShardOp = require('./shardOp').ShardOp;
 let Operation = require('./operation').Operation;
 let BaseOp = require('./baseOp').BaseOp;
 
-class ColonizingOp extends ShardChildOp {
+module.exports = class ColonizingOp extends ShardChildOp {
     /**@param {ShardOp}  shardOp */
     /**@param {Operation}  parent */
     /**@param {BaseOp} [baseOp] */
@@ -96,4 +96,3 @@ class ColonizingOp extends ShardChildOp {
     }
 }
 
-module.exports.ColonizingOp = ColonizingOp;

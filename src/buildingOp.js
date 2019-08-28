@@ -1,8 +1,8 @@
 let U = require('./util');
 const c = require('./constants');
-let BaseChildOp = require('./baseOp').BaseChildOp;
+let BaseChildOp = require('./baseChildOp').BaseChildOp;
 
-class BuildingOp extends BaseChildOp {
+module.exports = class BuildingOp extends BaseChildOp {
     _strategy() {
         if (!this._baseOp) throw Error();
         let creepCount = 0;
@@ -26,5 +26,3 @@ class BuildingOp extends BaseChildOp {
 
     }
 }
-
-module.exports.BuildingOp = BuildingOp;

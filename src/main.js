@@ -1,7 +1,7 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./operation').Operation;
-let ShardOp = require('./shardOp').ShardOp;
+let Operation = require('./operation');
+let ShardOp = require('./shardOp');
 let Debug = require('./debug');
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
@@ -132,7 +132,6 @@ class Main extends Operation {
 let debug = new Debug;
 /**@type {any}*/(Game).debug = debug;
 let main = new Main;
-module.exports.Main = Main;
 
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;

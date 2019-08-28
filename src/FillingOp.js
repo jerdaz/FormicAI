@@ -1,8 +1,8 @@
 let U = require('./util');
 const c = require('./constants');
-let BaseChildOp = require('./baseOp').BaseChildOp;
+let BaseChildOp = require('./baseChildOp').BaseChildOp;
 
-class FillingOp extends BaseChildOp {
+module.exports = class FillingOp extends BaseChildOp {
     _strategy() {
         if (this._baseOp) this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 2)
         for (let creepName in this._creepOps) {
@@ -28,4 +28,3 @@ class FillingOp extends BaseChildOp {
     }
 }
 
-module.exports.FillingOp = FillingOp;

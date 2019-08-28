@@ -11,7 +11,7 @@ const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
 
-class CreepOp extends ShardChildOp {
+module.exports = class CreepOp extends ShardChildOp {
     /**@param {ShardOp}  shardOp */
     /**@param {Operation}  parent */
     /**@param {BaseOp} [baseOp] */
@@ -150,4 +150,3 @@ class CreepOp extends ShardChildOp {
     }
 }
 
-module.exports.CreepOp = CreepOp;

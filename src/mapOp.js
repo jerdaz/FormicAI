@@ -7,7 +7,7 @@ let BaseOp = require('./baseOp').BaseOp
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
-class MapOp extends ChildOp {
+module.exports = class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
         super(shardOp);
@@ -116,4 +116,3 @@ class MapOp extends ChildOp {
     }
 }
 
-module.exports.MapOp = MapOp;

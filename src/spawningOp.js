@@ -1,6 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseOp').BaseChildOp;
+const BaseChildOp = require('./baseChildOp').BaseChildOp;
 const BaseOp = require('./baseOp').BaseOp;
 const ShardChildOp = require('./shardOp').ShardChildOp
 
@@ -169,5 +169,3 @@ class SpawningOp extends BaseChildOp {
         else return [];
     }
 }
-
-module.exports.SpawningOp = SpawningOp;

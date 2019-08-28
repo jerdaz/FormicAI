@@ -1,11 +1,11 @@
 let U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseOp').BaseChildOp;
+const BaseChildOp = require('./baseChildOp').BaseChildOp;
 const BaseOp = require('./baseOp').BaseOp;
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
-class TowerOp extends BaseChildOp {
+module.exports = class TowerOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
@@ -62,4 +62,3 @@ class TowerOp extends BaseChildOp {
     }
 }
 
-module.exports.TowerOp = TowerOp;

@@ -1,6 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
-let FillingOp = require('./FillingOp').FillingOp;
+let FillingOp = require('./fillingOp').FillingOp;
 let UpgradingOp = require('./upgradingOp').UpgradingOp;
 let BuildingOp = require('./buildingOp').BuildingOp;
 let SpawningOp = require ('./spawningOp').SpawningOp;
@@ -9,7 +9,7 @@ let ShardOp = require('./shardOp').ShardOp;
 let ShardChildOp = require('./shardOp').ShardChildOp;
 let ColonizingOp = require('./colonizingOp').ColonizingOp;
 
-class BaseOp extends ShardChildOp{
+module.exports = class BaseOp extends ShardChildOp{
     /** @param {Base} base */
     /** @param {ShardOp} shardOp */
     constructor (base, shardOp) {
@@ -239,5 +239,3 @@ class BaseChildOp extends ShardChildOp {
     get baseOp() {return this._baseOp}
 }
 
-module.exports.BaseOp = BaseOp;
-module.exports.BaseChildOp = BaseChildOp;

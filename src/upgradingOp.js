@@ -1,8 +1,8 @@
 let U = require('./util');
 const c = require('./constants');
-let BaseChildOp = require('./baseOp').BaseChildOp;
+let BaseChildOp = require('./baseChildOp').BaseChildOp;
 
-class UpgradingOp extends BaseChildOp {
+module.exports = class UpgradingOp extends BaseChildOp {
     _strategy() {
         if(!this._baseOp) throw Error();
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
@@ -20,5 +20,3 @@ class UpgradingOp extends BaseChildOp {
         }
     }
 }
-
-module.exports.UpgradingOp = UpgradingOp; 
