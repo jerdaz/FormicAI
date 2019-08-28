@@ -1,4 +1,4 @@
-let U = require('./util')
+const U = require('./util')
 
 module.exports = class Debug {
     constructor(){

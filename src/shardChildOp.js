@@ -1,6 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./operation');
+const ChildOp = require('./childOp');
+const CreepOp = require('./creepOp');
 
 module.exports = class ShardChildOp extends ChildOp {
     /**@param {ShardOp}  shardOp */

@@ -1,9 +1,6 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation').Operation;
-let BaseOp = require('./baseOp').BaseOp;
-let ShardOp = require('./shardOp').ShardOp;
-let ShardChildOp = require('./shardOp').ShardChildOp;
+const ChildOp = require('./childOp');
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
@@ -11,12 +8,12 @@ const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
 
-module.exports = class CreepOp extends ShardChildOp {
+module.exports = class CreepOp extends ChildOp {
     /**@param {ShardOp}  shardOp */
     /**@param {Operation}  parent */
     /**@param {BaseOp} [baseOp] */
     constructor(parent, shardOp, baseOp) {
-        super(parent, shardOp);
+        super(parent);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';

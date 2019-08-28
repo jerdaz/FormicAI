@@ -1,6 +1,6 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let BaseChildOp = require('./baseChildOp').BaseChildOp;
+const BaseChildOp = require('./baseChildOp');
 
 module.exports = class FillingOp extends BaseChildOp {
     _strategy() {

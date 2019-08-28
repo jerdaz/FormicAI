@@ -1,13 +1,12 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let FillingOp = require('./fillingOp').FillingOp;
-let UpgradingOp = require('./upgradingOp').UpgradingOp;
-let BuildingOp = require('./buildingOp').BuildingOp;
-let SpawningOp = require ('./spawningOp').SpawningOp;
-let TowerOp = require('./towerOp').TowerOp;
-let ShardOp = require('./shardOp').ShardOp;
-let ShardChildOp = require('./shardOp').ShardChildOp;
-let ColonizingOp = require('./colonizingOp').ColonizingOp;
+const FillingOp = require('./fillingOp');
+const UpgradingOp = require('./upgradingOp');
+const BuildingOp = require('./buildingOp');
+const SpawningOp = require ('./spawningOp');
+const TowerOp = require('./towerOp');
+const ShardChildOp = require('./shardChildOp');
+const ColonizingOp = require('./colonizingOp');
 
 module.exports = class BaseOp extends ShardChildOp{
     /** @param {Base} base */
@@ -227,15 +226,3 @@ module.exports = class BaseOp extends ShardChildOp{
     } 
 
 }
-
-class BaseChildOp extends ShardChildOp {
-    /**@param {BaseOp}  baseOp */
-    constructor(baseOp) {
-        super(baseOp, baseOp.shardOp, baseOp);
-        this._baseOp = baseOp;
-        this._baseName = baseOp.getName();
-    }
-
-    get baseOp() {return this._baseOp}
-}
-

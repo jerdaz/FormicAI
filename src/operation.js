@@ -1,4 +1,4 @@
-let U = require('./util')
+const U = require('./util')
 const c = require('./constants');
 
 //unique id of Operation

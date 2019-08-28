@@ -1,7 +1,6 @@
 let U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp').BaseChildOp;
-const BaseOp = require('./baseOp').BaseOp;
+const BaseChildOp = require('./baseChildOp');
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 

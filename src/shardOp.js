@@ -1,9 +1,9 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./operation').ChildOp;
-const BaseOp = require('./baseOp').BaseOp;
-const MapOp = require('./mapOp').MapOp;
-const ColonizingOp = require('./colonizingOp').ColonizingOp;
+const ChildOp = require('./childOp');
+const BaseOp = require('./baseOp');
+const MapOp = require('./mapOp');
+const ColonizingOp = require('./colonizingOp');
 
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */

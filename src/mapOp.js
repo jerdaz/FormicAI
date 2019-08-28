@@ -1,8 +1,6 @@
-let U = require('./util');
-let c = require('./constants');
-let ChildOp = require('./operation').ChildOp;
-let ShardOp = require('./shardOp').ShardOp;
-let BaseOp = require('./baseOp').BaseOp
+const U = require('./util');
+const c = require('./constants');
+const ChildOp = require('./childOp');
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */

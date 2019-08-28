@@ -1,9 +1,6 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let ShardChildOp = require('./shardOp').ShardChildOp;
-let ShardOp = require('./shardOp').ShardOp;
-let Operation = require('./operation').Operation;
-let BaseOp = require('./baseOp').BaseOp;
+const ShardChildOp = require('./shardChildOp');
 
 module.exports = class ColonizingOp extends ShardChildOp {
     /**@param {ShardOp}  shardOp */

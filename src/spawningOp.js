@@ -1,13 +1,11 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp').BaseChildOp;
-const BaseOp = require('./baseOp').BaseOp;
-const ShardChildOp = require('./shardOp').ShardChildOp
+const BaseChildOp = require('./baseChildOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
 
-class SpawningOp extends BaseChildOp {
+module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
