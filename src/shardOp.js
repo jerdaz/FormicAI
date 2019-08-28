@@ -12,8 +12,6 @@ module.exports = class ShardOp extends ChildOp {
         this._parent = main;
         /**@type {{[baseName:string] : ShardChildOp[]}} */
         this._OperationIdByRoomByOpType = {};
-        /**@type {{[key:string] : Creep[]}} */
-        this._creepsByOperationId = {};
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
         /**@type {number} */
@@ -34,7 +32,7 @@ module.exports = class ShardOp extends ChildOp {
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
         Memory.maxCPU = this._maxCPU
 
-        //construct and delete base suboperations
+        //construct, init and delete base suboperations
         let updateMap = false;
         /** @type {{[key:string]: BaseOp }} */
         let newBaseOps = {}
