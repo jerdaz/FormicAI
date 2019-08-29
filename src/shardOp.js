@@ -56,7 +56,7 @@ module.exports = class ShardOp extends ChildOp {
             let creep = U.getCreep(creepName);
             let roomName = creep.memory.baseName || creepName.split('_')[0];
             let opType = creep.memory.operationType || parseInt(creepName.split('_')[1]);
-            if (creep.hits> 0) {
+            if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType]
                 if (subOp) subOp.initCreep(creep) 
             }

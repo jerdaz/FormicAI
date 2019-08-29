@@ -94,4 +94,3 @@ module.exports = class ColonizingOp extends ShardChildOp {
         }
     }
 }
-
