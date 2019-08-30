@@ -68,7 +68,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             let base = this._baseOp.getBase();
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
+                && this._baseOp.fillingOp.getCreepCount() >= this._spawnRequests[this._baseOp.fillingOp.id].count
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
