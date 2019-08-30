@@ -33,7 +33,7 @@ module.exports = class Util {
                 if (cache.indexOf(value) !== -1) {
                     // Duplicate reference found, discard key
                     return;
-                }
+                } else if (key == '_parent' || key == '_baseOp') return;
                 // Store value in our collection
                 cache.push(value);
             }

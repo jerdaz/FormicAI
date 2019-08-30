@@ -90,6 +90,7 @@ class Main extends Operation {
                 }
             }
             if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount() + 1)
+            else this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount());
         }
     }
 
