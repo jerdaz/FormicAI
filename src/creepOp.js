@@ -22,6 +22,7 @@ module.exports = class CreepOp extends ChildOp {
         this._baseOp = baseOp;
     }
     get type() {return c.OPERATION_CREEP}
+    get source() {return Game.getObjectById(this._sourceId)}
 
     /**@param {Creep} creep */
     setCreep(creep) {
