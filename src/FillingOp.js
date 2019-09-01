@@ -17,11 +17,7 @@ module.exports = class FillingOp extends BaseChildOp {
                 let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE)
                 let dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
                     return  (o.energy < o.energyCapacity)
-                            && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION);
-                    }})
-                if (!dest) dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
-                    return  (o.energy < o.energyCapacity)
-                            && (o.structureType == STRUCTURE_TOWER);
+                            && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER);
                     }})
                 if (!source) source = creepOp.source;                                    
                 if (source && dest) creepOp.instructTransfer(source, dest);
