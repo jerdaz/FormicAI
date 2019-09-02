@@ -83,6 +83,8 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 // debug invalid spawn errors 
                                 if (result == -10) {
                                     U.l(body);
+                                    U.l(spawnItem)
+                                    U.l(this._baseOp.getMaxSpawnEnergy())
                                     U.l(spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
                                     throw Error('invalid body or or name')
                                 }

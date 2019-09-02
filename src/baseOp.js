@@ -18,6 +18,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {Base} */
         this._base = base;
+        this._name = base.name;
         this._directive = c.DIRECTIVE_NONE;
 
         this._addChildOp(new SpawningOp(this));
@@ -39,6 +40,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
     initTick() {
         super.initTick();
+        this._base = /**@type {Base} */ (Game.rooms[this._name])
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
@@ -52,7 +54,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION])}
-    get name() {return this._base.name}
+    get name() {return this._name}
 
 
     hasSpawn() {
