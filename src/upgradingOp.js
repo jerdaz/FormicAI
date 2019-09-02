@@ -15,9 +15,8 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (!(dest instanceof StructureController)
             || (creepOp.getInstr() != c.COMMAND_TRANSFER) )
             {
-                let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
                 let dest = this._baseOp.getBase().controller;
-                if (source && dest) creepOp.instructTransfer(source, dest);
+                if (dest) creepOp.instructFill(dest);
             }
         }
     }

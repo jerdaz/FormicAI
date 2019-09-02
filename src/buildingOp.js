@@ -19,9 +19,8 @@ module.exports = class BuildingOp extends BaseChildOp {
                 if (!(dest instanceof ConstructionSite)
                 || (creepOp.getInstr() != c.COMMAND_TRANSFER) ) 
                 {
-                    let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
                     let dest = creepOp.getPos().findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                    if (source && dest) creepOp.instructTransfer(source, dest);
+                    if (dest) creepOp.instructFill(dest);
                 }
             }
         } else for (let creepName in this._creepOps) this._creepOps[creepName].instrStop();
