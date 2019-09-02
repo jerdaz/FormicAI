@@ -23,7 +23,7 @@ module.exports = class BuildingOp extends BaseChildOp {
                     if (dest) creepOp.instructFill(dest);
                 }
             }
-        } else for (let creepName in this._creepOps) this._creepOps[creepName].instrStop();
+        } else for (let creepName in this._creepOps) this._creepOps[creepName].setOperation(c.OPERATION_UPGRADING);
 
     }
 }
