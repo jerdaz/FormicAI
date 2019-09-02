@@ -164,8 +164,7 @@ module.exports = class CreepOp extends ChildOp {
         roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
         if (result == null) {
-            roomObjects = room.find(FIND_SOURCES_ACTIVE);
-            result = this._creep.pos.findClosestByPath(roomObjects);
+            result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
         }
         return result
     }
