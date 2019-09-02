@@ -1,7 +1,16 @@
 module.exports = class Util {
+    constructor() {
+        this.trace = false;
+    }
+
     /**@param {any} message Logs message to console*/
     static l(message){
         console.log(this.stringify(message));
+    }
+
+    /**@param {any} message Logs message to console*/
+    lt(message){
+        if (this.trace) Util.l(message);
     }
 
     /**@param {number} x */

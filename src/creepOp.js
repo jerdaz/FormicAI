@@ -7,6 +7,7 @@ const STATE_RETRIEVING = 1;
 const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
+const STATE_FILLING = 5;
 
 module.exports = class CreepOp extends ChildOp {
     /**@param {ShardOp}  shardOp */
@@ -28,6 +29,13 @@ module.exports = class CreepOp extends ChildOp {
     setCreep(creep) {
         this._creep = creep;
         if (this._firstRun) creep.notifyWhenAttacked( false);
+    }
+
+    /**@param {Structure | ConstructionSite} dest */
+    instructFill(dest) {
+        this._sourceId = ''
+        this._destId = dest.id;
+        this._instruct = c.COMMAND_FILL
     }
 
     /**@param {Source} source */
@@ -72,12 +80,16 @@ module.exports = class CreepOp extends ChildOp {
     _command() {
         if (this._creep == undefined ) throw Error('creep undefined');
 
-        let source = U.getObj(this._sourceId);
-        let dest = U.getObj(this._destId);
         let creep = this._creep;
-
-
         switch (this._instruct) {
+            case c.COMMAND_FILL:
+                    if (creep.carry.energy == 0) this._state = STATE_FILLING;
+                    if (creep.carry.energy == creep.carryCapacity) {
+                        this._state = STATE_DELIVERING;
+                        this._sourceId =='';
+                    }
+                    if (this._state == STATE_NONE) this._state = STATE_FILLING;
+                    break;
             case c.COMMAND_TRANSFER:
                 if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
@@ -94,11 +106,25 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         }
 
+        let source = U.getObj(this._sourceId);
+        let dest = U.getObj(this._destId);
         switch (this._state) {
+            case STATE_FILLING:
+                if (source.store && source.store.energy == 0) source = undefined;
+                if (source.energy === 0) source = undefined;
+                if (source.amount === 0) source = undefined;
+                if(source == undefined) {
+                    source = this._findEnergySource();
+                    if (source) this._sourceId = source.id;
+                    else this.sourceId = '';
+                }
             case STATE_RETRIEVING:
+                if (source == null) break;
                 creep.moveTo(source, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
+                else if (source instanceof Tombstone) creep.withdraw(source, RESOURCE_ENERGY);
+                else if (source instanceof Resource) creep.pickup(source);
                 else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
             case STATE_DELIVERING:
@@ -119,6 +145,32 @@ module.exports = class CreepOp extends ChildOp {
                     creep.claimController(dest);
                 }
         }    
+    }
+
+    _findEnergySource() {
+        if (!this._creep) throw Error('invalid creep')
+        let room = this._creep.room;
+        /**@type {RoomObject[]} */
+        let roomObjects = [];
+        /**@type RoomObject|null */
+        let result;
+        roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
+        roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
+        result = this._creep.pos.findClosestByPath(roomObjects)
+        if (result == null) {
+            roomObjects = room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
+                                                                                    ) && o.store.energy > 0
+                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
+                                                                        }
+                                                                    })
+            roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));
+            result = this._creep.pos.findClosestByPath(roomObjects);
+        }
+        if (result == null) {
+            roomObjects = room.find(FIND_SOURCES_ACTIVE);
+            result = this._creep.pos.findClosestByPath(roomObjects);
+        }
+        return result
     }
 
     getPos() {

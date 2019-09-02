@@ -42,6 +42,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
+            if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
             this._structures[structure.structureType].push(structure);
         }
     }
@@ -136,7 +137,7 @@ module.exports = class BaseOp extends ShardChildOp{
         }
         if (this._base.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
         for(let structureType of baseBuildOrder) {
-            if(this._structures[structureType].length < CONTROLLER_STRUCTURES[structureType][room.controller.level] ) {
+            if(this._structures[structureType] == undefined || this._structures[structureType].length < CONTROLLER_STRUCTURES[structureType][room.controller.level] ) {
                 let pos = this._findBuildingSpot();
                 if (pos) pos.createConstructionSite(structureType);
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
