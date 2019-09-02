@@ -30,12 +30,29 @@ module.exports = class BaseOp extends ShardChildOp{
 
         this._fillerEmergency = false;
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
+
+        /**@type {StructureExtension[]} */
+        this._extensions = [];
+    }
+
+    initTick() {
+        super.initTick();
+        this._extensions = [];
+        let structures = this._base.find(FIND_MY_STRUCTURES);
+        for (let structure of structures) {
+            switch (structure.structureType) {
+                case STRUCTURE_EXTENSION:
+                    this._extensions.push(structure)
+            }
+        }
     }
 
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
+    get extensions() {return this._extensions}
+    get name() {return this._base.name}
 
 
     hasSpawn() {
@@ -90,6 +107,25 @@ module.exports = class BaseOp extends ShardChildOp{
         if (U.chance(10)) {
             this._planBase();
             if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
+        }
+
+        //find & destroy extensions that have become unreachable.
+        if (U.chance(1000)) {
+            for (let extension of this.extensions) {
+                let walkable = false;
+                let pos = extension.pos;
+                for(let i=-1; i<=1; i++) {
+                    for (let j=-1; j<=1; j++) {
+                        let pos2 = new RoomPosition(pos.x+i, pos.y+j, this.name)
+                        if (U.isWalkable(pos2)) {
+                            walkable = true;
+                            break;
+                        }
+                    }
+                    if (!walkable) extension.destroy();
+                }
+
+            }
         }
     }
 

@@ -53,5 +53,27 @@ module.exports = class Util {
         for (var i=0; i<body.length;i++) cost += BODYPART_COST[body[i]];
         return cost;
     }    
+
+    /**@param {RoomPosition} pos */
+    /**@returns {Boolean} */
+    static isWalkable(pos) {
+        let room = Game.rooms[pos.roomName]
+        let objects = room.lookAt(pos);
+        for (let object of objects) {
+            if (object.type == LOOK_TERRAIN && object.terrain == "wall") return false;
+            if (object.type == LOOK_STRUCTURES && object.structure) {
+                switch (object.structure.structureType) {
+                    case STRUCTURE_CONTAINER:
+                    case STRUCTURE_PORTAL:
+                    case STRUCTURE_RAMPART:
+                    case STRUCTURE_ROAD:
+                        break;
+                    default:
+                        return false;
+                }
+            } 
+        }
+        return true;
+    }
 }
 
