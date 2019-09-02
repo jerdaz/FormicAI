@@ -156,16 +156,13 @@ module.exports = class CreepOp extends ChildOp {
         let result;
         roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
         roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
+        roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
+                                                                                                ) && o.store.energy > 0
+                                                                                            || o.structureType == STRUCTURE_LINK && o.energy > 0;   
+                                                                                        }   
+                                                                        }))
+        roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
-        if (result == null) {
-            roomObjects = room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
-                                                                                    ) && o.store.energy > 0
-                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
-                                                                        }
-                                                                    })
-            roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));
-            result = this._creep.pos.findClosestByPath(roomObjects);
-        }
         if (result == null) {
             roomObjects = room.find(FIND_SOURCES_ACTIVE);
             result = this._creep.pos.findClosestByPath(roomObjects);
