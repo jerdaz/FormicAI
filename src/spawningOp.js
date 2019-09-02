@@ -80,6 +80,12 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 let body = this._expandCreep(spawnItem.template);
                                 let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999) )
                                 if (result != OK) spawnList.push(spawnItem);
+                                // debug invalid spawn errors 
+                                if (result == -10) {
+                                    U.l(body);
+                                    U.l(spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
+                                    throw Error('invalid body or or name')
+                                }
                             }
                         }
                     }
