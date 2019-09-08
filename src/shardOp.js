@@ -52,15 +52,15 @@ module.exports = class ShardOp extends ChildOp {
         if (updateMap) this._map.updateBaseDistances(this._baseOps);
 
         //assign new creep objects to childshardops.
+        //do not yet do this based on memory. Shardchildops remember their creeps. Reassigning a creep needs to update the creep, creepOp and shardchildop
         for (let creepName in Game.creeps) {
             let creep = U.getCreep(creepName);
-            let roomName = creep.memory.baseName || creepName.split('_')[0];
-            let opType = creep.memory.operationType || parseInt(creepName.split('_')[1]);
+            let roomName = /*creep.memory.baseName ||*/ creepName.split('_')[0];
+            let opType = /*creep.memory.operationType ||*/ parseInt(creepName.split('_')[1]);
             if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType]
                 if (subOp) subOp.initCreep(creep) 
             }
-
             else delete Memory.creeps[creepName];
         }
 
