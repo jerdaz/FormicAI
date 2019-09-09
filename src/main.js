@@ -14,6 +14,12 @@ class Main extends Operation {
             // @ts-ignore
             if (memObj != 'maxCPU') delete Memory[memObj];
         }
+        Memory.creeps = {};
+        Memory.rooms = {};
+        Memory.flags = {};
+        Memory.spawns = {};
+        Memory.powerCreeps = {};
+        
         InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
         this._addChildOp(this._shardOp);
