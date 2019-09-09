@@ -80,7 +80,8 @@ class Main extends Operation {
         }
 
         // check for shard requests
-        if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
+        let myBasesCount = this._shardOp.getBaseCount();
+        if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (myBasesCount >= 2)) {
             let interShardMem = this._loadInterShardMem();
             let totalBases = 0;
             for (let i=0; i < interShardMem.shards.length; i++) {
@@ -95,8 +96,12 @@ class Main extends Operation {
                     }
                 }
             }
-            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount() + 1)
-            else this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount());
+            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
+            else this._shardOp.setDirectiveMaxBases(myBasesCount);
+            if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
+                interShardMem.shards[this._shardNum].baseCount = myBasesCount;
+                this._writeInterShardMem(interShardMem);
+            }
         }
     }
 

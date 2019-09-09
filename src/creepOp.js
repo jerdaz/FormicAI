@@ -10,8 +10,8 @@ const STATE_CLAIMING = 4;
 const STATE_FILLING = 5;
 
 module.exports = class CreepOp extends ChildOp {
-    /**@param {ShardOp}  shardOp */
-    /**@param {Operation}  parent */
+    /**@param {ShardOp} shardOp */
+    /**@param {Operation} parent */
     /**@param {BaseOp} [baseOp] */
     constructor(parent, shardOp, baseOp) {
         super(parent);
@@ -28,7 +28,7 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {Creep} creep */
     setCreep(creep) {
         this._creep = creep;
-        if (this._firstRun) creep.notifyWhenAttacked( false);
+        if (this._firstRun) creep.notifyWhenAttacked(false);
     }
 
     /**@param {Structure | ConstructionSite} dest */
