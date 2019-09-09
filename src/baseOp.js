@@ -134,7 +134,7 @@ module.exports = class BaseOp extends ShardChildOp{
     
     _planBase() {
         let room = this._base;
-        if (this._structures[STRUCTURE_SPAWN].length == 0 && this.buildingOp.getCreepCount() == 0) {
+        if ((this._structures[STRUCTURE_SPAWN] == undefined || this._structures[STRUCTURE_SPAWN].length == 0) && this.buildingOp.getCreepCount() == 0) {
             this._shardOp.requestBuilder(room.name);
         }
         if (this._base.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
