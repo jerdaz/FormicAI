@@ -79,8 +79,9 @@ module.exports = class ShardOp extends ChildOp {
         if (donorRoom) this._baseOps[donorRoom].requestBuilder(roomName);
     }
 
-    /**@param {string} shard */
-    /**@param {number} requestType} */
+    /**
+     * @param {string} shard
+     * @param {number} requestType} */
     requestShardColonization(shard, requestType) {
         for(let baseOp in this._baseOps) this._baseOps[baseOp].requestShardColonization(shard, requestType);
     }
@@ -139,16 +140,18 @@ module.exports = class ShardOp extends ChildOp {
         return this._map;
     }
 
-    /**@param {string} roomName */
-    /**@returns {Room} returns room with RoomName */
+    /**
+     * @param {string} roomName
+     * @returns {Room} returns room with RoomName */
     getRoom(roomName) {
         let room = Game.rooms[roomName];
         if (!room) throw ('Error');
         return room;
     }
 
-    /**@param {string} roomName */
-    /**@returns {Base} returns base with RoomName */
+    /**
+     * @param {string} roomName
+     * @returns {Base} returns base with RoomName */
     getBase(roomName) {
         let base = /**@type {Base} */ (Game.rooms[roomName]);
         if (!base) throw ('Error');
@@ -156,8 +159,9 @@ module.exports = class ShardOp extends ChildOp {
         return base;
     }
 
-    /**@param {string} roomName */
-    /**@returns {BaseOp} */
+    /**
+     * @param {string} roomName
+     * @returns {BaseOp} */
     getBaseOp(roomName) {
         return this._baseOps[roomName];
     }
@@ -168,9 +172,10 @@ module.exports = class ShardOp extends ChildOp {
     }
 
     //add's an operation to the basename/optype to operation map.
-    /**@param {ShardChildOp} shardChildOp */
-    /**@param {string} baseName */
-    /**@param {Number} opType */
+    /**
+     * @param {ShardChildOp} shardChildOp
+     * @param {string} baseName
+     * @param {Number} opType */
     addOperation(shardChildOp, baseName, opType) {
         let x = this._OperationIdByRoomByOpType;
         if (x[baseName] == undefined) x[baseName] = [];

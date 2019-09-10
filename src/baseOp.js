@@ -11,8 +11,9 @@ const ColonizingOp = require('./colonizingOp');
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 
 module.exports = class BaseOp extends ShardChildOp{
-    /** @param {Base} base */
-    /** @param {ShardOp} shardOp */
+    /** 
+     * @param {Base} base 
+     * @param {ShardOp} shardOp */
     constructor (base, shardOp) {
         super(shardOp, shardOp);
 
@@ -74,8 +75,9 @@ module.exports = class BaseOp extends ShardChildOp{
         return this._base.name;
     }
 
-    /**@param {string} structureType */
-    /**@returns {Structure[]} */
+    /**
+     * @param {string} structureType
+     * @returns {Structure[]} */
     getMyStructures(structureType) {
         return this._base.find(FIND_MY_STRUCTURES, {filter: {structureType: structureType}})
     }
@@ -99,8 +101,9 @@ module.exports = class BaseOp extends ShardChildOp{
         this.spawningOp.requestBuilder(roomName);
     }
 
-    /**@param {string} shard */
-    /**@param {number} requestType} */
+    /**
+     * @param {string} shard
+     * @param {number} requestType} */
     requestShardColonization(shard, requestType) {
         this.spawningOp.requestShardColonizers(shard, requestType);
     }
@@ -169,9 +172,10 @@ module.exports = class BaseOp extends ShardChildOp{
         return undefined;
 
    
-        /** @param {number} x */
-        /** @param {number} y */
-        /** @param {Base} base */
+        /** 
+         * @param {number} x
+         * @param {number} y
+         * @param {Base} base */
         function _isValidBuildingSpot(x, y, base) {
             if (!base.controller) throw Error();
             if (x<2 || x > 47 || y < 2 || y > 47) return false;
