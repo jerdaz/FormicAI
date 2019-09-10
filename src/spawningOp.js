@@ -27,9 +27,10 @@ module.exports = class SpawningOp extends BaseChildOp {
         this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
     }
 
-    /**@param {ShardChildOp} operation */
-    /**@param {CreepTemplate} template */
-    /**@param {number} count */
+    /**
+     * @param {ShardChildOp} operation
+     * @param {CreepTemplate} template
+     * @param {number} count */
     ltRequestSpawn(operation, template, count) {
         this._spawnRequests[operation.id] = {operation:operation, count:count, template: template};
     }
@@ -39,8 +40,9 @@ module.exports = class SpawningOp extends BaseChildOp {
         this._builderRequest = roomName;
     }
 
-    /**@param {string} shard */
-    /**@param {number} requestType} */
+    /**
+     * @param {string} shard
+     * @param {number} requestType} */
     requestShardColonizers(shard, requestType){
         switch (requestType) {
             case c.SHARDREQUEST_BUILDER:
@@ -80,14 +82,6 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 let body = this._expandCreep(spawnItem.template);
                                 let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999) )
                                 if (result != OK) spawnList.push(spawnItem);
-                                // debug invalid spawn errors 
-                                if (result == -10) {
-                                    U.l(body);
-                                    U.l(spawnItem)
-                                    U.l(this._baseOp.getMaxSpawnEnergy())
-                                    U.l(spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
-                                    throw Error('invalid body or or name')
-                                }
                             }
                         }
                     }
