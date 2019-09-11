@@ -10,7 +10,7 @@ module.exports = class ShardOp extends ChildOp {
     constructor(main) {
         super(main);
         this._parent = main;
-        /**@type {{[baseName:string] : ShardChildOp[]}} */
+        /**@type {{[baseName:string] : ShardChildOp[][]}} */
         this._OperationIdByRoomByOpType = {};
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
@@ -55,10 +55,12 @@ module.exports = class ShardOp extends ChildOp {
         //do not yet do this based on memory. Shardchildops remember their creeps. Reassigning a creep needs to update the creep, creepOp and shardchildop
         for (let creepName in Game.creeps) {
             let creep = U.getCreep(creepName);
-            let roomName = /*creep.memory.baseName ||*/ creepName.split('_')[0];
-            let opType = /*creep.memory.operationType ||*/ parseInt(creepName.split('_')[1]);
+            let split = creepName.split('_');
+            let roomName = /*creep.memory.baseName ||*/ split[0];
+            let opType = /*creep.memory.operationType ||*/ parseInt(split[1]);
+            let opInstance = parseInt(split[2])||0;
             if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
-                let subOp = this._OperationIdByRoomByOpType[roomName][opType]
+                let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 
             }
             else delete Memory.creeps[creepName];
@@ -174,12 +176,14 @@ module.exports = class ShardOp extends ChildOp {
     //add's an operation to the basename/optype to operation map.
     /**
      * @param {ShardChildOp} shardChildOp
-     * @param {string} baseName
-     * @param {Number} opType */
-    addOperation(shardChildOp, baseName, opType) {
+     * @param {string} baseName */
+    addOperation(shardChildOp, baseName) {
+        let opType = shardChildOp.type
+        let opInstance = shardChildOp.instance
         let x = this._OperationIdByRoomByOpType;
         if (x[baseName] == undefined) x[baseName] = [];
-        x[baseName][opType] = shardChildOp;
+        if (x[baseName][opType] == undefined) x[baseName][opType] = [];
+        x[baseName][opType][opInstance] = shardChildOp;
     }
 }
 

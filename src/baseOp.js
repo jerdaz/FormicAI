@@ -7,6 +7,7 @@ const SpawningOp = require ('./spawningOp');
 const TowerOp = require('./towerOp');
 const ShardChildOp = require('./shardChildOp');
 const ColonizingOp = require('./colonizingOp');
+const HarvestingOp = require('./harvestingOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 
@@ -28,6 +29,12 @@ module.exports = class BaseOp extends ShardChildOp{
         this._addChildOp(new BuildingOp(this));
         this._addChildOp(new UpgradingOp(this));
         this._addChildOp(new ColonizingOp(this,shardOp, this));
+
+        let i = 0;
+        for (let source of base.find(FIND_SOURCES)) {
+            let harvestingOp = new HarvestingOp(this, source.id, i++)
+            this._addChildOp(harvestingOp);
+        }
 
         // determine out center of the base
         this._centerPos = this._getBaseCenter();
@@ -56,7 +63,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
-    get storage() {return /**@type {StructureStorage}*/ (this._structures[STRUCTURE_STORAGE][0])}
+    get storage() {return /**@type {StructureStorage}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get name() {return this._name}
     get phase() {return this._phase}
 
@@ -118,7 +125,8 @@ module.exports = class BaseOp extends ShardChildOp{
         }
 
         if (U.chance(100) || this._firstRun) {
-            if(this.storage) this._phase = c.BASE_PHASE_STORAGE;
+            if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+            else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
             else this._phase = c.BASE_PHASE_BIRTH
         }
 

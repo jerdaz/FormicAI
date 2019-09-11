@@ -3,9 +3,12 @@ const c = require('./constants');
 let ShardChildOp = require('./shardChildOp');
 
 module.exports = class BaseChildOp extends ShardChildOp {
-    /**@param {BaseOp}  baseOp */
-    constructor(baseOp) {
-        super(baseOp, baseOp.shardOp, baseOp);
+    /**
+     * @param {BaseOp}  baseOp
+     * @param {Number} [instance]
+     */
+    constructor(baseOp, instance) {
+        super(baseOp, baseOp.shardOp, baseOp, instance);
         this._baseOp = baseOp;
         this._baseName = baseOp.getName();
     }

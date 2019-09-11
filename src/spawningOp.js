@@ -57,6 +57,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
+            this._spawnPrio[c.OPERATION_HARVESTING] = 50;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 10;
             this._spawnPrio[c.OPERATION_COLONIZING] = 10;
@@ -80,7 +81,7 @@ module.exports = class SpawningOp extends BaseChildOp {
                             let spawnItem = spawnList.pop();
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
-                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999) )
+                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                 if (result != OK) spawnList.push(spawnItem);
                             }
                         }
@@ -117,8 +118,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _getSpawnList() {
-        let base = this._baseOp.getBase();
-        /**@type {{prio:number, opType:number, template:CreepTemplate}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
@@ -129,7 +129,8 @@ module.exports = class SpawningOp extends BaseChildOp {
             if (teamOp) nCreeps = teamOp.getCreepCount();
             if (spawnRequest.count > nCreeps) {
                 let opType = teamOp.type;
-                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, template:spawnRequest.template})
+                let opInstance = teamOp.instance;
+                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
             }
         }
 

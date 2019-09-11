@@ -6,7 +6,9 @@ module.exports = class FillingOp extends BaseChildOp {
     get type() {return c.OPERATION_FILLING}
 
     _strategy() {
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 2)
+        let template = {body:[MOVE,CARRY,WORK]}
+        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
+        this._baseOp.spawningOp.ltRequestSpawn(this, template, 2)
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.getDest();
