@@ -6,7 +6,6 @@ module.exports = class BuildingOp extends BaseChildOp {
     get type() {return c.OPERATION_BUILDING}
 
     _strategy() {
-        if (!this._baseOp) throw Error();
         let creepCount = 0;
         let constructionCount = this._baseOp.getBase().find(FIND_CONSTRUCTION_SITES).length
         if (constructionCount > 0) creepCount = 8;

@@ -6,8 +6,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
 
     _strategy() {
-        if(!this._baseOp) throw Error();
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
+        this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
