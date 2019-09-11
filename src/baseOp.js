@@ -128,6 +128,7 @@ module.exports = class BaseOp extends ShardChildOp{
             if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
             else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
             else this._phase = c.BASE_PHASE_BIRTH
+            if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         }
 
 

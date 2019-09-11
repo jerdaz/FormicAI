@@ -24,6 +24,7 @@ module.exports = {
     BASE_PHASE_BIRTH: 0,
     BASE_PHASE_HARVESTER: 1,
     BASE_PHASE_STORED_ENERGY: 2,
+    BASE_PHASE_EOL: 3,
 
     ROLE_NONE:  0,
     ROLE_FILLER: 1,

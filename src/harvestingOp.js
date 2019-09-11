@@ -2,6 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
+const HARVESTER_SIZE = 3 * 10
+
 module.exports = class HarvestingOp extends BaseChildOp {
     /** 
      * @param {BaseOp} baseOp
@@ -18,7 +20,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
         } else {
-            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], minLength:3, maxLength:10*3}, 1)
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE}, 1)
             for (let creepName in this._creepOps) {
                 let creepOp = this._creepOps[creepName];
                 let source = Game.getObjectById(this._sourceId);

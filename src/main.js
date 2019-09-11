@@ -44,6 +44,7 @@ class Main extends Operation {
 
     _strategy() {
         // run cross shard strategy about once every 10.000 ticks
+        if(U.chance(1000)) Game.cpu.setShardLimits({shard0:200, shard1:10, shard2:10, shard3: 20})
         if(U.chance(10000) || this._firstRun) {
             // divide cpu evenly between shards
             let totalCPU = 0;
@@ -53,7 +54,7 @@ class Main extends Operation {
             for (let shard in shardLimits) {
                 totalCPU += shardLimits[shard]
             }
-            let dividedCPU = totalCPU / this._shards.length;
+            let dividedCPU = Math.floor(totalCPU / this._shards.length);
             for (let shard of this._shards) {
                 shardLimits[shard] = dividedCPU;
             }
