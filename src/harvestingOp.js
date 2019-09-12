@@ -19,7 +19,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
     _strategy() {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
-        } else {
+        } else if (this.baseOp.storage) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE}, 1)
             for (let creepName in this._creepOps) {
                 let creepOp = this._creepOps[creepName];
