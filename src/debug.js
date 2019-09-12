@@ -32,8 +32,9 @@ module.exports = class Debug {
     }
 
     //log state of an object in verbose log
-    /**@param {String} state */
-    /**@param {Object} object */
+    /**
+     * @param {String} state
+     * @param {Object} object */
     logState(state, object) {
         this._verboseLog.push(object.constructor.name + ' - ' + state);
         this._verboseLog.push(Object.assign({}, object));
