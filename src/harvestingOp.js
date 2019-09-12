@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
-const HARVESTER_SIZE = 3 * 10
+const HARVESTER_SIZE = 48
 
 module.exports = class HarvestingOp extends BaseChildOp {
     /** 
