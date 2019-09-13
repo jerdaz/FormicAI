@@ -3,12 +3,13 @@ const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
+const REDUCE_UPGRADER_COUNT_LEVEL = 6
 
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
 
     _strategy() {
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.getBase().controller.level < 5) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.getBase().controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
             let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
