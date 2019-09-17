@@ -13,8 +13,9 @@ module.exports = class Util {
         if (this.trace) Util.l(message);
     }
 
-    /**@param {number} x */
-    /**@returns {boolean} returns true with a chance one in X */
+    /**
+     * @param {number} x
+     * @returns {boolean} returns true with a chance one in X */
     static chance(x) {
         return Math.floor(Math.random() * x) == 0;
     }
@@ -24,8 +25,9 @@ module.exports = class Util {
         return Game.getObjectById(id);
     }
 
-    /**@param {string} creepName */
-    /**@returns {Creep} returns creep with creepName */
+    /**
+     * @param {string} creepName
+     * @returns {Creep} returns creep with creepName */
     static getCreep(creepName) {
         let creep = Game.creeps[creepName];
         if (creep) return creep;
@@ -50,8 +52,9 @@ module.exports = class Util {
         });
     }
 
-    /**@param {String} shardName */
-    /**@returns {Number} */
+    /**
+     * @param {String} shardName
+     * @returns {Number} */
     static getShardID(shardName) {
         return (parseInt(shardName.slice(-1)));
     }
@@ -63,8 +66,9 @@ module.exports = class Util {
         return cost;
     }    
 
-    /**@param {RoomPosition} pos */
-    /**@returns {Boolean} */
+    /**
+     * @param {RoomPosition} pos
+     * @returns {Boolean} */
     static isWalkable(pos) {
         let room = Game.rooms[pos.roomName]
         let objects = room.lookAt(pos);
