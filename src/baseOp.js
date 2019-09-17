@@ -145,9 +145,8 @@ module.exports = class BaseOp extends ShardChildOp{
                             break;
                         }
                     }
-                    if (!walkable) extension.destroy();
                 }
-
+                if (!walkable) extension.destroy();
             }
         }
     }
