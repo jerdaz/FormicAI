@@ -1,14 +1,15 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let CreepTeamOp = require('./teamOp');
+const BaseChildOp = require('./baseChildOp');
 
-module.exports = class CreepBuilderOp extends CreepTeamOp {
+module.exports = class BuildingOp extends BaseChildOp {
+    get type() {return c.OPERATION_BUILDING}
+
     _strategy() {
-        if (!this._baseOp) throw Error();
         let creepCount = 0;
         let constructionCount = this._baseOp.getBase().find(FIND_CONSTRUCTION_SITES).length
         if (constructionCount > 0) creepCount = 8;
-        this._baseOp.ltRequestSpawn(c.OPERATION_BUILDING, {body:[MOVE,CARRY,WORK]}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
 
         if (constructionCount>0) {
             for (let creepName in this._creepOps) {
@@ -17,12 +18,11 @@ module.exports = class CreepBuilderOp extends CreepTeamOp {
                 if (!(dest instanceof ConstructionSite)
                 || (creepOp.getInstr() != c.COMMAND_TRANSFER) ) 
                 {
-                    let source = creepOp.getPos().findClosestByPath(FIND_SOURCES_ACTIVE);
                     let dest = creepOp.getPos().findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                    if (source && dest) creepOp.instructTransfer(source, dest);
+                    if (dest) creepOp.instructFill(dest);
                 }
             }
-        } else for (let creepName in this._creepOps) this._creepOps[creepName].instrStop();
+        } else for (let creepName in this._creepOps) this._creepOps[creepName].setOperation(c.OPERATION_UPGRADING);
 
     }
 }
