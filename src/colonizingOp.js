@@ -3,9 +3,10 @@ const c = require('./constants');
 const ShardChildOp = require('./shardChildOp');
 
 module.exports = class ColonizingOp extends ShardChildOp {
-    /**@param {ShardOp}  shardOp */
-    /**@param {Operation}  parent */
-    /**@param {BaseOp} [baseOp] */
+    /**
+     * @param {ShardOp}  shardOp
+     * @param {Operation}  parent
+     * @param {BaseOp} [baseOp] */
     constructor(parent, shardOp, baseOp) {
         super(parent, shardOp, baseOp);
         /**@type {{[creepName:string]: string}} */

@@ -7,6 +7,7 @@ const SpawningOp = require ('./spawningOp');
 const TowerOp = require('./towerOp');
 const ShardChildOp = require('./shardChildOp');
 const ColonizingOp = require('./colonizingOp');
+const HarvestingOp = require('./harvestingOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 
@@ -29,9 +30,16 @@ module.exports = class BaseOp extends ShardChildOp{
         this._addChildOp(new UpgradingOp(this));
         this._addChildOp(new ColonizingOp(this,shardOp, this));
 
+        let i = 0;
+        for (let source of base.find(FIND_SOURCES)) {
+            let harvestingOp = new HarvestingOp(this, source.id, i++)
+            this._addChildOp(harvestingOp);
+        }
+
         // determine out center of the base
         this._centerPos = this._getBaseCenter();
 
+        this._phase = c.BASE_PHASE_BIRTH;
         this._fillerEmergency = false;
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
@@ -55,7 +63,9 @@ module.exports = class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
+    get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get name() {return this._name}
+    get phase() {return this._phase}
 
 
     hasSpawn() {
@@ -113,6 +123,14 @@ module.exports = class BaseOp extends ShardChildOp{
             this._planBase();
             if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
         }
+
+        if (U.chance(100) || this._firstRun) {
+            if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+            else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+            else this._phase = c.BASE_PHASE_BIRTH
+            if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        }
+
 
         //find & destroy extensions that have become unreachable.
         if (U.chance(1000)) {

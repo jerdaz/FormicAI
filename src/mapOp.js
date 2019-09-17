@@ -42,11 +42,12 @@ module.exports = class MapOp extends ChildOp {
         else return 0;
     }
 
-    /**@param {String} roomName */
-    /**@param {number} minLevel */
-    /**@param {boolean} hasSpawn */
-    /**@param {number | undefined} lastSeenHostile */
-    /**@returns {String | undefined} */
+    /**
+     * @param {String} roomName
+     * @param {number} minLevel
+     * @param {boolean} hasSpawn
+     * @param {number | undefined} lastSeenHostile
+     * @returns {String | undefined} */
     findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = 0) {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {

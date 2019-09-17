@@ -4,21 +4,26 @@ const ChildOp = require('./childOp');
 const CreepOp = require('./creepOp');
 
 module.exports = class ShardChildOp extends ChildOp {
-    /**@param {ShardOp}  shardOp */
-    /**@param {Operation}  parent */
-    /**@param {BaseOp} [baseOp] */
-    constructor(parent, shardOp, baseOp) {
+    /**
+     * @param {ShardOp}  shardOp
+     * @param {Operation}  parent
+     * @param {BaseOp} [baseOp] 
+     * @param {Number} [instance]*/
+    constructor(parent, shardOp, baseOp, instance) {
         super(parent);
         this._shardOp = shardOp;
         this._map = shardOp._map;
         this._baseOp = baseOp;
+        this._instance = instance || 0
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
         let baseName = '';
         if (baseOp) baseName = baseOp.getName();
         else baseName = shardOp.name;
-        shardOp.addOperation(this, baseName, this.type)
+        shardOp.addOperation(this, baseName)
     }
+
+    get instance() {return this._instance}
 
     initTick() {
         super.initTick();

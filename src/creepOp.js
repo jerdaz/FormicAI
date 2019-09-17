@@ -10,9 +10,10 @@ const STATE_CLAIMING = 4;
 const STATE_FILLING = 5;
 
 module.exports = class CreepOp extends ChildOp {
-    /**@param {ShardOp} shardOp */
-    /**@param {Operation} parent */
-    /**@param {BaseOp} [baseOp] */
+    /**
+     * @param {ShardOp} shardOp
+     * @param {Operation} parent
+     * @param {BaseOp} [baseOp] */
     constructor(parent, shardOp, baseOp) {
         super(parent);
         this._state = STATE_NONE;
@@ -38,8 +39,9 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_FILL
     }
 
-    /**@param {Source} source */
-    /**@param {Structure | ConstructionSite} dest */
+    /**
+     * @param {Source} source
+     * @param {Structure | ConstructionSite} dest */
     instructTransfer(source, dest) {
         this._sourceId = source.id;
         this._destId = dest.id;
