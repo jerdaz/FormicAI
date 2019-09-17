@@ -179,7 +179,7 @@ module.exports = class BaseOp extends ShardChildOp{
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this._base))
+                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this))
                         break loop;
                 }
             }
@@ -193,20 +193,22 @@ module.exports = class BaseOp extends ShardChildOp{
         /** 
          * @param {number} x
          * @param {number} y
-         * @param {Base} base */
-        function _isValidBuildingSpot(x, y, base) {
+         * @param {BaseOp} baseOp */
+        function _isValidBuildingSpot(x, y, baseOp) {
+            const MAX_CENTER_DISTANCE = 15;
+            let base = baseOp.getBase();
             if (!base.controller) throw Error();
             if (x<2 || x > 47 || y < 2 || y > 47) return false;
-            var pos = new RoomPosition(x, y, base.name)
-            var structures = pos.lookFor(LOOK_STRUCTURES);
-            var buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-            var sources = pos.findInRange(FIND_SOURCES,2);
-            var minerals = pos.findInRange(FIND_MINERALS,2);
-            var countStructures = 0;
+            let pos = new RoomPosition(x, y, base.name)
+            let structures = pos.lookFor(LOOK_STRUCTURES);
+            let countStructures = 0;
             for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
             if (countStructures > 0) return false;
+            let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
             if (buildingsites.length > 0 ) return false;
+            let sources = pos.findInRange(FIND_SOURCES,2);
             if (sources.length > 0) return false;
+            let minerals = pos.findInRange(FIND_MINERALS,2);
             if (minerals.length > 0 ) return false;
             if (pos.inRangeTo(base.controller.pos,2)) return false;
             for (let nx=-1;nx<=1;nx++) {
@@ -216,6 +218,7 @@ module.exports = class BaseOp extends ShardChildOp{
                     if (terrain == TERRAIN_MASK_WALL) return false;
                 }
             }
+            if (pos.findPathTo(baseOp.getBaseCenter()).length > MAX_CENTER_DISTANCE) return false;
             return true;
         }
 
