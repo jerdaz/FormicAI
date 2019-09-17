@@ -1,22 +1,23 @@
 let U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp');
+let Operation = require('./operation');
+/**@typedef {import('./baseOp')} BaseOp  */
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
-module.exports = class TowerOp extends BaseChildOp {
+module.exports = class TowerOp extends Operation {
+    /**@param {StructureTower[]} towers */
     /**@param {BaseOp} baseOp */
-    constructor(baseOp) {
-        super(baseOp);
-        /**@type {StructureTower[]} */
-        this._towers = [];
+    constructor(towers, baseOp) {
+        super();
+        this._towers = towers;
+        /**@type {BaseOp} */
+        this._baseOp = baseOp;
     }
 
-    get type() { return c.OPERATION_TOWER; }
-
-
-    initTick() {
-        this._towers = /**@type {StructureTower[]}*/ (this._baseOp.getMyStructures(STRUCTURE_TOWER));
+    /**@param {StructureTower[]} towers */
+    initTick(towers) {
+        this._towers = towers;
     }
 
     _command() {
@@ -29,12 +30,12 @@ module.exports = class TowerOp extends BaseChildOp {
                 tower.attack(hostile);
                 continue;
             }
-            if (creepsHit.length>0) {
+            if (creepsHit) {
                 let creep = tower.pos.findClosestByRange(creepsHit)
                 if (creep) tower.heal(creep);
                 continue;
             }
-            if (structuresHit.length>0) {
+            if (structuresHit) {
                 var target = structuresHit[0];
                 for(var i = 1;i<structuresHit.length;i++) if (target.hits > structuresHit[i].hits) target = structuresHit[i];
                 tower.repair(target);
@@ -60,4 +61,3 @@ module.exports = class TowerOp extends BaseChildOp {
         return target;
     }
 }
-

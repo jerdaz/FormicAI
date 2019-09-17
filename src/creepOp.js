@@ -1,21 +1,21 @@
-const U = require('./util');
+let U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./childOp');
+let Operation = require('./operation');
+/**@typedef {import('./baseOp')} BaseOp  */
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
 const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
-const STATE_FILLING = 5;
 
-module.exports = class CreepOp extends ChildOp {
-    /**
-     * @param {ShardOp} shardOp
-     * @param {Operation} parent
-     * @param {BaseOp} [baseOp] */
-    constructor(parent, shardOp, baseOp) {
-        super(parent);
+module.exports = class CreepOp extends Operation {
+    /**@param {Creep} creep */
+    /**@param {BaseOp | undefined} baseOp */
+    constructor(creep, baseOp) {
+        super();
+        this._creep = creep;
+        creep.notifyWhenAttacked( false);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -23,25 +23,14 @@ module.exports = class CreepOp extends ChildOp {
         this._destPos;
         this._baseOp = baseOp;
     }
-    get type() {return c.OPERATION_CREEP}
-    get source() {return Game.getObjectById(this._sourceId)}
 
     /**@param {Creep} creep */
-    setCreep(creep) {
+    initTick(creep) {
         this._creep = creep;
-        if (this._firstRun) creep.notifyWhenAttacked(false);
     }
 
+    /**@param {Source} source */
     /**@param {Structure | ConstructionSite} dest */
-    instructFill(dest) {
-        this._sourceId = ''
-        this._destId = dest.id;
-        this._instruct = c.COMMAND_FILL
-    }
-
-    /**
-     * @param {Source} source
-     * @param {Structure | ConstructionSite} dest */
     instructTransfer(source, dest) {
         this._sourceId = source.id;
         this._destId = dest.id;
@@ -66,7 +55,6 @@ module.exports = class CreepOp extends ChildOp {
 
 
     _strategy() {
-        if (this._creep == undefined ) throw Error('creep undefined');
 
         switch (this._instruct) {
             case c.COMMAND_NONE:
@@ -80,18 +68,12 @@ module.exports = class CreepOp extends ChildOp {
     }
     
     _command() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
+        let source = U.getObj(this._sourceId);
+        let dest = U.getObj(this._destId);
         let creep = this._creep;
+
+
         switch (this._instruct) {
-            case c.COMMAND_FILL:
-                    if (creep.carry.energy == 0) this._state = STATE_FILLING;
-                    if (creep.carry.energy == creep.carryCapacity) {
-                        this._state = STATE_DELIVERING;
-                        this._sourceId =='';
-                    }
-                    if (this._state == STATE_NONE) this._state = STATE_FILLING;
-                    break;
             case c.COMMAND_TRANSFER:
                 if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
@@ -108,25 +90,11 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         }
 
-        let source = U.getObj(this._sourceId);
-        let dest = U.getObj(this._destId);
         switch (this._state) {
-            case STATE_FILLING:
-                if (source && source.store && source.store.energy == 0) source = undefined;
-                if (source && source.energy === 0) source = undefined;
-                if (source && source.amount === 0) source = undefined;
-                if(source == undefined) {
-                    source = this._findEnergySource();
-                    if (source) this._sourceId = source.id;
-                    else this.sourceId = '';
-                }
             case STATE_RETRIEVING:
-                if (source == null) break;
                 creep.moveTo(source, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
-                else if (source instanceof Tombstone) creep.withdraw(source, RESOURCE_ENERGY);
-                else if (source instanceof Resource) creep.pickup(source);
                 else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
             case STATE_DELIVERING:
@@ -149,31 +117,7 @@ module.exports = class CreepOp extends ChildOp {
         }    
     }
 
-    _findEnergySource() {
-        if (!this._creep) throw Error('invalid creep')
-        let room = this._creep.room;
-        /**@type {RoomObject[]} */
-        let roomObjects = [];
-        /**@type RoomObject|null */
-        let result;
-        roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
-        roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
-        roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
-                                                                                                ) && o.store.energy > 0
-                                                                                            || o.structureType == STRUCTURE_LINK && o.energy > 0;   
-                                                                                        }   
-                                                                        }))
-        roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));        
-        result = this._creep.pos.findClosestByPath(roomObjects)
-        if (result == null) {
-            result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
-        }
-        return result
-    }
-
     getPos() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
         return this._creep.pos;
     }
 
@@ -182,8 +126,6 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     getRoom() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
         return this._creep.room;
     }
 
@@ -191,11 +133,8 @@ module.exports = class CreepOp extends ChildOp {
         return this._instruct;
     }
 
-    /**@param {Number} opType */
-    setOperation(opType) {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
-        this._creep.memory.operationType = opType;
+    /**@param {Number} teamOp */
+    setOperation(teamOp) {
+        this._creep.memory.operation = teamOp;
     }
 }
-
