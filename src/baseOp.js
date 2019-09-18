@@ -10,6 +10,7 @@ const ColonizingOp = require('./colonizingOp');
 const HarvestingOp = require('./harvestingOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
+const MAX_CENTER_DISTANCE = 15;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
@@ -134,6 +135,14 @@ module.exports = class BaseOp extends ShardChildOp{
 
         //find & destroy extensions that have become unreachable.
         if (U.chance(1000)) {
+            for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
+                switch (structure.structureType) {
+                    case STRUCTURE_EXTENSION:
+                    case STRUCTURE_STORAGE:
+                    case STRUCTURE_TOWER:
+                        if (structure.pos.findPathTo(this.getBaseCenter()).length > MAX_CENTER_DISTANCE) structure.destroy();
+                }
+            }
             for (let extension of this.extensions) {
                 let walkable = false;
                 let pos = extension.pos;
@@ -194,7 +203,6 @@ module.exports = class BaseOp extends ShardChildOp{
          * @param {number} y
          * @param {BaseOp} baseOp */
         function _isValidBuildingSpot(x, y, baseOp) {
-            const MAX_CENTER_DISTANCE = 15;
             let base = baseOp.getBase();
             if (!base.controller) throw Error();
             if (x<2 || x > 47 || y < 2 || y > 47) return false;
