@@ -133,6 +133,14 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _support() {
         //find & destroy extensions that have become unreachable.
+        for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
+            switch (structure.structureType) {
+                case STRUCTURE_EXTENSION:
+                case STRUCTURE_STORAGE:
+                case STRUCTURE_TOWER:
+                    if (structure.pos.findPathTo(this.getBaseCenter()).length > MAX_CENTER_DISTANCE) structure.destroy();
+            }
+        }
         for (let extension of this.extensions) {
             let walkable = false;
             let pos = extension.pos;
@@ -146,7 +154,6 @@ module.exports = class BaseOp extends ShardChildOp{
                 }
                 if (!walkable) extension.destroy();
             }
-
         }
     }
 
