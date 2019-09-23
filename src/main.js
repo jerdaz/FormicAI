@@ -43,46 +43,42 @@ class Main extends Operation {
     get type() { return c.OPERATION_MAIN; }
 
     _strategy() {
-        // run cross shard strategy about once every 10.000 ticks
-        if(U.chance(1000)) Game.cpu.setShardLimits({shard0:200, shard1:10, shard2:10, shard3: 20})
-        if(U.chance(10000) || this._firstRun) {
-            // divide cpu evenly between shards
-            let totalCPU = 0;
-            /**@type {{[key:string]:number}} */
-            let shardLimits = {};
-            Object.assign(shardLimits, Game.cpu.shardLimits);
-            for (let shard in shardLimits) {
-                totalCPU += shardLimits[shard]
-            }
-            let dividedCPU = Math.floor(totalCPU / this._shards.length);
-            for (let shard of this._shards) {
-                shardLimits[shard] = dividedCPU;
-            }
-            //Game.cpu.setShardLimits(shardLimits);
-            U.l(shardLimits);
+        // // divide cpu evenly between shards
+        // let totalCPU = 0;
+        // /**@type {{[key:string]:number}} */
+        // let shardLimits = {};
+        // Object.assign(shardLimits, Game.cpu.shardLimits);
+        // for (let shard in shardLimits) {
+        //     totalCPU += shardLimits[shard]
+        // }
+        // let dividedCPU = Math.floor(totalCPU / this._shards.length);
+        // for (let shard of this._shards) {
+        //     shardLimits[shard] = dividedCPU;
+        // }
+        // //Game.cpu.setShardLimits(shardLimits);
+        // // U.l(shardLimits);
 
-            //set max bases
-            let nBases = Game.gcl.level
-            let cpuPerBase = totalCPU / nBases;
-            Object.assign(shardLimits, Game.cpu.shardLimits);
-            /**@type {{[index:string] : Number}} */
-            let maxShardBases = {};
-            while (nBases > 0) {
-                for (let shard of this._shards) {
-                    if (shardLimits[shard] > 0 ) {
-                        shardLimits[shard] -= cpuPerBase;
-                        maxShardBases[shard] =  (maxShardBases[shard] | 0) + 1
-                        if (--nBases <= 0 ) break;
-                    }
-                }
-            }
-           // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
-            // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
-        }
+        // //set max bases
+        // let nBases = Game.gcl.level
+        // let cpuPerBase = totalCPU / nBases;
+        // Object.assign(shardLimits, Game.cpu.shardLimits);
+        // /**@type {{[index:string] : Number}} */
+        // let maxShardBases = {};
+        // while (nBases > 0) {
+        //     for (let shard of this._shards) {
+        //         if (shardLimits[shard] > 0 ) {
+        //             shardLimits[shard] -= cpuPerBase;
+        //             maxShardBases[shard] =  (maxShardBases[shard] | 0) + 1
+        //             if (--nBases <= 0 ) break;
+        //         }
+        //     }
+        // }
+        // // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
+        // // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
 
         // check for shard requests
         let myBasesCount = this._shardOp.getBaseCount();
-        if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (myBasesCount >= 2)) {
+        if(Game.gcl.level >= 3 && (myBasesCount >= 2)) {
             let interShardMem = this._loadInterShardMem();
             let totalBases = 0;
             for (let i=0; i < interShardMem.shards.length; i++) {
