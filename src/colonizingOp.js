@@ -15,7 +15,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
     
     get type() {return c.OPERATION_COLONIZING}
 
-    _strategy() {
+    _tactics() {
         // if running under a base give spawn requests.
         if (this._baseOp) {
             let nCreep = 0;

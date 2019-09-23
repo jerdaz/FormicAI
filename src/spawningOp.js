@@ -19,6 +19,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
+        this._runStrategy = true;
     }
 
     get type() {return c.OPERATION_SPAWNING}

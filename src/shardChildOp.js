@@ -41,6 +41,7 @@ module.exports = class ShardChildOp extends ChildOp {
         if (this._creepOps[creep.name] == undefined) {
             this._creepOps[creep.name] = new CreepOp(this, this._shardOp, this._baseOp)
             this._addChildOp(this._creepOps[creep.name])
+            this._runTactics = true;
         }
         this._creepOps[creep.name].setCreep(creep);
     }

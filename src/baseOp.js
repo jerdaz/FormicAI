@@ -57,6 +57,7 @@ module.exports = class BaseOp extends ShardChildOp{
             if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
             this._structures[structure.structureType].push(structure);
         }
+        this._runStrategy = true;
     }
 
     get type() {return c.OPERATION_BASE}

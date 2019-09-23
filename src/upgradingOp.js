@@ -18,7 +18,9 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (workerCount < 1 && this.baseOp.getBase().controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]/4) workerCount = 1;
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, workerCount)
         }
+    }
 
+    _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.getDest();

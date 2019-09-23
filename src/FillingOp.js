@@ -13,6 +13,9 @@ module.exports = class FillingOp extends BaseChildOp {
             creepCount = 1;
         }
         this._baseOp.spawningOp.ltRequestSpawn(this, template, creepCount)
+    }
+
+    _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.getDest();

@@ -29,7 +29,7 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {Creep} creep */
     setCreep(creep) {
         this._creep = creep;
-        if (this._firstRun) creep.notifyWhenAttacked(false);
+        if (this._runTactics) creep.notifyWhenAttacked(false);
     }
 
     /**@param {Structure | ConstructionSite} dest */
@@ -65,7 +65,7 @@ module.exports = class CreepOp extends ChildOp {
     }
 
 
-    _strategy() {
+    _tactics() {
         if (this._creep == undefined ) throw Error('creep undefined');
 
         switch (this._instruct) {

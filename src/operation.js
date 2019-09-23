@@ -12,7 +12,8 @@ let idIndex = 0;
 module.exports = class Operation {
     constructor() {
         this._id = idIndex++;
-        this._firstRun = true;
+        this._runTactics = false;
+        this._runStrategy = false;
         /**@type {ChildOp[][]} */
         this._childOps = []
         /**@type {Debug} */
@@ -49,13 +50,13 @@ module.exports = class Operation {
                 this._support();
             } catch(err) {this._debug.logError(err)};
         }
-        if (this._firstRun || Game.time % STRATEGY_INTERVAL == this._tickOffset % STRATEGY_INTERVAL) {
+        if (this._runStrategy || Game.time % STRATEGY_INTERVAL == this._tickOffset % STRATEGY_INTERVAL) {
             if(this._debug.verbose) this._debug.logState('strategy', this)
             try {
                 this._strategy();
             } catch(err) {this._debug.logError(err)};
         }
-        if (this._firstRun || Game.time % TACTICS_INTERVAL == this._tickOffset % TACTICS_INTERVAL) {
+        if (this._runTactics || Game.time % TACTICS_INTERVAL == this._tickOffset % TACTICS_INTERVAL) {
             if(this._debug.verbose) this._debug.logState('tactics', this)
             try {
                 this._tactics();
@@ -70,7 +71,8 @@ module.exports = class Operation {
                 childOp.run();
             } catch(err) {this._debug.logError(err)}
         }
-        if (this._firstRun) this._firstRun = false;
+        if (this._runTactics) this._runTactics = false;
+        if (this._runStrategy) this._runStrategy = false;
         if(this._debug.verbose) this._debug.logState('end', this)
     }
 

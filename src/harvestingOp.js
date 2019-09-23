@@ -21,11 +21,15 @@ module.exports = class HarvestingOp extends BaseChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
         } else if (this.baseOp.storage) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE}, 1)
-            for (let creepName in this._creepOps) {
-                let creepOp = this._creepOps[creepName];
-                let source = Game.getObjectById(this._sourceId);
-                creepOp.instructTransfer(source, this.baseOp.storage)
-            }
+        }
+    }
+
+    _tactics() {
+        if (!this.baseOp.storage) return;
+        for (let creepName in this._creepOps) {
+            let creepOp = this._creepOps[creepName];
+            let source = Game.getObjectById(this._sourceId);
+            creepOp.instructTransfer(source, this.baseOp.storage)
         }
     }
 }
