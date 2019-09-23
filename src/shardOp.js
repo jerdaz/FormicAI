@@ -90,31 +90,30 @@ module.exports = class ShardOp extends ChildOp {
 
     _support() {
         //garbage collection
-        if (U.chance(1500)) {
-            for (let creepName in Memory.creeps) {
-                if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
-            }
+        for (let creepName in Memory.creeps) {
+            if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
         }
     }
 
 
     _strategy(){
-        if (U.chance(100) || this._firstRun) {
-            let directive = c.DIRECTIVE_NONE;
-            if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
-            for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
+        // check if we need to colonize
+        let directive = c.DIRECTIVE_NONE;
+        if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases && this._maxShardBases > _.size(this._baseOps)) directive = c.DIRECTIVE_COLONIZE
+        for (let baseName in this._baseOps) this._baseOps[baseName].setDirective(directive);
 
-            if (_.isEmpty(this._baseOps)) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
-            else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
-            else this._parent.requestCreep(c.SHARDREQUEST_NONE);
+        // check if we need to request a colonizer
+        if (_.isEmpty(this._baseOps)) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
+        else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
+        else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
-            if (this._maxShardBases && _.size(this._baseOps) > this._maxShardBases) {
-                let bases = [];
-                for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
-                bases.sort ((a,b) => {return a.controller.level - b.controller.level});
-                
-                for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
-            }
+        //check if we need to unclaim bases
+        if (this._maxShardBases && _.size(this._baseOps) > this._maxShardBases) {
+            let bases = [];
+            for (let baseOpName in this._baseOps) bases.push(this.getBase(baseOpName))
+            bases.sort ((a,b) => {return a.controller.level - b.controller.level});
+            
+            for (let i = _.size(this._baseOps) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
         }
     }
 

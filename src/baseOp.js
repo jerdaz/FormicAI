@@ -119,44 +119,34 @@ module.exports = class BaseOp extends ShardChildOp{
         this.spawningOp.requestShardColonizers(shard, requestType);
     }
 
+    _tactics() {
+        this._planBase();
+        if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
+    }
+
     _strategy() {
-        if (U.chance(10)) {
-            this._planBase();
-            if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
-        }
+        if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+        else this._phase = c.BASE_PHASE_BIRTH
+        if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+    }
 
-        if (U.chance(100) || this._firstRun) {
-            if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
-            else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
-            else this._phase = c.BASE_PHASE_BIRTH
-            if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
-        }
-
-
+    _support() {
         //find & destroy extensions that have become unreachable.
-        if (U.chance(1000)) {
-            for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
-                switch (structure.structureType) {
-                    case STRUCTURE_EXTENSION:
-                    case STRUCTURE_STORAGE:
-                    case STRUCTURE_TOWER:
-                        if (structure.pos.findPathTo(this.getBaseCenter()).length > MAX_CENTER_DISTANCE) structure.destroy();
-                }
-            }
-            for (let extension of this.extensions) {
-                let walkable = false;
-                let pos = extension.pos;
-                for(let i=-1; i<=1; i++) {
-                    for (let j=-1; j<=1; j++) {
-                        let pos2 = new RoomPosition(pos.x+i, pos.y+j, this.name)
-                        if (U.isWalkable(pos2)) {
-                            walkable = true;
-                            break;
-                        }
+        for (let extension of this.extensions) {
+            let walkable = false;
+            let pos = extension.pos;
+            for(let i=-1; i<=1; i++) {
+                for (let j=-1; j<=1; j++) {
+                    let pos2 = new RoomPosition(pos.x+i, pos.y+j, this.name)
+                    if (U.isWalkable(pos2)) {
+                        walkable = true;
+                        break;
                     }
                 }
                 if (!walkable) extension.destroy();
             }
+
         }
     }
 

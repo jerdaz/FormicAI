@@ -18,15 +18,13 @@ module.exports = class MapOp extends ChildOp {
 
     get type() {return c.OPERATION_MAP}
 
-    _strategy() {
-        if (U.chance(10)) {
-            for(let roomName in Game.rooms) {
-                if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0}
-                let room = Game.rooms[roomName];
-                let hostiles = room.find(FIND_HOSTILE_CREEPS);
-                if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
-                this._scoutInfo[roomName].lastSeen = Game.time;
-            }
+    _tactics() {
+        for(let roomName in Game.rooms) {
+            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0}
+            let room = Game.rooms[roomName];
+            let hostiles = room.find(FIND_HOSTILE_CREEPS);
+            if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
+            this._scoutInfo[roomName].lastSeen = Game.time;
         }
     }
 
