@@ -4,8 +4,14 @@ module.exports = class Util {
         console.log(this.stringify(message));
     }
 
-    /**@param {number} x */
-    /**@returns {boolean} returns true with a chance one in X */
+    /**@param {any} message Logs message to console*/
+    lt(message){
+        if (this.trace) Util.l(message);
+    }
+
+    /**
+     * @param {number} x
+     * @returns {boolean} returns true with a chance one in X */
     static chance(x) {
         return Math.floor(Math.random() * x) == 0;
     }
@@ -15,8 +21,9 @@ module.exports = class Util {
         return Game.getObjectById(id);
     }
 
-    /**@param {string} creepName */
-    /**@returns {Creep|undefined} returns creep with creepName */
+    /**
+     * @param {string} creepName
+     * @returns {Creep} returns creep with creepName */
     static getCreep(creepName) {
         let creep = Game.creeps[creepName];
         return creep;
@@ -40,8 +47,9 @@ module.exports = class Util {
         });
     }
 
-    /**@param {String} shardName */
-    /**@returns {Number} */
+    /**
+     * @param {String} shardName
+     * @returns {Number} */
     static getShardID(shardName) {
         return (parseInt(shardName.slice(-1)));
     }
@@ -52,5 +60,29 @@ module.exports = class Util {
         for (var i=0; i<body.length;i++) cost += BODYPART_COST[body[i]];
         return cost;
     }    
+  
+  
+    /**
+     * @param {RoomPosition} pos
+     * @returns {Boolean} */
+    static isWalkable(pos) {
+        let room = Game.rooms[pos.roomName]
+        let objects = room.lookAt(pos);
+        for (let object of objects) {
+            if (object.type == LOOK_TERRAIN && object.terrain == "wall") return false;
+            if (object.type == LOOK_STRUCTURES && object.structure) {
+                switch (object.structure.structureType) {
+                    case STRUCTURE_CONTAINER:
+                    case STRUCTURE_PORTAL:
+                    case STRUCTURE_RAMPART:
+                    case STRUCTURE_ROAD:
+                        break;
+                    default:
+                        return false;
+                }
+            } 
+        }
+        return true;
+    }
 }
 

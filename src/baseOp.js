@@ -1,22 +1,23 @@
 let U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
-let TeamFillingOp = require('./teamFillingOp');
-let TeamUpgradingOp = require('./teamUpgradingOp');
-let TeamBuildingOp = require('./teamBuildingOp');
-let TeamColonizingOp = require('./teamColonizingOp');
-let SpawningOp = require ('./spawningOp');
-let TowerOp = require('./towerOp');
-/** @typedef {import('./shardOp')} ShardOp */
-/** @typedef {import ('./teamOp')} TeamOp */
+const FillingOp = require('./fillingOp');
+const UpgradingOp = require('./upgradingOp');
+const BuildingOp = require('./buildingOp');
+const SpawningOp = require ('./spawningOp');
+const TowerOp = require('./towerOp');
+const ShardChildOp = require('./shardChildOp');
+const ColonizingOp = require('./colonizingOp');
+const HarvestingOp = require('./harvestingOp');
 
-module.exports = class BaseOp extends Operation{
-    /** @param {Base} base */
-    /** @param {Creep[]} creeps */
-    /** @param {ShardOp} shardOp */
-    constructor (base, creeps, shardOp) {
-        super();
-        this._shardOp = shardOp;
+const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
+const MAX_CENTER_DISTANCE = 15;
+
+module.exports = class BaseOp extends ShardChildOp{
+    /** 
+     * @param {Base} base 
+     * @param {ShardOp} shardOp */
+    constructor (base, shardOp) {
+        super(shardOp, shardOp);
 
         /**@type {Base} */
         this._base = base;
@@ -149,6 +150,40 @@ module.exports = class BaseOp extends Operation{
             this._planBase();
             if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
         }
+
+        if (U.chance(100) || this._firstRun) {
+            if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+            else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+            else this._phase = c.BASE_PHASE_BIRTH
+            if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        }
+
+
+        //find & destroy extensions that have become unreachable.
+        if (U.chance(1000)) {
+            for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
+                switch (structure.structureType) {
+                    case STRUCTURE_EXTENSION:
+                    case STRUCTURE_STORAGE:
+                    case STRUCTURE_TOWER:
+                        if (structure.pos.findPathTo(this.getBaseCenter()).length > MAX_CENTER_DISTANCE) structure.destroy();
+                }
+            }
+            for (let extension of this.extensions) {
+                let walkable = false;
+                let pos = extension.pos;
+                for(let i=-1; i<=1; i++) {
+                    for (let j=-1; j<=1; j++) {
+                        let pos2 = new RoomPosition(pos.x+i, pos.y+j, this.name)
+                        if (U.isWalkable(pos2)) {
+                            walkable = true;
+                            break;
+                        }
+                    }
+                }
+                if (!walkable) extension.destroy();
+            }
+        }
     }
 
     _command() {
@@ -197,7 +232,7 @@ module.exports = class BaseOp extends Operation{
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this._base))
+                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this))
                         break loop;
                 }
             }
@@ -208,22 +243,24 @@ module.exports = class BaseOp extends Operation{
         return undefined;
 
    
-        /** @param {number} x */
-        /** @param {number} y */
-        /** @param {Base} base */
-        function _isValidBuildingSpot(x, y, base) {
+        /** 
+         * @param {number} x
+         * @param {number} y
+         * @param {BaseOp} baseOp */
+        function _isValidBuildingSpot(x, y, baseOp) {
+            let base = baseOp.getBase();
             if (!base.controller) throw Error();
             if (x<2 || x > 47 || y < 2 || y > 47) return false;
-            var pos = new RoomPosition(x, y, base.name)
-            var structures = pos.lookFor(LOOK_STRUCTURES);
-            var buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-            var sources = pos.findInRange(FIND_SOURCES,2);
-            var minerals = pos.findInRange(FIND_MINERALS,2);
-            var countStructures = 0;
+            let pos = new RoomPosition(x, y, base.name)
+            let structures = pos.lookFor(LOOK_STRUCTURES);
+            let countStructures = 0;
             for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
             if (countStructures > 0) return false;
+            let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
             if (buildingsites.length > 0 ) return false;
+            let sources = pos.findInRange(FIND_SOURCES,2);
             if (sources.length > 0) return false;
+            let minerals = pos.findInRange(FIND_MINERALS,2);
             if (minerals.length > 0 ) return false;
             if (pos.inRangeTo(base.controller.pos,2)) return false;
             for (let nx=-1;nx<=1;nx++) {
@@ -233,6 +270,7 @@ module.exports = class BaseOp extends Operation{
                     if (terrain == TERRAIN_MASK_WALL) return false;
                 }
             }
+            if (pos.findPathTo(baseOp.getBaseCenter()).length > MAX_CENTER_DISTANCE) return false;
             return true;
         }
 
