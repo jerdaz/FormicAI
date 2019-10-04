@@ -16,8 +16,6 @@ module.exports = class HarvestingOp extends BaseChildOp {
 
     get type() {return c.OPERATION_HARVESTING}
 
-    _command() {this._strategy()}
-
     _strategy() {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
@@ -30,7 +28,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
             let source = Game.getObjectById(this._sourceId);
             if (!source) throw Error('Source not found')
             let base = this.baseOp.getBase();
-            let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {type: STRUCTURE_LINK}});
+            let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
             if(links.length == 0) {
                 let result = PathFinder.search(source.pos, this.baseOp.getBaseCenter())
                 let pos = result.path[1];
