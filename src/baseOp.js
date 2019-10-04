@@ -9,6 +9,7 @@ const ShardChildOp = require('./shardChildOp');
 const ColonizingOp = require('./colonizingOp');
 const HarvestingOp = require('./harvestingOp');
 const BasePlanOp = require('./basePlanOp');
+const LinkOp = require('./linkOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 const MAX_CENTER_DISTANCE = 15;
@@ -32,6 +33,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._addChildOp(new UpgradingOp(this));
         this._addChildOp(new ColonizingOp(this,shardOp, this));
         this._addChildOp(new BasePlanOp(this));
+        this._addChildOp(new LinkOp(this));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {

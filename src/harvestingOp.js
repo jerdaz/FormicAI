@@ -2,7 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
-const HARVESTER_SIZE = 48
+const HARVESTER_SIZE_BIG = 48
+const HARVESTER_SIZE_SMALL = 6*3
 
 module.exports = class HarvestingOp extends BaseChildOp {
     /** 
@@ -17,18 +18,21 @@ module.exports = class HarvestingOp extends BaseChildOp {
     get type() {return c.OPERATION_HARVESTING}
 
     _strategy() {
+        /**@type {Source | null} */
+        let source = Game.getObjectById(this._sourceId);
+        if (!source) throw Error('Source not found')
+        let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+        
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
+        } else if (links.length >=1) {
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_SMALL}, 1)
         } else if (this.baseOp.storage) {
-            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE}, 1)
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, 1)
         }
 
         if (this.baseOp.phase >= c.BASE_PHASE_LINKS) {
-            /**@type {Source | null} */
-            let source = Game.getObjectById(this._sourceId);
-            if (!source) throw Error('Source not found')
             let base = this.baseOp.getBase();
-            let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
             if(links.length == 0) {
                 let result = PathFinder.search(source.pos, this.baseOp.getBaseCenter())
                 let pos = result.path[1];
@@ -47,7 +51,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let source = Game.getObjectById(this._sourceId);
-            creepOp.instructTransfer(source, this.baseOp.storage)
+            creepOp.instructHarvest(source)
         }
     }
 }

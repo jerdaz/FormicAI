@@ -7,7 +7,8 @@ const STATE_RETRIEVING = 1;
 const STATE_DELIVERING = 2;
 const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
-const STATE_FILLING = 5;
+const STATE_FINDENERGY = 5;
+const STATE_DROPENERGY = 6;
 
 module.exports = class CreepOp extends ChildOp {
     /**
@@ -60,8 +61,16 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
-    instrStop() {
+    instructStop() {
         this._instruct = c.COMMAND_NONE;
+    }
+
+    /**
+     * @param {Source} source
+     * */
+    instructHarvest(source) {
+        this._instruct = c.COMMAND_HARVEST;
+        this._sourceId = source.id;
     }
 
 
@@ -84,14 +93,21 @@ module.exports = class CreepOp extends ChildOp {
 
         let creep = this._creep;
         switch (this._instruct) {
+            case c.COMMAND_HARVEST:
+                if (creep.carry.energy == 0) {
+                    this._state = STATE_RETRIEVING;
+                }
+                if (creep.carry.energy == creep.carryCapacity) {
+                    this._state = STATE_DROPENERGY;
+                }
+                break;
             case c.COMMAND_FILL:
-                    if (creep.carry.energy == 0) this._state = STATE_FILLING;
-                    if (creep.carry.energy == creep.carryCapacity) {
-                        this._state = STATE_DELIVERING;
-                        this._sourceId =='';
-                    }
-                    if (this._state == STATE_NONE) this._state = STATE_FILLING;
-                    break;
+                if (creep.carry.energy == 0) this._state = STATE_FINDENERGY;
+                if (creep.carry.energy == creep.carryCapacity) {
+                    this._state = STATE_DELIVERING;
+                }
+                if (this._state == STATE_NONE) this._state = STATE_FINDENERGY;
+                break;
             case c.COMMAND_TRANSFER:
                 if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
                 if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
@@ -111,14 +127,14 @@ module.exports = class CreepOp extends ChildOp {
         let source = U.getObj(this._sourceId);
         let dest = U.getObj(this._destId);
         switch (this._state) {
-            case STATE_FILLING:
+            case STATE_FINDENERGY:
                 if (source && source.store && source.store.energy == 0) source = undefined;
                 if (source && source.energy === 0) source = undefined;
                 if (source && source.amount === 0) source = undefined;
                 if(source == undefined) {
                     source = this._findEnergySource();
                     if (source) this._sourceId = source.id;
-                    else this.sourceId = '';
+                    else this._sourceId = '';
                 }
             case STATE_RETRIEVING:
                 if (source == null) break;
@@ -129,6 +145,15 @@ module.exports = class CreepOp extends ChildOp {
                 else if (source instanceof Resource) creep.pickup(source);
                 else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
+
+            case STATE_DROPENERGY:
+                if (dest && dest.store && _.size(dest.store) == dest.storeCapacity) dest = undefined;
+                if (dest && dest.energy && dest.energy == dest.energyCapacity) dest = undefined;
+                if (dest == undefined) {
+                    dest = this._findEnergySink();
+                    if (dest) this._destId = dest.id;
+                    else this._sourceId = ''
+                }
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;
                 else {
@@ -138,6 +163,7 @@ module.exports = class CreepOp extends ChildOp {
                     else throw Error('Cannot deliver to object ' + dest + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 }
                 break;
+        
             case STATE_MOVING:
                 if (this._destPos) creep.moveTo(this._destPos);
                 break;
@@ -169,6 +195,22 @@ module.exports = class CreepOp extends ChildOp {
             result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
         }
         return result
+    }
+
+    _findEnergySink() {
+        if (!this._creep) throw Error('invalid creep')
+        let room = this._creep.room;
+        /**@type {RoomObject[]} */
+        let roomObjects = [];
+        /**@type RoomObject|null */
+        let result;
+        if (this._baseOp) {
+            roomObjects = roomObjects.concat(_.filter(this._baseOp.links, o => {return o.energy < o.energyCapacity} ));
+            let storage = this._baseOp.storage
+            if (storage && _.size(storage.store) < storage.storeCapacity) roomObjects.push (storage);
+        }
+        result = this._creep.pos.findClosestByPath(roomObjects);
+        return result;        
     }
 
     getPos() {
