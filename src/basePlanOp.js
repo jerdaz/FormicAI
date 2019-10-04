@@ -37,7 +37,7 @@ module.exports = class basePlanOp extends BaseChildOp{
         let baseOp = this._baseOp;
         let structures = baseOp.myStructures;
 
-        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 1) return;
+        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
 
         for(let template of baseBuildTemplate) {
             let structureType = template.type;
@@ -61,6 +61,7 @@ module.exports = class basePlanOp extends BaseChildOp{
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
                     if (structure.pos.findPathTo(this.baseCenter).length > MAX_CENTER_DISTANCE) structure.destroy();
+                    break;
             }
         }
         for (let extension of this.baseOp.extensions) {

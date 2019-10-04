@@ -44,6 +44,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
+        this._runStrategy = true;
     }
 
     initTick() {
@@ -65,6 +66,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
+    get links() {return /**@type {StructureLink[]} */ (this._structures[STRUCTURE_LINK]) || [] }
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get name() {return this._name}
     get phase() {return this._phase}
@@ -128,10 +130,15 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _strategy() {
-        if(this.storage && this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
-        else if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
-        else this._phase = c.BASE_PHASE_BIRTH
-        if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        let phase = c.BASE_PHASE_BIRTH;
+        if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+        else return;
+        if( this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        else return;
+        if (this.links.length > 0) this._phase = c.BASE_PHASE_LINKS;
+        else return;
+        if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        return;
     }
 
         
