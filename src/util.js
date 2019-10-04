@@ -1,5 +1,7 @@
 module.exports = class Util {
-    trace = false;
+    constructor() {
+        this.trace = false;
+    }
 
     /**@param {any} message Logs message to console*/
     static l(message){
@@ -28,7 +30,8 @@ module.exports = class Util {
      * @returns {Creep} returns creep with creepName */
     static getCreep(creepName) {
         let creep = Game.creeps[creepName];
-        return creep;
+        if (creep) return creep;
+        throw 'creepname not found'
     }
 
     /**@param {any} obj */
@@ -41,7 +44,7 @@ module.exports = class Util {
                 if (cache.indexOf(value) !== -1) {
                     // Duplicate reference found, discard key
                     return;
-                }
+                } else if (key == '_parent' || key == '_baseOp') return;
                 // Store value in our collection
                 cache.push(value);
             }
@@ -62,8 +65,7 @@ module.exports = class Util {
         for (var i=0; i<body.length;i++) cost += BODYPART_COST[body[i]];
         return cost;
     }    
-  
-  
+
     /**
      * @param {RoomPosition} pos
      * @returns {Boolean} */
