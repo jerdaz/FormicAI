@@ -1,6 +1,6 @@
 let U = require('./util')
 const c = require('./constants');
-const Operation = require('./operation');
+const Operation = require('./000_operation');
 
 module.exports = class ChildOp extends Operation{
     /**@param {Operation} parent */
