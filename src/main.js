@@ -14,8 +14,15 @@ class Main extends Operation {
             // @ts-ignore
             if (memObj != 'maxCPU') delete Memory[memObj];
         }
+        Memory.creeps = {};
+        Memory.rooms = {};
+        Memory.flags = {};
+        Memory.spawns = {};
+        Memory.powerCreeps = {};
+        
         InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
+        this._addChildOp(this._shardOp);
 
         // populate shard names (by trial and error!!)
         /**@type {String[]} */
@@ -33,49 +40,45 @@ class Main extends Operation {
         catch (err) {}
     }
 
-    initTick() {
-        this._shardOp.initTick();
-    }
+    get type() { return c.OPERATION_MAIN; }
 
     _strategy() {
-        // run cross shard strategy about once every 10.000 ticks
-        if(U.chance(10000) || this._firstRun) {
-            // divide cpu evenly between shards
-            let totalCPU = 0;
-            /**@type {{[key:string]:number}} */
-            let shardLimits = {};
-            Object.assign(shardLimits, Game.cpu.shardLimits);
-            for (let shard in shardLimits) {
-                totalCPU += shardLimits[shard]
-            }
-            let dividedCPU = totalCPU / this._shards.length;
-            for (let shard of this._shards) {
-                shardLimits[shard] = dividedCPU;
-            }
-            //Game.cpu.setShardLimits(shardLimits);
-            U.l(shardLimits);
+        // // divide cpu evenly between shards
+        // let totalCPU = 0;
+        // /**@type {{[key:string]:number}} */
+        // let shardLimits = {};
+        // Object.assign(shardLimits, Game.cpu.shardLimits);
+        // for (let shard in shardLimits) {
+        //     totalCPU += shardLimits[shard]
+        // }
+        // let dividedCPU = Math.floor(totalCPU / this._shards.length);
+        // for (let shard of this._shards) {
+        //     shardLimits[shard] = dividedCPU;
+        // }
+        // //Game.cpu.setShardLimits(shardLimits);
+        // // U.l(shardLimits);
 
-            //set max bases
-            let nBases = Game.gcl.level
-            let cpuPerBase = totalCPU / nBases;
-            Object.assign(shardLimits, Game.cpu.shardLimits);
-            /**@type {{[index:string] : Number}} */
-            let maxShardBases = {};
-            while (nBases > 0) {
-                for (let shard of this._shards) {
-                    if (shardLimits[shard] > 0 ) {
-                        shardLimits[shard] -= cpuPerBase;
-                        maxShardBases[shard] =  (maxShardBases[shard] | 0) + 1
-                        if (--nBases <= 0 ) break;
-                    }
-                }
-            }
-           // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
-            // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
-        }
+        // //set max bases
+        // let nBases = Game.gcl.level
+        // let cpuPerBase = totalCPU / nBases;
+        // Object.assign(shardLimits, Game.cpu.shardLimits);
+        // /**@type {{[index:string] : Number}} */
+        // let maxShardBases = {};
+        // while (nBases > 0) {
+        //     for (let shard of this._shards) {
+        //         if (shardLimits[shard] > 0 ) {
+        //             shardLimits[shard] -= cpuPerBase;
+        //             maxShardBases[shard] =  (maxShardBases[shard] | 0) + 1
+        //             if (--nBases <= 0 ) break;
+        //         }
+        //     }
+        // }
+        // // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
+        // // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
 
         // check for shard requests
-        if((U.chance(10) || this._firstRun) && Game.gcl.level >= 3 && (this._shardOp.getBaseCount() >= 2)) {
+        let myBasesCount = this._shardOp.getBaseCount();
+        if(Game.gcl.level >= 3 && (myBasesCount >= 2)) {
             let interShardMem = this._loadInterShardMem();
             let totalBases = 0;
             for (let i=0; i < interShardMem.shards.length; i++) {
@@ -90,13 +93,14 @@ class Main extends Operation {
                     }
                 }
             }
-            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(this._shardOp.getBaseCount() + 1)
+            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
+            else this._shardOp.setDirectiveMaxBases(myBasesCount);
+            if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
+                interShardMem.shards[this._shardNum].baseCount = myBasesCount;
+                this._writeInterShardMem(interShardMem);
+            }
         }
     }
-
-    _command() {
-        this._shardOp.run();
-    };
 
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){
@@ -137,8 +141,8 @@ class Main extends Operation {
 let debug = new Debug;
 /**@type {any}*/(Game).debug = debug;
 let main = new Main;
-module.exports.Main = Main;
 
+module.exports.mainOp = Main;
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = main;

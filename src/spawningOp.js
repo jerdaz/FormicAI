@@ -1,39 +1,39 @@
-let U = require('./util');
+const U = require('./util');
 const c = require('./constants');
-let Operation = require('./operation');
-/**@typedef {import('./baseOp')} BaseOp  */
+const BaseChildOp = require('./baseChildOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
 
-module.exports = class SpawnOp extends Operation {
-    /**@param {StructureSpawn[]} spawns */
+module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
-    constructor(spawns, baseOp) {
-        super();
-        this._spawns = spawns;
-        /**@type {BaseOp} */
-        this._baseOp = baseOp;
-        /**@type {{count:number, template:CreepTemplate}[]} */
-        this._spawnRequests = [];
+    constructor(baseOp) {
+        super(baseOp);
+        /**@type {StructureSpawn[]} */
+        this._spawns = [];
+        /**@type {{[index:string] : {operation:ShardChildOp, count:number, template:CreepTemplate}}} */
+        this._spawnRequests = {};
         this._builderRequest = '';
         this._shardColonizer = '';
         this._shardColBuilder = '';
 
         /**@type {number[]} */
         this._spawnPrio = [];
+        this._runStrategy = true;
     }
 
-    /**@param {StructureSpawn[]} spawns */
-    initTick(spawns) {
-        this._spawns = spawns;
+    get type() {return c.OPERATION_SPAWNING}
+
+    initTick() {
+        this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
     }
 
-    /**@param {number} opType */
-    /**@param {CreepTemplate} template */
-    /**@param {number} count */
-    ltRequestSpawn(opType, template, count) {
-        this._spawnRequests[opType] = {count:count, template: template};
+    /**
+     * @param {ShardChildOp} operation
+     * @param {CreepTemplate} template
+     * @param {number} count */
+    ltRequestSpawn(operation, template, count) {
+        this._spawnRequests[operation.id] = {operation:operation, count:count, template: template};
     }
 
     /**@param {string} roomName */
@@ -41,8 +41,9 @@ module.exports = class SpawnOp extends Operation {
         this._builderRequest = roomName;
     }
 
-    /**@param {string} shard */
-    /**@param {number} requestType} */
+    /**
+     * @param {string} shard
+     * @param {number} requestType} */
     requestShardColonizers(shard, requestType){
         switch (requestType) {
             case c.SHARDREQUEST_BUILDER:
@@ -57,6 +58,7 @@ module.exports = class SpawnOp extends Operation {
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
+            this._spawnPrio[c.OPERATION_HARVESTING] = 50;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 10;
             this._spawnPrio[c.OPERATION_COLONIZING] = 10;
@@ -70,7 +72,7 @@ module.exports = class SpawnOp extends Operation {
             let base = this._baseOp.getBase();
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.getSubTeamOp(c.OPERATION_FILLING).getCreepCount() >= this._spawnRequests[c.OPERATION_FILLING].count
+                && this._baseOp.fillingOp.getCreepCount() >= this._spawnRequests[this._baseOp.fillingOp.id].count
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -80,7 +82,7 @@ module.exports = class SpawnOp extends Operation {
                             let spawnItem = spawnList.pop();
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
-                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + _.random(0, 999999999))
+                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                 if (result != OK) spawnList.push(spawnItem);
                             }
                         }
@@ -117,20 +119,19 @@ module.exports = class SpawnOp extends Operation {
     }
 
     _getSpawnList() {
-        let base = this._baseOp.getBase();
-        /**@type {{prio:number, opType:number, template:CreepTemplate}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
-        for (let opType = 1; opType <= c.OPERATION_MAX; opType++){
-            let spawnRequest = spawnRequests[opType];
-            if (spawnRequest) {
-                let teamOp = this._baseOp.getSubTeamOp(opType);
-                let nCreeps = 0;
-                if (teamOp) nCreeps = teamOp.getCreepCount();
-                if (spawnRequest.count > nCreeps) {
-                    spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, template:spawnRequest.template})
-                }
+        for (let spawnRequestId in this._spawnRequests) {
+            let spawnRequest = spawnRequests[spawnRequestId];
+            let teamOp = spawnRequest.operation;
+            let nCreeps = 0;
+            if (teamOp) nCreeps = teamOp.getCreepCount();
+            if (spawnRequest.count > nCreeps) {
+                let opType = teamOp.type;
+                let opInstance = teamOp.instance;
+                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
             }
         }
 
