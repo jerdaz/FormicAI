@@ -8,6 +8,7 @@ const TowerOp = require('./towerOp');
 const ShardChildOp = require('./shardChildOp');
 const ColonizingOp = require('./colonizingOp');
 const HarvestingOp = require('./harvestingOp');
+const BasePlanOp = require('./basePlanOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 const MAX_CENTER_DISTANCE = 15;
@@ -30,6 +31,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._addChildOp(new BuildingOp(this));
         this._addChildOp(new UpgradingOp(this));
         this._addChildOp(new ColonizingOp(this,shardOp, this));
+        this._addChildOp(new BasePlanOp(this));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {
@@ -37,12 +39,8 @@ module.exports = class BaseOp extends ShardChildOp{
             this._addChildOp(harvestingOp);
         }
 
-        // determine out center of the base
-        this._centerPos = this._getBaseCenter();
-
         this._phase = c.BASE_PHASE_BIRTH;
         this._fillerEmergency = false;
-        for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
@@ -57,13 +55,15 @@ module.exports = class BaseOp extends ShardChildOp{
             if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
             this._structures[structure.structureType].push(structure);
         }
-        this._runStrategy = true;
     }
 
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
-    get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };    
+    get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
+    get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
+    get myStructures() {return this._structures};  
+    get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get name() {return this._name}
@@ -121,7 +121,9 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _tactics() {
-        this._planBase();
+        if ((this.spawns.length == 0) && this.buildingOp.getCreepCount() == 0) {
+            this._shardOp.requestBuilder(this.name);
+        }
         if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
     }
 
@@ -132,154 +134,8 @@ module.exports = class BaseOp extends ShardChildOp{
         if (this._phase >= c.BASE_PHASE_STORED_ENERGY && this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
     }
 
-    _support() {
-        //find & destroy extensions that have become unreachable.
-        for (let structure of this._base.find(FIND_MY_STRUCTURES)) {
-            switch (structure.structureType) {
-                case STRUCTURE_EXTENSION:
-                case STRUCTURE_STORAGE:
-                case STRUCTURE_TOWER:
-                    if (structure.pos.findPathTo(this.getBaseCenter()).length > MAX_CENTER_DISTANCE) structure.destroy();
-            }
-        }
-        for (let extension of this.extensions) {
-            let walkable = false;
-            let pos = extension.pos;
-            for(let i=-1; i<=1; i++) {
-                for (let j=-1; j<=1; j++) {
-                    let pos2 = new RoomPosition(pos.x+i, pos.y+j, this.name)
-                    if (U.isWalkable(pos2)) {
-                        walkable = true;
-                        break;
-                    }
-                }
-                if (!walkable) extension.destroy();
-            }
-        }
-    }
-
-    
-    _planBase() {
-        let room = this._base;
-        if ((this._structures[STRUCTURE_SPAWN] == undefined || this._structures[STRUCTURE_SPAWN].length == 0) && this.buildingOp.getCreepCount() == 0) {
-            this._shardOp.requestBuilder(room.name);
-        }
-        if (this._base.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
-        for(let structureType of baseBuildOrder) {
-            if(this._structures[structureType] == undefined || this._structures[structureType].length < CONTROLLER_STRUCTURES[structureType][room.controller.level] ) {
-                let pos = this._findBuildingSpot();
-                if (pos) pos.createConstructionSite(structureType);
-                else throw Error('WARNING: Cannot find building spot in room ' + room.name);
-            }
-        }
-    }
         
-    _findBuildingSpot() {
-        let x_ = this._centerPos.x;
-        let y_ = this._centerPos.y;
-        let x = 0;
-        let y = 0;
-    
-        let i=1;
-        loop:
-        while (i<50) {
-            for(x = -1 * i;x<=1*i;x++ ) {
-                for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this))
-                        break loop;
-                }
-            }
-            i++;
-        }
-    
-        if (i<50) return new RoomPosition (x_+x,y_+y, this._base.name);
-        return undefined;
-
-   
-        /** 
-         * @param {number} x
-         * @param {number} y
-         * @param {BaseOp} baseOp */
-        function _isValidBuildingSpot(x, y, baseOp) {
-            let base = baseOp.getBase();
-            if (!base.controller) throw Error();
-            if (x<2 || x > 47 || y < 2 || y > 47) return false;
-            let pos = new RoomPosition(x, y, base.name)
-            let structures = pos.lookFor(LOOK_STRUCTURES);
-            let countStructures = 0;
-            for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
-            if (countStructures > 0) return false;
-            let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-            if (buildingsites.length > 0 ) return false;
-            let sources = pos.findInRange(FIND_SOURCES,2);
-            if (sources.length > 0) return false;
-            let minerals = pos.findInRange(FIND_MINERALS,2);
-            if (minerals.length > 0 ) return false;
-            if (pos.inRangeTo(base.controller.pos,2)) return false;
-            for (let nx=-1;nx<=1;nx++) {
-                for (let ny=-1;ny<=1;ny++) {
-                    if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                    var terrain =base.getTerrain().get(x+nx, y+ny);
-                    if (terrain == TERRAIN_MASK_WALL) return false;
-                }
-            }
-            if (pos.findPathTo(baseOp.getBaseCenter()).length > MAX_CENTER_DISTANCE) return false;
-            return true;
-        }
-
-    }
- 
     getBaseCenter() {
-        return this._centerPos;
+        return this.basePlanOp.baseCenter;
     }
-
-    _getBaseCenter() {
-        let firstSpawn = this.getMyStructures(STRUCTURE_SPAWN)[0];
-        let firstConstructionSite = this._base.find(FIND_MY_CONSTRUCTION_SITES)[0];
-        if (firstSpawn) return firstSpawn.pos;
-        else if (firstConstructionSite) return firstConstructionSite.pos;
-
-        let base = this._base;
-        let x = 0;
-        let y = 0;
-        let n = 0;
-
-        x += base.controller.pos.x;
-        y += base.controller.pos.y;
-        n += 1;
-
-        for (let source of /**@type {Source[]} */(base.find(FIND_SOURCES))) {
-            x += source.pos.x;
-            y += source.pos.y;
-            n += 1;
-        }
-
-        
-        x = Math.round(x / n);
-        y = Math.round(y / n);
-
-        let spawnX = x;
-        let spawnY = y;
-        let validSpot;
-        let roomTerrain = base.getTerrain();
-        do {
-            validSpot = true;
-            spawnX = spawnX + _.random(-1, 1) ;
-            spawnY = spawnY + _.random(-1, 1) ;
-            if (spawnX <4 || spawnX > 45) spawnX = 25;
-            if (spawnY <4 || spawnY > 45) spawnY = 25;
-
-            for (let nx=-2;nx<=2;nx++) {
-                for (let ny=-2;ny<=2;ny++) {
-                    var terrain = roomTerrain.get(spawnX + nx, spawnY + ny);
-                    if (terrain == TERRAIN_MASK_WALL) validSpot = false;
-                }
-            }
-        }
-        while (validSpot == false )
-
-        let result = new RoomPosition(spawnX, spawnY, base.name);
-        return result;
-    } 
-
 }
