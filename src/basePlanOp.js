@@ -2,7 +2,15 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
-const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
+const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
+const baseBuildTemplate = [
+    {type: STRUCTURE_SPAWN},
+    {type: STRUCTURE_EXTENSION},
+    {type: STRUCTURE_TOWER},
+    {type: STRUCTURE_STORAGE},
+    {type: STRUCTURE_LINK, max:1}
+]
+
 const MAX_CENTER_DISTANCE = 15;
 
 module.exports = class basePlanOp extends BaseChildOp{
@@ -31,8 +39,10 @@ module.exports = class basePlanOp extends BaseChildOp{
 
         if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 1) return;
 
-        for(let structureType of baseBuildOrder) {
-            if(structures[structureType] == undefined || structures[structureType].length < CONTROLLER_STRUCTURES[structureType][room.controller.level] ) {
+        for(let template of baseBuildTemplate) {
+            let structureType = template.type;
+            let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
+            if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
                 let pos = this._findBuildingSpot();
                 if (pos) pos.createConstructionSite(structureType);
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
@@ -49,6 +59,7 @@ module.exports = class basePlanOp extends BaseChildOp{
                 case STRUCTURE_EXTENSION:
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
+                case STRUCTURE_SPAWN:
                     if (structure.pos.findPathTo(this.baseCenter).length > MAX_CENTER_DISTANCE) structure.destroy();
             }
         }
