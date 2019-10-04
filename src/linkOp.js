@@ -2,7 +2,6 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./baseChildOp');
 
-const RESERVED_AMOUNT = 6 * CARRY_CAPACITY
 
 module.exports = class LinkOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -33,7 +32,7 @@ module.exports = class LinkOp extends BaseChildOp {
     _command(){
         let targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
-            if (sourceLink.energyCapacity - sourceLink.energy < RESERVED_AMOUNT ) {
+            if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
                 sourceLink.transferEnergy(targetLink);
             }
         }
