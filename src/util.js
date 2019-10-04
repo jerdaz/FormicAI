@@ -1,4 +1,6 @@
 module.exports = class Util {
+    trace = false;
+
     /**@param {any} message Logs message to console*/
     static l(message){
         console.log(this.stringify(message));
