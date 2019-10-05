@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./childOp');
+const ChildOp = require('./01_childOp');
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
@@ -100,6 +100,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (creep.carry.energy == creep.carryCapacity) {
                     this._state = STATE_DROPENERGY;
                 }
+                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
             case c.COMMAND_FILL:
                 if (creep.carry.energy == 0) this._state = STATE_FINDENERGY;
@@ -152,7 +153,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (dest == undefined) {
                     dest = this._findEnergySink();
                     if (dest) this._destId = dest.id;
-                    else this._sourceId = ''
+                    else this._destId = ''
                 }
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;

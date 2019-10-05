@@ -1,15 +1,15 @@
 const U = require('./util');
 const c = require('./constants');
-const FillingOp = require('./fillingOp');
-const UpgradingOp = require('./upgradingOp');
-const BuildingOp = require('./buildingOp');
-const SpawningOp = require ('./spawningOp');
-const TowerOp = require('./towerOp');
-const ShardChildOp = require('./shardChildOp');
-const ColonizingOp = require('./colonizingOp');
-const HarvestingOp = require('./harvestingOp');
-const BasePlanOp = require('./basePlanOp');
-const LinkOp = require('./linkOp');
+const FillingOp = require('./22_fillingOp');
+const UpgradingOp = require('./22_upgradingOp');
+const BuildingOp = require('./22_buildingOp');
+const SpawningOp = require ('./22_spawningOp');
+const TowerOp = require('./22_towerOp');
+const ShardChildOp = require('./11_shardChildOp');
+const ColonizingOp = require('./12_colonizingOp');
+const HarvestingOp = require('./22_harvestingOp');
+const BasePlanOp = require('./22_basePlanOp');
+const LinkOp = require('./22_linkOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
 const MAX_CENTER_DISTANCE = 15;

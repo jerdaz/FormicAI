@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp');
+const BaseChildOp = require('./21_baseChildOp');
 
 module.exports = class BuildingOp extends BaseChildOp {
     get type() {return c.OPERATION_BUILDING}

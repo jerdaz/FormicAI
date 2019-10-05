@@ -1,7 +1,7 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./operation');
-let ShardOp = require('./shardOp');
+let Operation = require('./00_operation');
+let ShardOp = require('./10_shardOp');
 let Debug = require('./debug');
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
