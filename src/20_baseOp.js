@@ -46,7 +46,6 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
-        this._runStrategy = true;
     }
 
     initTick() {
@@ -125,6 +124,10 @@ module.exports = class BaseOp extends ShardChildOp{
         this.spawningOp.requestShardColonizers(shard, requestType);
     }
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _tactics() {
         if ((this.spawns.length == 0) && this.buildingOp.getCreepCount() == 0) {
             this._shardOp.requestBuilder(this.name);
@@ -133,7 +136,7 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _strategy() {
-        let phase = c.BASE_PHASE_BIRTH;
+        this._phase = c.BASE_PHASE_BIRTH;
         if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
         else return;
         if( this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
