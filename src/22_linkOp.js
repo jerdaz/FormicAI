@@ -22,6 +22,7 @@ module.exports = class LinkOp extends BaseChildOp {
     get sourceLinks() {return this._sourceLinks};
 
     initTick() {
+        super.initTick();
         let newSourceLinks = [];
         let newBaseLinks = [];
         for (let linkId of this._sourceLinkIds) {

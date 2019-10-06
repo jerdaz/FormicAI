@@ -139,11 +139,17 @@ module.exports = class basePlanOp extends BaseChildOp{
 
     }
  
+    /**
+     * @returns {RoomPosition}
+     */
     _getBaseCenter() {
         if (this._centerPos == undefined) this._centerPos = this._calcBaseCenter();
         return this._centerPos;
     }
 
+    /**
+     * @returns {RoomPosition}
+     */
     _calcBaseCenter() {
         let baseOp = this._baseOp
         let base = baseOp.getBase();
