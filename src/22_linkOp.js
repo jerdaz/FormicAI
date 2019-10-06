@@ -18,12 +18,21 @@ module.exports = class LinkOp extends BaseChildOp {
     }
 
     get type() {return c.OPERATION_LINK}
+    get baseLinks() {return this._baseLinks}
+    get sourceLinks() {return this._sourceLinks};
 
     initTick() {
         let newSourceLinks = [];
         let newBaseLinks = [];
-        for (let linkId of this._sourceLinkIds) newSourceLinks.push(Game.getObjectById(linkId));
-        for (let linkId of this._baseLinkIds) newBaseLinks.push(Game.getObjectById(linkId));
+        for (let linkId of this._sourceLinkIds) {
+            let link = Game.getObjectById(linkId);
+            if (link) newSourceLinks.push(link);
+        }
+        for (let linkId of this._baseLinkIds) {
+            let link = Game.getObjectById(linkId);
+            if (link) newBaseLinks.push(link);
+        }
+    
         this._sourceLinks = newSourceLinks;
         this._baseLinks = newBaseLinks;
     }

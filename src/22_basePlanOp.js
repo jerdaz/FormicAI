@@ -30,10 +30,6 @@ module.exports = class basePlanOp extends BaseChildOp{
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
 
-    _firstRun() {
-        this._support();
-    }
-
     _tactics() {
         let room = this.baseOp.getBase();
         let baseOp = this._baseOp;
@@ -53,7 +49,6 @@ module.exports = class basePlanOp extends BaseChildOp{
     }
 
     _support() {
-
         let base = this.baseOp.getBase();
         //find & destroy extensions that have become unreachable.
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
@@ -81,6 +76,8 @@ module.exports = class basePlanOp extends BaseChildOp{
             }
         }
 
+        if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
     }
