@@ -24,13 +24,15 @@ module.exports = class basePlanOp extends BaseChildOp{
         /**@type {RoomPosition | undefined} */
         this._centerPos = undefined;
 
-        this._runSupport = true;
     }
 
 
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
 
+    _firstRun() {
+        this._support();
+    }
 
     _tactics() {
         let room = this.baseOp.getBase();

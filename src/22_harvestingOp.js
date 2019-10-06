@@ -3,7 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./21_baseChildOp');
 
 const HARVESTER_SIZE_BIG = 48
-const HARVESTER_SIZE_SMALL = 6*3
+const HARVESTER_SIZE_SMALL = 48 //6*3
 
 module.exports = class HarvestingOp extends BaseChildOp {
     /** 
@@ -16,6 +16,10 @@ module.exports = class HarvestingOp extends BaseChildOp {
     }
 
     get type() {return c.OPERATION_HARVESTING}
+
+    _firstRun() {
+        this._strategy();
+    }
 
     _strategy() {
         /**@type {Source | null} */

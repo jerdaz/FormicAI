@@ -41,7 +41,7 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     /**
-     * @param {Source} source
+     * @param {Source | Structure} source
      * @param {Structure | ConstructionSite} dest */
     instructTransfer(source, dest) {
         this._sourceId = source.id;

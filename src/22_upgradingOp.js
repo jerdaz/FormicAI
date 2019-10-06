@@ -8,6 +8,10 @@ const REDUCE_UPGRADER_COUNT_LEVEL = 6
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _strategy() {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.getBase().controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
         else if (this.baseOp.storage) {

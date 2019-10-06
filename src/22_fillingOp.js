@@ -5,6 +5,10 @@ const BaseChildOp = require('./21_baseChildOp');
 module.exports = class FillingOp extends BaseChildOp {
     get type() {return c.OPERATION_FILLING}
 
+    _firstRun() {
+        this._strategy();
+    }
+    
     _strategy() {
         let template = {body:[MOVE,CARRY,WORK]}
         let creepCount = 2;

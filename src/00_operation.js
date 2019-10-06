@@ -12,9 +12,7 @@ let idIndex = 0;
 module.exports = class Operation {
     constructor() {
         this._id = idIndex++;
-        this._runTactics = false;
-        this._runStrategy = false;
-        this._runSupport = false;
+        this._bFirstRun = true;
         /**@type {ChildOp[][]} */
         this._childOps = []
         /**@type {Debug} */
@@ -44,6 +42,14 @@ module.exports = class Operation {
     run() {
         //last resort cpu overflow prevention.
         if (Game.cpu.bucket < Game.cpu.getUsed() + Game.cpu.limit) throw Error('Out of CPU');
+
+        if (this._bFirstRun) {
+            if(this._debug.verbose) this._debug.logState('firstRun', this)
+            try {
+                this._firstRun();
+                this._bFirstRun = false;
+            } catch(err) {this._debug.logError(err)};
+        }
 
         if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
             if(this._debug.verbose) this._debug.logState('support', this)
@@ -89,7 +95,7 @@ module.exports = class Operation {
         this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
     }
 
-
+    _firstRun() {}
     _support() {}
     _strategy() {}
     _tactics() {}

@@ -19,7 +19,6 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
-        this._runStrategy = true;
     }
 
     get type() {return c.OPERATION_SPAWNING}
@@ -55,6 +54,10 @@ module.exports = class SpawningOp extends BaseChildOp {
         }
     }
 
+    _firstRun() {
+        this._strategy();
+    }
+    
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;

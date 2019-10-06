@@ -7,7 +7,6 @@ module.exports = class LinkOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
-        this._runStrategy = true;
         /**@type {String[]} */
         this._sourceLinkIds = [];
         /**@type {String[]} */
@@ -29,12 +28,25 @@ module.exports = class LinkOp extends BaseChildOp {
         this._baseLinks = newBaseLinks;
     }
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _command(){
         let targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
             if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
                 sourceLink.transferEnergy(targetLink);
             }
+        }
+    }
+
+    _tactics() {
+        if (!this.baseOp.storage) return;
+        for (let creepName in this._creepOps) {
+            let creepOp = this._creepOps[creepName];
+            let source = this._baseLinks[0];
+            creepOp.instructTransfer(source, this.baseOp.storage)
         }
     }
     
@@ -49,5 +61,7 @@ module.exports = class LinkOp extends BaseChildOp {
         this._sourceLinkIds = newSourceLinkIds;
         this._baseLinkIds = newBaseLinkIds;
         this.initTick();
+
+        if (this._baseOp.phase >= c.BASE_PHASE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
     }
 }
