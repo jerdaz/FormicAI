@@ -11,9 +11,6 @@ const HarvestingOp = require('./22_harvestingOp');
 const BasePlanOp = require('./22_basePlanOp');
 const LinkOp = require('./22_linkOp');
 
-const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE];
-const MAX_CENTER_DISTANCE = 15;
-
 module.exports = class BaseOp extends ShardChildOp{
     /** 
      * @param {Base} base 
