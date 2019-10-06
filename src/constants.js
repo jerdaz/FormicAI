@@ -1,4 +1,6 @@
 module.exports = {
+    MY_SIGN: 'FormicAI: Open source fully autonomous bot',
+    
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
