@@ -137,6 +137,7 @@ module.exports = class CreepOp extends ChildOp {
                     if (source) this._sourceId = source.id;
                     else this._sourceId = '';
                 }
+                //deliberate fallthrough to retrieving
             case STATE_RETRIEVING:
                 if (source == null) break;
                 creep.moveTo(source, {range:1});
@@ -155,6 +156,7 @@ module.exports = class CreepOp extends ChildOp {
                     if (dest) this._destId = dest.id;
                     else this._destId = ''
                 }
+                //deliberate fallthrough to delivering
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;
                 else {

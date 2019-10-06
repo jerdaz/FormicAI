@@ -72,8 +72,8 @@ module.exports = class basePlanOp extends BaseChildOp{
                         break;
                     }
                 }
-                if (!walkable) extension.destroy();
             }
+            if (!walkable) extension.destroy();
         }
 
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
