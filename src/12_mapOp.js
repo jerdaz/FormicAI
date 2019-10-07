@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./childOp');
+const ChildOp = require('./01_childOp');
 
 /** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */

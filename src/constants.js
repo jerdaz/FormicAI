@@ -1,9 +1,12 @@
 module.exports = {
+    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot ',
+
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
     COMMAND_CLAIMCONTROLLER: 3,
     COMMAND_FILL: 4,
+    COMMAND_HARVEST: 5,
 
     OPERATION_NONE: 0,
     OPERATION_MAIN: 1,
@@ -19,12 +22,15 @@ module.exports = {
     OPERATION_MAP: 11,
     OPERATION_TOWER: 12,
     OPERATION_HARVESTING: 13,
-    OPERATION_MAX: 13,
+    OPERATION_BASEPLAN: 14,
+    OPERATION_LINK: 15,
+    OPERATION_MAX: 15,
 
     BASE_PHASE_BIRTH: 0,
     BASE_PHASE_HARVESTER: 1,
     BASE_PHASE_STORED_ENERGY: 2,
-    BASE_PHASE_EOL: 3,
+    BASE_PHASE_LINKS: 3,
+    BASE_PHASE_EOL: 4,
 
     ROLE_NONE:  0,
     ROLE_FILLER: 1,

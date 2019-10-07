@@ -1,7 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./childOp');
-const CreepOp = require('./creepOp');
+const ChildOp = require('./01_childOp');
+const CreepOp = require('./12_creepOp');
 
 module.exports = class ShardChildOp extends ChildOp {
     /**
@@ -43,7 +43,7 @@ module.exports = class ShardChildOp extends ChildOp {
             this._addChildOp(this._creepOps[creep.name])
             this._runTactics = true;
         }
-        this._creepOps[creep.name].setCreep(creep);
+        this._creepOps[creep.name].initTickCreep(creep);
     }
 
     get shardOp() {return this._shardOp};

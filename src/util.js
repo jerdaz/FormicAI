@@ -80,7 +80,7 @@ module.exports = class Util {
                     case STRUCTURE_PORTAL:
                     case STRUCTURE_RAMPART:
                     case STRUCTURE_ROAD:
-                        break;
+                        return true;
                     default:
                         return false;
                 }

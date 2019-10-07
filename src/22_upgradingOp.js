@@ -1,12 +1,16 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp');
+const BaseChildOp = require('./21_baseChildOp');
 
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
 
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
+
+    _firstRun() {
+        this._strategy();
+    }
 
     _strategy() {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.getBase().controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
