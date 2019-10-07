@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./baseChildOp');
+const BaseChildOp = require('./21_baseChildOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
@@ -19,7 +19,6 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
-        this._runStrategy = true;
     }
 
     get type() {return c.OPERATION_SPAWNING}
@@ -55,6 +54,10 @@ module.exports = class SpawningOp extends BaseChildOp {
         }
     }
 
+    _firstRun() {
+        this._strategy();
+    }
+    
     _strategy() {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
