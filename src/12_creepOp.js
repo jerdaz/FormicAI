@@ -21,16 +21,16 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
-        this._destPos;
+        this._destPos = null;
         this._baseOp = baseOp;
+        this._creep = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
 
     /**@param {Creep} creep */
-    setCreep(creep) {
+    initTickCreep(creep) {
         this._creep = creep;
-        if (this._runTactics) creep.notifyWhenAttacked(false);
     }
 
     /**@param {Structure | ConstructionSite} dest */
@@ -73,9 +73,14 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = source.id;
     }
 
+    _firstRun() {
+        if (this._creep == null ) throw Error('creep undefined');
+        this._creep.notifyWhenAttacked(false);
+    }
+
 
     _tactics() {
-        if (this._creep == undefined ) throw Error('creep undefined');
+        if (this._creep == null ) throw Error('creep undefined');
 
         switch (this._instruct) {
             case c.COMMAND_NONE:
