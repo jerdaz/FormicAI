@@ -38,3 +38,6 @@ The ants aren't aggressive, they will try to find new places to settle if pressu
 * Enhanced trading
 * Keeper room harvesting / mining
 * Defense/attack: Only if needed for continued survival or expansion
+
+# About license:
+The license is A-GPU. You may only use modified versions of (pieces of) this source code on public screeps servers if you publish the modified sources as well.
