@@ -11,7 +11,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LINK, max:1}
 ]
 
-const MAX_CENTER_DISTANCE = 18;
+const MAX_CENTER_DISTANCE = 20;
 
 module.exports = class basePlanOp extends BaseChildOp{
     /** 
