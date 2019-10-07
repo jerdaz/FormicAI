@@ -21,7 +21,7 @@ time is spent improving the code quality.
 # Principles
 1. Survival: The bot should be able to recover from (near) extinction automatically. No respawns should be necessary.
 2. Quality/scalability: The bot should be easy to scale and expand with new features
-3. Economical: The bot's main goal is getting optimal GCL from the available time.
+3. Economical: The bot's main goal is leveling GCL as much as possible.
 
 The behaviour is like ants: the map will automatically be filled with hives. Destroying one base will automatically trigger expansion in another shard.
 Eventually the bot will kill it's own bases as well to trigger strategic evolutionary strategy.
