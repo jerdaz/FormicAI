@@ -69,11 +69,12 @@ module.exports = class MapOp extends ChildOp {
         return undefined;
     }
 
-    /** @param {{[key:string]: BaseOp }} baseOps*/
-    updateBaseDistances(baseOps) {
+    /** @param {Map<string,BaseOp>} baseOpsMap*/
+    updateBaseDistances(baseOpsMap) {
         this._baseDist = {};
         let baseNames = [];
-        for(let baseName in baseOps) {
+        for(let baseOpKey of baseOpsMap) {
+            let baseName = baseOpKey[0];
             this._baseDist[baseName] = [];
             baseNames.push(baseName);
         }
