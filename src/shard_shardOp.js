@@ -14,6 +14,8 @@ module.exports = class ShardOp extends ChildOp {
         this._OperationIdByRoomByOpType = {};
         /** @type {{[key:string]: BaseOp }} */
         this._baseOps = {};
+        /**@type {Map<String, BaseOp>}*/
+        this._baseOpsMap = new Map;
         /**@type {number} */
         this._maxCPU = Memory.maxCPU;
         this._maxShardBases = undefined;
@@ -93,6 +95,11 @@ module.exports = class ShardOp extends ChildOp {
         for (let creepName in Memory.creeps) {
             if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
         }
+
+        //sort bases in order of priority
+        this._baseOpsMap = new Map(_.values(this._baseOpsMap).sort((a,b) => 
+            {return a[1].getBase().controller.level - b[1].getBase().controller.level})
+        );
     }
 
 
