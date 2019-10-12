@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ShardChildOp = require('./11_shardChildOp');
+const ShardChildOp = require('./shard_shardChildOp');
 
 module.exports = class ColonizingOp extends ShardChildOp {
     /**

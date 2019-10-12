@@ -1,15 +1,15 @@
 const U = require('./util');
 const c = require('./constants');
-const FillingOp = require('./22_fillingOp');
-const UpgradingOp = require('./22_upgradingOp');
-const BuildingOp = require('./22_buildingOp');
-const SpawningOp = require ('./22_spawningOp');
-const TowerOp = require('./22_towerOp');
-const ShardChildOp = require('./11_shardChildOp');
-const ColonizingOp = require('./12_colonizingOp');
-const HarvestingOp = require('./22_harvestingOp');
-const BasePlanOp = require('./22_basePlanOp');
-const LinkOp = require('./22_linkOp');
+const FillingOp = require('./base_child_fillingOp');
+const UpgradingOp = require('./base_child_upgradingOp');
+const BuildingOp = require('./base_child_buildingOp');
+const SpawningOp = require ('./base_child_spawningOp');
+const TowerOp = require('./base_child_towerOp');
+const ShardChildOp = require('./shard_shardChildOp');
+const ColonizingOp = require('./shard_child_colonizingOp');
+const HarvestingOp = require('./base_child_harvestingOp');
+const BasePlanOp = require('./base_basePlanOp');
+const LinkOp = require('./base_child_linkOp');
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
