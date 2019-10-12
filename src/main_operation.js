@@ -8,7 +8,6 @@ const TACTICS_INTERVAL = 10
 //unique id of Operation
 let idIndex = 0;
 
-
 module.exports = class Operation {
     constructor() {
         this._id = idIndex++;

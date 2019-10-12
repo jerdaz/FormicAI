@@ -3,6 +3,9 @@ let c = require('./constants');
 let Operation = require('./main_operation');
 let ShardOp = require('./shard_shardOp');
 
+// @ts-ignore
+if (!global.InterShardMemory) global.InterShardMemory = null;
+
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
 
 module.exports = class Main extends Operation {
@@ -19,7 +22,7 @@ module.exports = class Main extends Operation {
         Memory.spawns = {};
         Memory.powerCreeps = {};
         
-        InterShardMemory.setLocal("");
+        if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
         this._addChildOp(this._shardOp);
 
@@ -103,6 +106,7 @@ module.exports = class Main extends Operation {
 
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){
+        if(!InterShardMemory) return;
         if(shardMem == undefined) throw Error()
         shardMem.timeStamp = new Date();
         InterShardMemory.setLocal(JSON.stringify(shardMem))
@@ -114,7 +118,7 @@ module.exports = class Main extends Operation {
         let interShardMem = {timeStamp: new Date(), shards:[]};
         for (let shard of this._shards) {
             let shardId = U.getShardID(shard)
-            let shardMem = /**@type {ShardMem}*/(JSON.parse(InterShardMemory.getRemote(shard) || '{}'));
+            let shardMem = InterShardMemory?/**@type {ShardMem}*/(JSON.parse(InterShardMemory.getRemote(shard) || '{}')):/**@type {ShardMem}*/({});
             if (!_.isEmpty(shardMem)) interShardMem.shards[shardId] = shardMem.shards[shardId];
         }
         if(!interShardMem) throw Error();
