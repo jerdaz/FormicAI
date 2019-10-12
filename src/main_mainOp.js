@@ -136,7 +136,9 @@ module.exports = class Main extends Operation {
     /**@param {number} shardRequest */
     requestCreep(shardRequest) {
         let interShardMem = this._loadInterShardMem();
-        interShardMem.shards[this._shardNum].request = shardRequest
-        this._writeInterShardMem(interShardMem);
+        if (interShardMem) {
+            interShardMem.shards[this._shardNum].request = shardRequest
+            this._writeInterShardMem(interShardMem);
+        }
     }
 }
