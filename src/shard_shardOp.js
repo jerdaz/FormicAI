@@ -149,7 +149,7 @@ module.exports = class ShardOp extends ChildOp {
         // if bucket is low, low priority bases are skipped 
         const cpuReserve = this._maxCPU / 20;
         const cpuRange = this._maxCPU - 2 * cpuReserve
-        const maxBasesToRun = Math.floor((Game.cpu.bucket - cpuReserve) / cpuRange);
+        const maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
             if (++baseCount > maxBasesToRun) break;
