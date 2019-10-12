@@ -57,7 +57,7 @@ module.exports = class basePlanOp extends BaseChildOp{
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (structure.pos.findPathTo(this.baseCenter).length > MAX_CENTER_DISTANCE) structure.destroy();
+                    if (structure.pos.findPathTo(this.baseCenter,{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) structure.destroy();
                     break;
             }
         }
