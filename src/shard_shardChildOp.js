@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./main_childOp');
+const ChildOp = require('./meta_childOp');
 const CreepOp = require('./shard_child_creepOp');
 
 module.exports = class ShardChildOp extends ChildOp {

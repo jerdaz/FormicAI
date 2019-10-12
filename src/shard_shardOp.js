@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./main_childOp');
+const ChildOp = require('./meta_childOp');
 const BaseOp = require('./base_baseOp');
 const MapOp = require('./shard_child_mapOp');
 const ColonizingOp = require('./shard_child_colonizingOp');

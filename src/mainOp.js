@@ -1,6 +1,6 @@
 let U = require('./util');
 let c = require('./constants');
-let Operation = require('./main_operation');
+let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
 // @ts-ignore

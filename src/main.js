@@ -1,5 +1,5 @@
 const Debug = require('./debug');
-const MainOp = require('./main_mainOp');
+const MainOp = require('./mainOp');
 
 let debug = new Debug;
 /**@type {any}*/(Game).debug = debug;
