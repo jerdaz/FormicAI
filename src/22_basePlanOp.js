@@ -133,7 +133,7 @@ module.exports = class basePlanOp extends BaseChildOp{
                     if (terrain == TERRAIN_MASK_WALL) return false;
                 }
             }
-            if (pos.findPathTo(baseOp.getBaseCenter()).length > MAX_CENTER_DISTANCE) return false;
+            if (pos.findPathTo(baseOp.getBaseCenter(),{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
             return true;
         }
 
