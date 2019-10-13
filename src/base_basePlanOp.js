@@ -11,9 +11,9 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LINK, max:1}
 ]
 
-const MAX_CENTER_DISTANCE = 20;
+const MAX_CENTER_DISTANCE = 15;
 
-module.exports = class basePlanOp extends BaseChildOp{
+module.exports = class BasePlanOp extends BaseChildOp{
     /** 
      * @param {BaseOp} baseOp 
      */
@@ -57,23 +57,11 @@ module.exports = class basePlanOp extends BaseChildOp{
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (structure.pos.findPathTo(this.baseCenter,{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) structure.destroy();
+                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
                     break;
             }
         }
         for (let extension of this.baseOp.extensions) {
-            let walkable = false;
-            let pos = extension.pos;
-            for(let i=-1; i<=1; i++) {
-                for (let j=-1; j<=1; j++) {
-                    let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
-                    if (U.isWalkable(pos2)) {
-                        walkable = true;
-                        break;
-                    }
-                }
-            }
-            if (!walkable) extension.destroy();
         }
 
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
@@ -95,7 +83,7 @@ module.exports = class basePlanOp extends BaseChildOp{
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this._baseOp))
+                    if ( (x+y) % 2 == 0 && BasePlanOp._isValidBuildingSpot(x_+x, y_+y, this._baseOp))
                         break loop;
                 }
             }
@@ -106,40 +94,46 @@ module.exports = class basePlanOp extends BaseChildOp{
         return undefined;
 
    
-        /** 
-         * @param {number} x
-         * @param {number} y
-         * @param {BaseOp} baseOp */
-        function _isValidBuildingSpot(x, y, baseOp) {
-            let base = baseOp.getBase();
-            if (!base.controller) throw Error();
-            if (x<2 || x > 47 || y < 2 || y > 47) return false;
-            let pos = new RoomPosition(x, y, base.name)
-            let structures = pos.lookFor(LOOK_STRUCTURES);
-            let countStructures = 0;
-            for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
-            if (countStructures > 0) return false;
-            let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-            if (buildingsites.length > 0 ) return false;
-            let sources = pos.findInRange(FIND_SOURCES,2);
-            if (sources.length > 0) return false;
-            let minerals = pos.findInRange(FIND_MINERALS,2);
-            if (minerals.length > 0 ) return false;
-            if (pos.inRangeTo(base.controller.pos,2)) return false;
-            for (let nx=-1;nx<=1;nx++) {
-                for (let ny=-1;ny<=1;ny++) {
-                    if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                    var terrain =base.getTerrain().get(x+nx, y+ny);
-                    if (terrain == TERRAIN_MASK_WALL) return false;
-                }
-            }
-            if (pos.findPathTo(baseOp.getBaseCenter(),{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
-            return true;
-        }
 
     }
  
-    /**
+    /** 
+     * @param {number} x
+     * @param {number} y
+     * @param {BaseOp} baseOp */
+    static _isValidBuildingSpot(x, y, baseOp, ignoreStructures = false) {
+        let base = baseOp.getBase();
+        if (!base.controller) throw Error();
+        if (x<2 || x > 47 || y < 2 || y > 47) return false;
+        let pos = new RoomPosition(x, y, base.name)
+        let structures = pos.lookFor(LOOK_STRUCTURES);
+        let countStructures = 0;
+        for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
+        if (!ignoreStructures && countStructures > 0) return false;
+        let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
+        if (buildingsites.length > 0 ) return false;
+        let sources = pos.findInRange(FIND_SOURCES,2);
+        if (sources.length > 0) return false;
+        let minerals = pos.findInRange(FIND_MINERALS,2);
+        if (minerals.length > 0 ) return false;
+        if (pos.inRangeTo(base.controller.pos,2)) return false;
+        if (pos.findPathTo(baseOp.getBaseCenter(),{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
+        let walkable = false;
+        for(let i=-1; i<=1; i++) {
+            for (let j=-1; j<=1; j++) {
+                let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
+                if (U.isWalkable(pos2)) {
+                    walkable = true;
+                    break;
+                }
+            }
+        }
+        if (!walkable) return false;
+
+        return true;
+    }
+
+     /**
      * @returns {RoomPosition}
      */
     _getBaseCenter() {
