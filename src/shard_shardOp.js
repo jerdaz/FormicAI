@@ -29,6 +29,75 @@ module.exports = class ShardOp extends ChildOp {
 
     get name() {return Game.shard.name};
 
+        /**
+     * @param {string} roomName
+     * @returns {Room} returns room with RoomName */
+    getRoom(roomName) {
+        let room = Game.rooms[roomName];
+        if (!room) throw ('Error');
+        return room;
+    }
+
+    /**
+     * @param {string} roomName
+     * @returns {Base} returns base with RoomName */
+    getBase(roomName) {
+        let base = /**@type {Base} */ (Game.rooms[roomName]);
+        if (!base) throw ('Error');
+        if (base.controller === undefined) throw ('Error');
+        return base;
+    }
+
+
+    /**@param {number} max */
+    setDirectiveMaxBases(max){
+        this._maxShardBases = max;
+    }
+
+    /**@param {String} roomName */
+    requestBuilder(roomName){
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
+        if (!donorRoom) return;
+        let baseOp = this._baseOpsMap.get(donorRoom);
+        if (!baseOp) throw Error('donorroom not in basemap');
+        baseOp.requestBuilder(roomName);
+    }
+
+    /**
+     * @param {string} shard
+     * @param {number} requestType} */
+    requestShardColonization(shard, requestType) {
+        for(let baseOpKey of this._baseOpsMap) baseOpKey[1].requestShardColonization(shard, requestType);
+    }
+
+
+    /**
+     * @param {string} roomName
+     * @returns {BaseOp} */
+    getBaseOp(roomName) {
+        let result = this._baseOpsMap.get(roomName);
+        if (!result) throw Error('baseop does not exist')
+        return result;
+    }
+
+    /**@returns {Number} */
+    getBaseCount() {
+        return _.size(this._baseOpsMap);
+    }
+
+    //add's an operation to the basename/optype to operation map.
+    /**
+     * @param {ShardChildOp} shardChildOp
+     * @param {string} baseName */
+    addOperation(shardChildOp, baseName) {
+        let opType = shardChildOp.type
+        let opInstance = shardChildOp.instance
+        let x = this._OperationIdByRoomByOpType;
+        if (x[baseName] == undefined) x[baseName] = [];
+        if (x[baseName][opType] == undefined) x[baseName][opType] = [];
+        x[baseName][opType][opInstance] = shardChildOp;
+    }
+
     initTick(){
 
         this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
@@ -81,25 +150,26 @@ module.exports = class ShardOp extends ChildOp {
         super.initTick()
     }
 
-    /**@param {number} max */
-    setDirectiveMaxBases(max){
-        this._maxShardBases = max;
-    }
+    run() {
+        // run all standard child operations
+        super.run();
 
-    /**@param {String} roomName */
-    requestBuilder(roomName){
-        let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
-        if (!donorRoom) return;
-        let baseOp = this._baseOpsMap.get(donorRoom);
-        if (!baseOp) throw Error('donorroom not in basemap');
-        baseOp.requestBuilder(roomName);
-    }
+        // now run all nonstandard child operations
 
-    /**
-     * @param {string} shard
-     * @param {number} requestType} */
-    requestShardColonization(shard, requestType) {
-        for(let baseOpKey of this._baseOpsMap) baseOpKey[1].requestShardColonization(shard, requestType);
+        // run the base operations in order of priority
+        // if bucket is low, low priority bases are skipped 
+        const cpuReserve = this._maxCPU / 20;
+        const cpuRange = this._maxCPU - 2 * cpuReserve
+        const maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
+        let baseCount = 0;
+        for (let baseOpKey of this._baseOpsMap) {
+            if (++baseCount > maxBasesToRun) break;
+            let baseOp = baseOpKey[1];
+            baseOp.run();
+        }
+
+        //run colonizing operation;
+        this._teamShardColonizing.run();
     }
 
     _firstRun() {
@@ -137,80 +207,6 @@ module.exports = class ShardOp extends ChildOp {
             
             for (let i = _.size(this._baseOpsMap) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
         }
-    }
-
-    run(){
-        // run all standard child operations
-        super.run();
-
-        // now run all nonstandard child operations
-
-        // run the base operations in order of priority
-        // if bucket is low, low priority bases are skipped 
-        const cpuReserve = this._maxCPU / 20;
-        const cpuRange = this._maxCPU - 2 * cpuReserve
-        const maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
-        let baseCount = 0;
-        for (let baseOpKey of this._baseOpsMap) {
-            if (++baseCount > maxBasesToRun) break;
-            let baseOp = baseOpKey[1];
-            baseOp.run();
-        }
-
-        //run colonizing operation;
-        this._teamShardColonizing.run();
-    }
-
-    
-
-    getMap(){
-        return this._map;
-    }
-
-    /**
-     * @param {string} roomName
-     * @returns {Room} returns room with RoomName */
-    getRoom(roomName) {
-        let room = Game.rooms[roomName];
-        if (!room) throw ('Error');
-        return room;
-    }
-
-    /**
-     * @param {string} roomName
-     * @returns {Base} returns base with RoomName */
-    getBase(roomName) {
-        let base = /**@type {Base} */ (Game.rooms[roomName]);
-        if (!base) throw ('Error');
-        if (base.controller === undefined) throw ('Error');
-        return base;
-    }
-
-    /**
-     * @param {string} roomName
-     * @returns {BaseOp} */
-    getBaseOp(roomName) {
-        let result = this._baseOpsMap.get(roomName);
-        if (!result) throw Error('baseop does not exist')
-        return result;
-    }
-
-    /**@returns {Number} */
-    getBaseCount() {
-        return _.size(this._baseOpsMap);
-    }
-
-    //add's an operation to the basename/optype to operation map.
-    /**
-     * @param {ShardChildOp} shardChildOp
-     * @param {string} baseName */
-    addOperation(shardChildOp, baseName) {
-        let opType = shardChildOp.type
-        let opInstance = shardChildOp.instance
-        let x = this._OperationIdByRoomByOpType;
-        if (x[baseName] == undefined) x[baseName] = [];
-        if (x[baseName][opType] == undefined) x[baseName][opType] = [];
-        x[baseName][opType][opInstance] = shardChildOp;
     }
 }
 
