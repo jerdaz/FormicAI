@@ -30,7 +30,7 @@ module.exports = class ShardChildOp extends ChildOp {
         //remove dead creeps from runtime
         for (let creepName in this._creepOps) {
             if (Game.creeps[creepName] == undefined) {
-                this._removeChildOp(this._creepOps[creepName])
+                this.removeChildOp(this._creepOps[creepName])
                 delete this._creepOps[creepName];
             }
         }
@@ -40,7 +40,7 @@ module.exports = class ShardChildOp extends ChildOp {
     initCreep(creep) {
         if (this._creepOps[creep.name] == undefined) {
             this._creepOps[creep.name] = new CreepOp(this, this._shardOp, this._baseOp)
-            this._addChildOp(this._creepOps[creep.name])
+            this.addChildOp(this._creepOps[creep.name])
             this._runTactics = true;
         }
         this._creepOps[creep.name].initTickCreep(creep);

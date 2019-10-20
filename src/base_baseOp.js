@@ -23,19 +23,19 @@ module.exports = class BaseOp extends ShardChildOp{
         this._name = base.name;
         this._directive = c.DIRECTIVE_NONE;
 
-        this._addChildOp(new SpawningOp(this));
-        this._addChildOp(new TowerOp(this));
-        this._addChildOp(new FillingOp(this));
-        this._addChildOp(new BuildingOp(this));
-        this._addChildOp(new UpgradingOp(this));
-        this._addChildOp(new ColonizingOp(this,shardOp, this));
-        this._addChildOp(new BasePlanOp(this));
-        this._addChildOp(new LinkOp(this));
+        this.addChildOp(new SpawningOp(this));
+        this.addChildOp(new TowerOp(this));
+        this.addChildOp(new FillingOp(this));
+        this.addChildOp(new BuildingOp(this));
+        this.addChildOp(new UpgradingOp(this));
+        this.addChildOp(new ColonizingOp(this,shardOp, this));
+        this.addChildOp(new BasePlanOp(this));
+        this.addChildOp(new LinkOp(this));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {
             let harvestingOp = new HarvestingOp(this, source.id, i++)
-            this._addChildOp(harvestingOp);
+            this.addChildOp(harvestingOp);
         }
 
         this._phase = c.BASE_PHASE_BIRTH;

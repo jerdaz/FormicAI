@@ -24,7 +24,7 @@ module.exports = class Main extends Operation {
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
-        this._addChildOp(this._shardOp);
+        this.addChildOp(this._shardOp);
 
         // populate shard names (by trial and error!!)
         /**@type {String[]} */
@@ -43,6 +43,10 @@ module.exports = class Main extends Operation {
     }
 
     get type() { return c.OPERATION_MAIN; }
+
+    // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
+    /**@param {number} shardRequest */
+    requestCreep(shardRequest) { this._requestCreep(shardRequest); }
 
     _strategy() {
         // // divide cpu evenly between shards
@@ -134,7 +138,7 @@ module.exports = class Main extends Operation {
     }
 
     /**@param {number} shardRequest */
-    requestCreep(shardRequest) {
+    _requestCreep(shardRequest) {
         let interShardMem = this._loadInterShardMem();
         if (interShardMem) {
             interShardMem.shards[this._shardNum].request = shardRequest

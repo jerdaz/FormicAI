@@ -21,7 +21,7 @@ module.exports = class ShardOp extends ChildOp {
         this._maxShardBases = undefined;
         /**@type {MapOp} */
         this._map = new MapOp(this);
-        this._addChildOp(this._map);
+        this.addChildOp(this._map);
         this._teamShardColonizing = new ColonizingOp(this, this);
     }
 

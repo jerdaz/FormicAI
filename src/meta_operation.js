@@ -84,13 +84,13 @@ module.exports = class Operation {
     }
 
     /**@param {ChildOp} childOp */
-    _addChildOp(childOp) {
+    addChildOp(childOp) {
         if (this._childOps[childOp.type] == undefined) this._childOps[childOp.type] = [];
         this._childOps[childOp.type].push(childOp);
     }
 
     /**@param {ChildOp} childOp */
-    _removeChildOp(childOp) {
+    removeChildOp(childOp) {
         this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
     }
 
