@@ -27,9 +27,9 @@ module.exports = class UpgradingOp extends BaseChildOp {
     _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let dest = creepOp.getDest();
+            let dest = creepOp.dest;
             if (!(dest instanceof StructureController)
-            || (creepOp.getInstr() != c.COMMAND_TRANSFER) )
+            || (creepOp.instruction != c.COMMAND_TRANSFER) )
             {
                 let dest = this._baseOp.getBase().controller;
                 if (dest) creepOp.instructFill(dest);

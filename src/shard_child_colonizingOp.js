@@ -27,7 +27,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
             let creep = U.getCreep(creepName);
             if (!creep) throw Error();
             let creepOp = this._creepOps[creepName];
-            let room = creepOp.getRoom();
+            let room = creepOp.room;
             if (creep.name.startsWith('shard') && ! creep.name.startsWith(Game.shard.name)) {
                 // creep is not in the correct shard.
                 let portalRoomName = this._map.findClosestPortalRoom(room.name);
@@ -61,7 +61,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
                     if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
                         creepOp.instructClaimController(room.controller);
                     }
-                    else if (room.name != lastRoomName || creepOp.getInstr() != c.COMMAND_MOVETO) {
+                    else if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                         /**@type {string | undefined} */
                         let destRoomName
                         /**@type {Structure[]}*/
@@ -84,7 +84,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
                             if (destRoomName) exit_side = room.findExitTo(destRoomName);
                             let dest;
                             if (exit_side>0) {
-                                dest = /**@type {RoomPosition} */(creepOp.getPos().findClosestByPath(/**@type {any}*/ (exit_side)));
+                                dest = /**@type {RoomPosition} */(creepOp.pos.findClosestByPath(/**@type {any}*/ (exit_side)));
                                 if (dest) creepOp.instructMoveTo(dest)
                                 this._lastRoomName[creep.name] = room.name;
                             }

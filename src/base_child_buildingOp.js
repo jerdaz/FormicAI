@@ -19,11 +19,11 @@ module.exports = class BuildingOp extends BaseChildOp {
     _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let dest = creepOp.getDest();
+            let dest = creepOp.dest;
             if (!(dest instanceof ConstructionSite)
-            || (creepOp.getInstr() != c.COMMAND_TRANSFER) ) 
+            || (creepOp.instruction != c.COMMAND_TRANSFER) ) 
             {
-                let dest = creepOp.getPos().findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+                let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                 if (dest) creepOp.instructFill(dest);
             }
         }
