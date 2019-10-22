@@ -10,7 +10,7 @@ module.exports = class BaseChildOp extends ShardChildOp {
     constructor(baseOp, instance) {
         super(baseOp, baseOp.shardOp, baseOp, instance);
         this._baseOp = baseOp;
-        this._baseName = baseOp.getName();
+        this._baseName = baseOp.name;
     }
 
     get baseOp() {return this._baseOp}
