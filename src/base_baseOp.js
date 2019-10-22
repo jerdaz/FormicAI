@@ -45,16 +45,6 @@ module.exports = class BaseOp extends ShardChildOp{
         this._structures = {};
     }
 
-    initTick() {
-        super.initTick();
-        this._base = /**@type {Base} */ (Game.rooms[this._name])
-        this._structures = {};
-        let structures = this._base.find(FIND_MY_STRUCTURES);
-        for (let structure of structures) {
-            if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
-            this._structures[structure.structureType].push(structure);
-        }
-    }
 
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
@@ -67,47 +57,28 @@ module.exports = class BaseOp extends ShardChildOp{
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
     get links() {return /**@type {StructureLink[]} */ (this._structures[STRUCTURE_LINK]) || [] }
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
+    get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
     get name() {return this._name}
     get phase() {return this._phase}
+    get centerPos() { return this.basePlanOp.baseCenter;}
+    get directive(){ return this._directive;}
+    get base() {return this._base;}
 
-
-    hasSpawn() {
-        return this.getMyStructures(STRUCTURE_SPAWN).length > 0;
+    initTick() {
+        super.initTick();
+        this._base = /**@type {Base} */ (Game.rooms[this._name])
+        this._structures = {};
+        let structures = this._base.find(FIND_MY_STRUCTURES);
+        for (let structure of structures) {
+            if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
+            this._structures[structure.structureType].push(structure);
+        }
     }
 
     /**@param {number} directive */
     setDirective(directive) {
         this._directive = directive;
     }
-
-    getDirective(){
-        return this._directive;
-    }
-
-    getName() {
-        return this._base.name;
-    }
-
-    /**
-     * @param {string} structureType
-     * @returns {Structure[]} */
-    getMyStructures(structureType) {
-        return this._base.find(FIND_MY_STRUCTURES, {filter: {structureType: structureType}})
-    }
-
-    getBase() {
-        return this._base;
-    }
-
-    getLevel() {
-        return this._base.controller.level;
-    }
-
-    getMaxSpawnEnergy() {
-        if (this.fillingOp.getCreepCount() == 0) return this._base.energyAvailable;
-        else return this._base.energyCapacityAvailable;
-    }
-
 
     /**@param {string} roomName */
     requestBuilder(roomName) {
@@ -126,10 +97,10 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _tactics() {
-        if ((this.spawns.length == 0) && this.buildingOp.getCreepCount() == 0) {
+        if ((this.spawns.length == 0) && this.buildingOp.creepCount == 0) {
             this._shardOp.requestBuilder(this.name);
         }
-        if (this.hasSpawn() == false && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
+        if (this.spawns.length == 0 && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
     }
 
     _strategy() {
@@ -144,8 +115,4 @@ module.exports = class BaseOp extends ShardChildOp{
         return;
     }
 
-        
-    getBaseCenter() {
-        return this.basePlanOp.baseCenter;
-    }
 }

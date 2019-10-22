@@ -36,9 +36,9 @@ module.exports = class HarvestingOp extends BaseChildOp {
         }
 
         if (this.baseOp.phase >= c.BASE_PHASE_LINKS) {
-            let base = this.baseOp.getBase();
+            let base = this.baseOp.base;
             if(links.length == 0) {
-                let result = PathFinder.search(source.pos, this.baseOp.getBaseCenter())
+                let result = PathFinder.search(source.pos, this.baseOp.centerPos)
                 let pos = result.path[1];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
                 for(let structure of structures) structure.destroy();

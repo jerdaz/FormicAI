@@ -18,12 +18,20 @@ module.exports = class ShardChildOp extends ChildOp {
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
         let baseName = '';
-        if (baseOp) baseName = baseOp.getName();
+        if (baseOp) baseName = baseOp.name;
         else baseName = shardOp.name;
         shardOp.addOperation(this, baseName)
     }
 
     get instance() {return this._instance}
+
+    get shardOp() {return this._shardOp};
+
+    get creepCount(){
+        let res = _.size(this._creepOps)
+        if (!res) res = 0;
+        return res;
+    }
 
     initTick() {
         super.initTick();
@@ -46,12 +54,5 @@ module.exports = class ShardChildOp extends ChildOp {
         this._creepOps[creep.name].initTickCreep(creep);
     }
 
-    get shardOp() {return this._shardOp};
-
-    getCreepCount(){
-        let res = _.size(this._creepOps)
-        if (!res) res = 0;
-        return res;
-    }
 }
 

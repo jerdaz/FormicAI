@@ -18,16 +18,6 @@ module.exports = class MapOp extends ChildOp {
 
     get type() {return c.OPERATION_MAP}
 
-    _tactics() {
-        for(let roomName in Game.rooms) {
-            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0}
-            let room = Game.rooms[roomName];
-            let hostiles = room.find(FIND_HOSTILE_CREEPS);
-            if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
-            this._scoutInfo[roomName].lastSeen = Game.time;
-        }
-    }
-
     /**@param {String} roomName */
     getLastHostile(roomName) {
         if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].lastSeenHostile;
@@ -50,7 +40,7 @@ module.exports = class MapOp extends ChildOp {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {
                 let base = this._parent.getBase(baseDist.roomName);
-                if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).hasSpawn() )) return base.name;
+                if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).spawns.length >= 1 )) return base.name;
             }
         } else {
             let closestBase = {roomName: '', dist:10000}
@@ -111,6 +101,18 @@ module.exports = class MapOp extends ChildOp {
     /**@param {String} roomName */
     describeExits(roomName) {
         return Game.map.describeExits(roomName);
+    }    
+
+    _tactics() {
+        for(let roomName in Game.rooms) {
+            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0}
+            let room = Game.rooms[roomName];
+            let hostiles = room.find(FIND_HOSTILE_CREEPS);
+            if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
+            this._scoutInfo[roomName].lastSeen = Game.time;
+        }
     }
+
+
 }
 

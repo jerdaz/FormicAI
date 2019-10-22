@@ -29,7 +29,12 @@ module.exports = class ShardOp extends ChildOp {
 
     get name() {return Game.shard.name};
 
-        /**
+    /**@returns {Number} */
+    get baseCount() {
+        return _.size(this._baseOpsMap);
+    }
+    
+    /**
      * @param {string} roomName
      * @returns {Room} returns room with RoomName */
     getRoom(roomName) {
@@ -80,10 +85,6 @@ module.exports = class ShardOp extends ChildOp {
         return result;
     }
 
-    /**@returns {Number} */
-    getBaseCount() {
-        return _.size(this._baseOpsMap);
-    }
 
     //add's an operation to the basename/optype to operation map.
     /**
@@ -183,7 +184,7 @@ module.exports = class ShardOp extends ChildOp {
 
         //sort bases in order of importance
         this._baseOpsMap = new Map(_.values(this._baseOpsMap).sort((a,b) => 
-            {return a[1].getBase().controller.level - b[1].getBase().controller.level})
+            {return a[1].base.controller.level - b[1].base.controller.level})
         );
     }
 

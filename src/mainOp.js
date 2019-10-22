@@ -83,7 +83,7 @@ module.exports = class Main extends Operation {
         // // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
 
         // check for shard requests
-        let myBasesCount = this._shardOp.getBaseCount();
+        let myBasesCount = this._shardOp.baseCount;
         if(Game.gcl.level >= 3 && (myBasesCount >= 2)) {
             let interShardMem = this._loadInterShardMem();
             let totalBases = 0;
@@ -130,8 +130,8 @@ module.exports = class Main extends Operation {
         for (let shard of this._shards) {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
-                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.getBaseCount()};
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: this._shardOp.getBaseCount()};
+                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount};
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: this._shardOp.baseCount};
             }
         }
         return interShardMem;

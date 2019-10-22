@@ -30,26 +30,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
 
-    _tactics() {
-        let room = this.baseOp.getBase();
-        let baseOp = this._baseOp;
-        let structures = baseOp.myStructures;
-
-        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
-
-        for(let template of baseBuildTemplate) {
-            let structureType = template.type;
-            let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
-            if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
-                let pos = this._findBuildingSpot();
-                if (pos) pos.createConstructionSite(structureType);
-                else throw Error('WARNING: Cannot find building spot in room ' + room.name);
-            }
-        }
-    }
-
     _support() {
-        let base = this.baseOp.getBase();
+        let base = this.baseOp.base;
         //find & destroy extensions that have become unreachable.
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
@@ -69,6 +51,24 @@ module.exports = class BasePlanOp extends BaseChildOp{
         
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
+    }
+
+    _tactics() {
+        let room = this.baseOp.base;
+        let baseOp = this._baseOp;
+        let structures = baseOp.myStructures;
+
+        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
+
+        for(let template of baseBuildTemplate) {
+            let structureType = template.type;
+            let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
+            if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
+                let pos = this._findBuildingSpot();
+                if (pos) pos.createConstructionSite(structureType);
+                else throw Error('WARNING: Cannot find building spot in room ' + room.name);
+            }
+        }
     }
 
     
@@ -103,7 +103,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
      * @param {number} y
      * @param {BaseOp} baseOp */
     static _isValidBuildingSpot(x, y, baseOp, ignoreStructures = false) {
-        let base = baseOp.getBase();
+        let base = baseOp.base;
         if (!base.controller) throw Error();
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
         let pos = new RoomPosition(x, y, base.name)
@@ -118,7 +118,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let minerals = pos.findInRange(FIND_MINERALS,2);
         if (minerals.length > 0 ) return false;
         if (pos.inRangeTo(base.controller.pos,2)) return false;
-        if (pos.findPathTo(baseOp.getBaseCenter(),{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
+        if (pos.findPathTo(baseOp.centerPos,{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
         let walkable = false;
         for(let i=-1; i<=1; i++) {
             for (let j=-1; j<=1; j++) {
@@ -147,7 +147,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
      */
     _calcBaseCenter() {
         let baseOp = this._baseOp
-        let base = baseOp.getBase();
+        let base = baseOp.base;
         let firstSpawn = baseOp.spawns[0];
         let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES)[0];
         if (firstSpawn) return firstSpawn.pos;

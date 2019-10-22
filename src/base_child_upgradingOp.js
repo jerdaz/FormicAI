@@ -13,13 +13,13 @@ module.exports = class UpgradingOp extends BaseChildOp {
     }
 
     _strategy() {
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.getBase().controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 8)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
             let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL && workerCount > 2) workerCount = 2
-            if (workerCount < 1 && this.baseOp.getBase().controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]/4) workerCount = 1;
+            if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]/4) workerCount = 1;
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, workerCount)
         }
     }
@@ -31,7 +31,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (!(dest instanceof StructureController)
             || (creepOp.instruction != c.COMMAND_TRANSFER) )
             {
-                let dest = this._baseOp.getBase().controller;
+                let dest = this._baseOp.base.controller;
                 if (dest) creepOp.instructFill(dest);
             }
         }

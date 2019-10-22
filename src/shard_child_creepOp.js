@@ -30,6 +30,7 @@ module.exports = class CreepOp extends ChildOp {
     get dest() {
         return U.getObj(this._destId);
     }
+
     get pos() {
         if (this._creep == undefined ) throw Error('creep undefined');
 
@@ -112,8 +113,8 @@ module.exports = class CreepOp extends ChildOp {
         switch (this._instruct) {
             case c.COMMAND_NONE:
                 if (this._baseOp) {
-                    if (this._creep.pos.roomName != this._baseOp.getName()) {
-                        this.instructMoveTo(this._baseOp.getBaseCenter());
+                    if (this._creep.pos.roomName != this._baseOp.name) {
+                        this.instructMoveTo(this._baseOp.centerPos);
                     }
                 }
                 break;

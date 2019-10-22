@@ -11,7 +11,7 @@ module.exports = class BuildingOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 0;
-        let constructionCount = this._baseOp.getBase().find(FIND_CONSTRUCTION_SITES).length
+        let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
         if (constructionCount > 0) creepCount = 8;
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
     }
