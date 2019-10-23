@@ -100,7 +100,7 @@ module.exports = class BaseOp extends ShardChildOp{
         if ((this.spawns.length == 0) && this.buildingOp.creepCount == 0) {
             this._shardOp.requestBuilder(this.name);
         }
-        if (this.spawns.length == 0 && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
+        //if (this.spawns.length == 0 && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
     }
 
     _strategy() {
