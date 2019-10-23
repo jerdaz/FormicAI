@@ -195,7 +195,10 @@ module.exports = class CreepOp extends ChildOp {
                 else {
                     creep.moveTo(dest, {range:1});
                     if      (dest instanceof Structure) {
-                        let result = creep.transfer(dest, RESOURCE_ENERGY);
+                        /**@type {number} */
+                        let result = -1000;
+                        if (dest.hits < dest.hitsMax) result = creep.repair(dest);
+                        if (result != OK) result = creep.transfer(dest, RESOURCE_ENERGY);
                         if (result == OK && dest instanceof StructureController && (dest.sign == null || dest.sign.text != c.MY_SIGN)) creep.signController(dest, c.MY_SIGN);
                     }
                     else if (dest instanceof ConstructionSite) creep.build(dest);
