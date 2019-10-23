@@ -2,6 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
+const MAX_WALL_HEIGHT = 0.01;
+
 module.exports = class BuildingOp extends BaseChildOp {
     get type() {return c.OPERATION_BUILDING}
 
@@ -11,9 +13,14 @@ module.exports = class BuildingOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 0;
+        let level = this._baseOp.base.controller.level
         let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
         if (constructionCount > 0) creepCount = 8;
-        else if (this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax /2)}}).length>0) {
+        else if (level >= 2 
+             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+                                                                              && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
+                                      ).length>0
+                ) {
             creepCount = 1;
         }
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
