@@ -30,6 +30,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
 
+    _firstRun() {
+        if (this._baseOp.base.controller.level == 1) this._support();
+    }
+
     _support() {
         let base = this.baseOp.base;
         //find & destroy extensions that have become unreachable.
