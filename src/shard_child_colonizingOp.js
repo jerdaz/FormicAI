@@ -82,9 +82,8 @@ module.exports = class ColonizingOp extends ShardChildOp {
                             else destRoomName = lastRoomName
                             let exit_side = 0;
                             if (destRoomName) exit_side = room.findExitTo(destRoomName);
-                            let dest;
+                            let dest = new RoomPosition(25, 25, destRoomName);
                             if (exit_side>0) {
-                                dest = /**@type {RoomPosition} */(creepOp.pos.findClosestByPath(/**@type {any}*/ (exit_side)));
                                 if (dest) creepOp.instructMoveTo(dest)
                                 this._lastRoomName[creep.name] = room.name;
                             }
