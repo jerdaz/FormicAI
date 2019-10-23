@@ -100,21 +100,21 @@ module.exports = class SpawningOp extends BaseChildOp {
             body = [MOVE,CLAIM];    
             let roomName = this._shardColonizer
             for (let spawn of spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._shardColonizer = '';
             }
         } else  if (this._shardColBuilder) {
             body = this._expandCreep({body:[MOVE,CARRY,WORK]});
             let roomName = this._shardColBuilder
             for (let spawn of spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._shardColBuilder = '';
             }
         } else  if (this._builderRequest) {
             body = this._expandCreep({body:[MOVE,CARRY,WORK]});
             let roomName = this._builderRequest
             for (let spawn of spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._builderRequest = '';
             }
         }
