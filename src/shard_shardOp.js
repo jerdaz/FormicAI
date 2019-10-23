@@ -31,7 +31,7 @@ module.exports = class ShardOp extends ChildOp {
 
     /**@returns {Number} */
     get baseCount() {
-        return _.size(this._baseOpsMap);
+        return this._baseOpsMap.size;
     }
     
     /**
@@ -192,7 +192,7 @@ module.exports = class ShardOp extends ChildOp {
     _strategy(){
         // check if we need to colonize
         let directive = c.DIRECTIVE_NONE;
-        if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases && this._maxShardBases > _.size(this._baseOpsMap)) directive = c.DIRECTIVE_COLONIZE
+        if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases && this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE
         for (let baseOpKey of this._baseOpsMap) baseOpKey[1].setDirective(directive);
 
         // check if we need to request a colonizer
@@ -201,12 +201,12 @@ module.exports = class ShardOp extends ChildOp {
         else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
         //check if we need to unclaim bases
-        if (this._maxShardBases && _.size(this._baseOpsMap) > this._maxShardBases) {
+        if (this._maxShardBases && this._baseOpsMap.size > this._maxShardBases) {
             let bases = [];
             for (let baseOpName in this._baseOpsMap) bases.push(this.getBase(baseOpName))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
             
-            for (let i = _.size(this._baseOpsMap) - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
+            for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
         }
     }
 }
