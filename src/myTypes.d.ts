@@ -1,20 +1,20 @@
 
 declare type Debug = import ('./debug');
-declare type MainOp = import ('./main').MainOp;
-declare type Operation = import('./00_operation')
-declare type ChildOp = import('./01_childOp')
-declare type ShardOp = import('./10_shardOp')
-declare type ShardChildOp = import('./11_shardChildOp');
-declare type MapOp = import('./12_mapOp');
+declare type MainOp = import ('./mainOp').MainOp;
+declare type Operation = import('./meta_operation')
+declare type ChildOp = import('./meta_childOp')
+declare type ShardOp = import('./shard_shardOp')
+declare type ShardChildOp = import('./shard_shardChildOp');
+declare type MapOp = import('./shard_child_mapOp');
 declare type CreepOp = import('.creepOp');
-declare type BaseOp = import('./20_baseOp');
-declare type BaseChildOp = import('./21_baseChildOp');
-declare type SpawningOp = import('./22_spawningOp');
-declare type FillingOp = import('./22_fillingOp');
-declare type UpgradingOp = import('./22_upgradingOp');
-declare type BuildingOp = import('./22_buildingOp');
-declare type TowerOp = import('./22_towerOp');
-declare type ColonizingOp = import('./12_colonizingOp');
+declare type BaseOp = import('./base_baseOp');
+declare type BaseChildOp = import('./base_baseChildOp');
+declare type SpawningOp = import('./base_child_spawningOp');
+declare type FillingOp = import('./base_child_fillingOp');
+declare type UpgradingOp = import('./base_child_upgradingOp');
+declare type BuildingOp = import('./base_child_buildingOp');
+declare type TowerOp = import('./base_child_towerOp');
+declare type ColonizingOp = import('./shard_child_colonizingOp');
 
 declare interface Base extends Room {controller: StructureController};
 declare var _ = import('lodash');

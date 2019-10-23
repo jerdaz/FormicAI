@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./21_baseChildOp');
+const BaseChildOp = require('./base_baseChildOp');
 
 
 module.exports = class LinkOp extends BaseChildOp {
@@ -42,24 +42,6 @@ module.exports = class LinkOp extends BaseChildOp {
         this._strategy();
     }
 
-    _command(){
-        let targetLink = this._baseLinks[0];
-        for(let sourceLink of this._sourceLinks) {
-            if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
-                sourceLink.transferEnergy(targetLink);
-            }
-        }
-    }
-
-    _tactics() {
-        if (!this.baseOp.storage) return;
-        for (let creepName in this._creepOps) {
-            let creepOp = this._creepOps[creepName];
-            let source = this._baseLinks[0];
-            creepOp.instructTransfer(source, this.baseOp.storage)
-        }
-    }
-    
     _strategy() {
         let links = this._baseOp.links;
         let newSourceLinkIds = [];
@@ -74,4 +56,24 @@ module.exports = class LinkOp extends BaseChildOp {
 
         if (this._baseOp.phase >= c.BASE_PHASE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
     }
+
+    _tactics() {
+        if (!this.baseOp.storage) return;
+        for (let creepName in this._creepOps) {
+            let creepOp = this._creepOps[creepName];
+            let source = this._baseLinks[0];
+            creepOp.instructTransfer(source, this.baseOp.storage)
+        }
+    }    
+
+    _command(){
+        let targetLink = this._baseLinks[0];
+        for(let sourceLink of this._sourceLinks) {
+            if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
+                sourceLink.transferEnergy(targetLink);
+            }
+        }
+    }
+
+
 }

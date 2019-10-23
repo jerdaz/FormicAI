@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./21_baseChildOp');
+const BaseChildOp = require('./base_baseChildOp');
 
 module.exports = class FillingOp extends BaseChildOp {
     get type() {return c.OPERATION_FILLING}
@@ -22,12 +22,12 @@ module.exports = class FillingOp extends BaseChildOp {
     _command() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let dest = creepOp.getDest();
+            let dest = creepOp.dest;
             if (!(dest instanceof StructureSpawn || dest instanceof StructureExtension)
-            || (creepOp.getInstr() != c.COMMAND_TRANSFER)
+            || (creepOp.instruction != c.COMMAND_TRANSFER)
             || (dest.energy && dest.energy == dest.energyCapacity) ) 
             {
-                let dest = creepOp.getPos().findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
+                let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
                     return  (o.energy < o.energyCapacity)
                             && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER);
                     }})

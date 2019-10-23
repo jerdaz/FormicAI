@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./21_baseChildOp');
+const BaseChildOp = require('./base_baseChildOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
@@ -11,9 +11,9 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LINK, max:1}
 ]
 
-const MAX_CENTER_DISTANCE = 20;
+const MAX_CENTER_DISTANCE = 15;
 
-module.exports = class basePlanOp extends BaseChildOp{
+module.exports = class BasePlanOp extends BaseChildOp{
     /** 
      * @param {BaseOp} baseOp 
      */
@@ -30,8 +30,35 @@ module.exports = class basePlanOp extends BaseChildOp{
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
 
+    _firstRun() {
+        if (this._baseOp.base.controller.level == 1) this._support();
+    }
+
+    _support() {
+        let base = this.baseOp.base;
+        //find & destroy extensions that have become unreachable.
+        for (let structure of base.find(FIND_MY_STRUCTURES)) {
+            switch (structure.structureType) {
+                case STRUCTURE_EXTENSION:
+                case STRUCTURE_STORAGE:
+                case STRUCTURE_TOWER:
+                case STRUCTURE_SPAWN:
+                    // only do this for one base for now!!!!
+                    if (this._baseOp.name == 'E7N39' && !BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
+                    break;
+            }
+        }
+        for (let extension of this.baseOp.extensions) {
+        }
+
+        if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        
+        for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
+
+    }
+
     _tactics() {
-        let room = this.baseOp.getBase();
+        let room = this.baseOp.base;
         let baseOp = this._baseOp;
         let structures = baseOp.myStructures;
 
@@ -48,40 +75,6 @@ module.exports = class basePlanOp extends BaseChildOp{
         }
     }
 
-    _support() {
-        let base = this.baseOp.getBase();
-        //find & destroy extensions that have become unreachable.
-        for (let structure of base.find(FIND_MY_STRUCTURES)) {
-            switch (structure.structureType) {
-                case STRUCTURE_EXTENSION:
-                case STRUCTURE_STORAGE:
-                case STRUCTURE_TOWER:
-                case STRUCTURE_SPAWN:
-                    if (structure.pos.findPathTo(this.baseCenter).length > MAX_CENTER_DISTANCE) structure.destroy();
-                    break;
-            }
-        }
-        for (let extension of this.baseOp.extensions) {
-            let walkable = false;
-            let pos = extension.pos;
-            for(let i=-1; i<=1; i++) {
-                for (let j=-1; j<=1; j++) {
-                    let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
-                    if (U.isWalkable(pos2)) {
-                        walkable = true;
-                        break;
-                    }
-                }
-            }
-            if (!walkable) extension.destroy();
-        }
-
-        if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
-        
-        for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
-
-    }
-
     
     _findBuildingSpot() {
         let centerPos = this.baseCenter;
@@ -95,7 +88,7 @@ module.exports = class basePlanOp extends BaseChildOp{
         while (i<50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && _isValidBuildingSpot(x_+x, y_+y, this._baseOp))
+                    if ( (x+y) % 2 == 0 && BasePlanOp._isValidBuildingSpot(x_+x, y_+y, this._baseOp))
                         break loop;
                 }
             }
@@ -106,40 +99,46 @@ module.exports = class basePlanOp extends BaseChildOp{
         return undefined;
 
    
-        /** 
-         * @param {number} x
-         * @param {number} y
-         * @param {BaseOp} baseOp */
-        function _isValidBuildingSpot(x, y, baseOp) {
-            let base = baseOp.getBase();
-            if (!base.controller) throw Error();
-            if (x<2 || x > 47 || y < 2 || y > 47) return false;
-            let pos = new RoomPosition(x, y, base.name)
-            let structures = pos.lookFor(LOOK_STRUCTURES);
-            let countStructures = 0;
-            for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
-            if (countStructures > 0) return false;
-            let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-            if (buildingsites.length > 0 ) return false;
-            let sources = pos.findInRange(FIND_SOURCES,2);
-            if (sources.length > 0) return false;
-            let minerals = pos.findInRange(FIND_MINERALS,2);
-            if (minerals.length > 0 ) return false;
-            if (pos.inRangeTo(base.controller.pos,2)) return false;
-            for (let nx=-1;nx<=1;nx++) {
-                for (let ny=-1;ny<=1;ny++) {
-                    if (Math.abs(nx) + Math.abs(ny) == 2) continue; // hoek mag wel grenzen met muur.
-                    var terrain =base.getTerrain().get(x+nx, y+ny);
-                    if (terrain == TERRAIN_MASK_WALL) return false;
-                }
-            }
-            if (pos.findPathTo(baseOp.getBaseCenter()).length > MAX_CENTER_DISTANCE) return false;
-            return true;
-        }
 
     }
  
-    /**
+    /** 
+     * @param {number} x
+     * @param {number} y
+     * @param {BaseOp} baseOp */
+    static _isValidBuildingSpot(x, y, baseOp, ignoreStructures = false) {
+        let base = baseOp.base;
+        if (!base.controller) throw Error();
+        if (x<2 || x > 47 || y < 2 || y > 47) return false;
+        let pos = new RoomPosition(x, y, base.name)
+        let structures = pos.lookFor(LOOK_STRUCTURES);
+        let countStructures = 0;
+        for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
+        if (!ignoreStructures && countStructures > 0) return false;
+        let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
+        if (buildingsites.length > 0 ) return false;
+        let sources = pos.findInRange(FIND_SOURCES,2);
+        if (sources.length > 0) return false;
+        let minerals = pos.findInRange(FIND_MINERALS,2);
+        if (minerals.length > 0 ) return false;
+        if (pos.inRangeTo(base.controller.pos,2)) return false;
+        if (pos.findPathTo(baseOp.centerPos,{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
+        let walkable = false;
+        for(let i=-1; i<=1; i++) {
+            for (let j=-1; j<=1; j++) {
+                let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
+                if (U.isWalkable(pos2)) {
+                    walkable = true;
+                    break;
+                }
+            }
+        }
+        if (!walkable) return false;
+
+        return true;
+    }
+
+     /**
      * @returns {RoomPosition}
      */
     _getBaseCenter() {
@@ -152,7 +151,7 @@ module.exports = class basePlanOp extends BaseChildOp{
      */
     _calcBaseCenter() {
         let baseOp = this._baseOp
-        let base = baseOp.getBase();
+        let base = baseOp.base;
         let firstSpawn = baseOp.spawns[0];
         let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES)[0];
         if (firstSpawn) return firstSpawn.pos;

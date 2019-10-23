@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./21_baseChildOp');
+const BaseChildOp = require('./base_baseChildOp');
 
 const HARVESTER_SIZE_BIG = 48
 const HARVESTER_SIZE_SMALL = 6*3
@@ -36,9 +36,9 @@ module.exports = class HarvestingOp extends BaseChildOp {
         }
 
         if (this.baseOp.phase >= c.BASE_PHASE_LINKS) {
-            let base = this.baseOp.getBase();
+            let base = this.baseOp.base;
             if(links.length == 0) {
-                let result = PathFinder.search(source.pos, this.baseOp.getBaseCenter())
+                let result = PathFinder.search(source.pos, this.baseOp.centerPos)
                 let pos = result.path[1];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
                 for(let structure of structures) structure.destroy();

@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./21_baseChildOp');
+const BaseChildOp = require('./base_baseChildOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
@@ -9,8 +9,6 @@ module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
-        /**@type {StructureSpawn[]} */
-        this._spawns = [];
         /**@type {{[index:string] : {operation:ShardChildOp, count:number, template:CreepTemplate}}} */
         this._spawnRequests = {};
         this._builderRequest = '';
@@ -22,10 +20,6 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     get type() {return c.OPERATION_SPAWNING}
-
-    initTick() {
-        this._spawns = /**@type {StructureSpawn[]} */(this._baseOp.getMyStructures(STRUCTURE_SPAWN));
-    }
 
     /**
      * @param {ShardChildOp} operation
@@ -62,31 +56,35 @@ module.exports = class SpawningOp extends BaseChildOp {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
             this._spawnPrio[c.OPERATION_HARVESTING] = 50;
+            this._spawnPrio[c.OPERATION_LINK] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
-            this._spawnPrio[c.OPERATION_UPGRADING] = 10;
+            this._spawnPrio[c.OPERATION_UPGRADING] = 1;
             this._spawnPrio[c.OPERATION_COLONIZING] = 10;
         }
     }
 
     _command() {
         let canSpawn = false;
-        for (let spawn of this._spawns) if (spawn.spawning == null) canSpawn = true;
+        let spawns = this._baseOp.spawns;
+        for (let spawn of spawns) if (spawn.spawning == null) canSpawn = true;
         if (canSpawn) {
-            let base = this._baseOp.getBase();
+            let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.getCreepCount() >= this._spawnRequests[this._baseOp.fillingOp.id].count
+                && this._baseOp.fillingOp.creepCount >= this._spawnRequests[this._baseOp.fillingOp.id].count
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
                 if (spawnList.length > 0 ) {
-                    for (let spawn of this._spawns) {
+                    for (let spawn of spawns) {
                         if (spawn.spawning == null) {
                             let spawnItem = spawnList.pop();
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
-                                let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
-                                if (result != OK) spawnList.push(spawnItem);
+                                if (body.length>0) {
+                                    let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    if (result != OK) spawnList.push(spawnItem);
+                                }
                             }
                         }
                     }
@@ -97,25 +95,26 @@ module.exports = class SpawningOp extends BaseChildOp {
 
     _prioritySpawn() {
         let body = [];
+        let spawns = this._baseOp.spawns;
         if (this._shardColonizer) {
             body = [MOVE,CLAIM];    
             let roomName = this._shardColonizer
-            for (let spawn of this._spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+            for (let spawn of spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._shardColonizer = '';
             }
         } else  if (this._shardColBuilder) {
             body = this._expandCreep({body:[MOVE,CARRY,WORK]});
             let roomName = this._shardColBuilder
-            for (let spawn of this._spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_' + _.random(0, 999999999))
+            for (let spawn of spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_SHARDCOLONIZING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._shardColBuilder = '';
             }
         } else  if (this._builderRequest) {
             body = this._expandCreep({body:[MOVE,CARRY,WORK]});
             let roomName = this._builderRequest
-            for (let spawn of this._spawns) {
-                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_' + _.random(0, 999999999))
+            for (let spawn of spawns) {
+                let result = spawn.spawnCreep(body, roomName + '_' + c.OPERATION_BUILDING + '_0_' + _.random(0, 999999999))
                 if (result == OK) this._builderRequest = '';
             }
         }
@@ -130,7 +129,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             let spawnRequest = spawnRequests[spawnRequestId];
             let teamOp = spawnRequest.operation;
             let nCreeps = 0;
-            if (teamOp) nCreeps = teamOp.getCreepCount();
+            if (teamOp) nCreeps = teamOp.creepCount;
             if (spawnRequest.count > nCreeps) {
                 let opType = teamOp.type;
                 let opInstance = teamOp.instance;
@@ -150,6 +149,8 @@ module.exports = class SpawningOp extends BaseChildOp {
     _expandCreep (template) {
         /**@type {BodyPartConstant[]} */
         let body = template.body;
+        let baseOp = this._baseOp;
+        let base = baseOp.base;
         let minLength = template.minLength;
         let maxLength = template.maxLength;
         if (!minLength) minLength = 3
@@ -158,7 +159,9 @@ module.exports = class SpawningOp extends BaseChildOp {
         /**@type {BodyPartConstant[]} */
         var result = [];
         var i=0;
-        var maxEnergy = this._baseOp.getMaxSpawnEnergy();
+        var maxEnergy = base.energyCapacityAvailable;
+        if (baseOp.fillingOp.creepCount == 0) maxEnergy = base.energyAvailable;
+
         while (U.getCreepCost(result) <= maxEnergy && result.length < Math.min(maxLength + 1, MAX_CREEP_SIZE + 1)) {
             result.push(body[i++]);
             i = i % body.length;

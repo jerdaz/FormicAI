@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./01_childOp');
+const ChildOp = require('./meta_childOp');
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
@@ -27,6 +27,26 @@ module.exports = class CreepOp extends ChildOp {
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
+    get dest() {
+        return U.getObj(this._destId);
+    }
+
+    get pos() {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
+        return this._creep.pos;
+    }
+
+
+    get room() {
+        if (this._creep == undefined ) throw Error('creep undefined');
+
+        return this._creep.room;
+    }
+
+    get instruction() {
+        return this._instruct;
+    }
 
     /**@param {Creep} creep */
     initTickCreep(creep) {
@@ -73,6 +93,14 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = source.id;
     }
 
+
+    // /**@param {Number} opType */
+    // setOperation(opType) {
+    //     if (this._creep == undefined ) throw Error('creep undefined');
+
+    //     this._creep.memory.operationType = opType;
+    // }
+    
     _firstRun() {
         if (this._creep == null ) throw Error('creep undefined');
         this._creep.notifyWhenAttacked(false);
@@ -85,8 +113,8 @@ module.exports = class CreepOp extends ChildOp {
         switch (this._instruct) {
             case c.COMMAND_NONE:
                 if (this._baseOp) {
-                    if (this._creep.pos.roomName != this._baseOp.getName()) {
-                        this.instructMoveTo(this._baseOp.getBaseCenter());
+                    if (this._creep.pos.roomName != this._baseOp.name) {
+                        this.instructMoveTo(this._baseOp.centerPos);
                     }
                 }
                 break;
@@ -224,31 +252,5 @@ module.exports = class CreepOp extends ChildOp {
         return result;        
     }
 
-    getPos() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
-        return this._creep.pos;
-    }
-
-    getDest() {
-        return U.getObj(this._destId);
-    }
-
-    getRoom() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
-        return this._creep.room;
-    }
-
-    getInstr() {
-        return this._instruct;
-    }
-
-    /**@param {Number} opType */
-    setOperation(opType) {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
-        this._creep.memory.operationType = opType;
-    }
 }
 

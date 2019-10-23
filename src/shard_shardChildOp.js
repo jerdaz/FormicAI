@@ -1,7 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
-const ChildOp = require('./01_childOp');
-const CreepOp = require('./12_creepOp');
+const ChildOp = require('./meta_childOp');
+const CreepOp = require('./shard_child_creepOp');
 
 module.exports = class ShardChildOp extends ChildOp {
     /**
@@ -18,19 +18,27 @@ module.exports = class ShardChildOp extends ChildOp {
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
         let baseName = '';
-        if (baseOp) baseName = baseOp.getName();
+        if (baseOp) baseName = baseOp.name;
         else baseName = shardOp.name;
         shardOp.addOperation(this, baseName)
     }
 
     get instance() {return this._instance}
 
+    get shardOp() {return this._shardOp};
+
+    get creepCount(){
+        let res = _.size(this._creepOps)
+        if (!res) res = 0;
+        return res;
+    }
+
     initTick() {
         super.initTick();
         //remove dead creeps from runtime
         for (let creepName in this._creepOps) {
             if (Game.creeps[creepName] == undefined) {
-                this._removeChildOp(this._creepOps[creepName])
+                this.removeChildOp(this._creepOps[creepName])
                 delete this._creepOps[creepName];
             }
         }
@@ -40,18 +48,11 @@ module.exports = class ShardChildOp extends ChildOp {
     initCreep(creep) {
         if (this._creepOps[creep.name] == undefined) {
             this._creepOps[creep.name] = new CreepOp(this, this._shardOp, this._baseOp)
-            this._addChildOp(this._creepOps[creep.name])
+            this.addChildOp(this._creepOps[creep.name])
             this._runTactics = true;
         }
         this._creepOps[creep.name].initTickCreep(creep);
     }
 
-    get shardOp() {return this._shardOp};
-
-    getCreepCount(){
-        let res = _.size(this._creepOps)
-        if (!res) res = 0;
-        return res;
-    }
 }
 
