@@ -122,7 +122,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
         let pos = new RoomPosition(x, y, base.name)
         let terrain = pos.lookFor(LOOK_TERRAIN);
-        if (_.find(terrain,{type: TERRAIN_MASK_WALL})) return false;
+        if (_.includes(terrain,'wall')) return false;
         let structures = pos.lookFor(LOOK_STRUCTURES);
         let countStructures = 0;
         for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
