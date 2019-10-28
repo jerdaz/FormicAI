@@ -25,6 +25,13 @@ module.exports = class Util {
         return Game.getObjectById(id);
     }
 
+    /**@param {string} id */
+    static getRoomObject(id) {
+        let ret = Game.getObjectById(id)
+        if (ret instanceof RoomObject) return ret;
+        else throw Error('Not a roomobject');
+    }
+
     /**
      * @param {string} creepName
      * @returns {Creep} returns creep with creepName */

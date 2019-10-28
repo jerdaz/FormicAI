@@ -177,7 +177,7 @@ module.exports = class CreepOp extends ChildOp {
                 //deliberate fallthrough to retrieving
             case STATE_RETRIEVING:
                 if (source == null) break;
-                this._moveTo(source, {range:1});
+                this._moveTo(source.pos, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
                 else if (source instanceof Tombstone) creep.withdraw(source, RESOURCE_ENERGY);
@@ -197,7 +197,7 @@ module.exports = class CreepOp extends ChildOp {
             case STATE_DELIVERING:
                 if(!dest) this._instruct = c.COMMAND_NONE;
                 else {
-                    this._moveTo(dest, {range:1});
+                    this._moveTo(dest.pos, {range:1});
                     if      (dest instanceof Structure) {
                         /**@type {number} */
                         let result = -1000;
@@ -215,8 +215,8 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case STATE_CLAIMING:
                 if (dest) {
-                    this._moveTo(dest, {range:1});
-                    creep.claimController(dest);
+                    this._moveTo(dest.pos, {range:1});
+                    if (dest instanceof StructureController) creep.claimController(dest);
                 }
 
             this._lastPos = this._creep.pos;
@@ -265,9 +265,8 @@ module.exports = class CreepOp extends ChildOp {
     */
     _moveTo(pos, opts) {
         let optsCopy = Object.assign(opts||{});
-        /**@type {RoomPosition | null} */
+        /**@type {RoomPosition | RoomObject| null} */
         let dest = pos;
-        if (dest.pos) dest = dest.pos;
         let myPos = this._creep.pos;
         if (myPos.roomName != dest.roomName) {
             optsCopy.range = 20;
@@ -285,7 +284,6 @@ module.exports = class CreepOp extends ChildOp {
         }
         this._creep.moveTo(dest, optsCopy);
         this._lastMoveToDest = pos;
-        if (this._lastMoveToDest.pos) this._lastMoveToDest = this._lastMoveToDest.pos;
     }
 }
 
