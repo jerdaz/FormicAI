@@ -265,7 +265,7 @@ module.exports = class CreepOp extends ChildOp {
     */
     _moveTo(pos, opts) {
         let optsCopy = Object.assign(opts||{});
-        /**@type {RoomPosition | RoomObject| null} */
+        /**@type {RoomPosition | null} */
         let dest = pos;
         let myPos = this._creep.pos;
         if (myPos.roomName != dest.roomName) {
