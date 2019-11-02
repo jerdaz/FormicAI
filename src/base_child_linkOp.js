@@ -84,7 +84,7 @@ module.exports = class LinkOp extends BaseChildOp {
 
     _command(){
         let targetLink = this._controllerLinks[0];
-        if (!targetLink || targetLink.energy > targetLink.energyCapacity / 2) targetLink = this._baseLinks[0];
+        if (targetLink == undefined || targetLink.energy > targetLink.energyCapacity / 2) targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
             if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
                 sourceLink.transferEnergy(targetLink);
