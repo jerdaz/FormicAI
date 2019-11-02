@@ -5,6 +5,7 @@ const BaseChildOp = require('./base_baseChildOp');
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
 const MAX_UPGRADER_COUNT = 15
+const DOWNGRADE_RESERVE = 0.75
 
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
@@ -20,7 +21,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL && workerCount > 2) workerCount = 2
-            if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]/4) workerCount = 1;
+            if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) workerCount = 1;
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, workerCount)
         }
     }

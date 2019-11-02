@@ -29,7 +29,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
-        } else if (links.length >=1) {
+        } else if (this.baseOp.phase >= c.BASE_PHASE_LINKS && links.length >=1) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_SMALL}, 1)
         } else if (this.baseOp.storage) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, 1)
