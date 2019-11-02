@@ -24,6 +24,18 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) workerCount = 1;
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, workerCount)
         }
+
+        if(this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) {
+            let controller = this.baseOp.base.controller;
+            let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
+            if (!link) {
+                let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
+                let pos = result.path[2];
+                let structures = pos.lookFor(LOOK_STRUCTURES)
+                for(let structure of structures) structure.destroy();
+                pos.createConstructionSite(STRUCTURE_LINK);
+            }
+        }
     }
 
     _tactics() {
