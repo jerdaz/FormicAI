@@ -10,24 +10,34 @@ module.exports = class LinkOp extends BaseChildOp {
         /**@type {String[]} */
         this._sourceLinkIds = [];
         /**@type {String[]} */
+        this._controllerLinkIds = [];
+        /**@type {String[]} */
         this._baseLinkIds = [];
         /**@type {StructureLink[]} */
         this._sourceLinks = [];
         /**@type {StructureLink[]} */
         this._baseLinks = [];
+        /**@type {StructureLink[]} */
+        this._controllerLinks = [];
     }
 
     get type() {return c.OPERATION_LINK}
     get baseLinks() {return this._baseLinks}
     get sourceLinks() {return this._sourceLinks};
+    get controllerLinks() {return this._controllerLinks};
 
     initTick() {
         super.initTick();
         let newSourceLinks = [];
+        let newControllerLinks = [];
         let newBaseLinks = [];
         for (let linkId of this._sourceLinkIds) {
             let link = Game.getObjectById(linkId);
             if (link) newSourceLinks.push(link);
+        }
+        for (let linkId of this._controllerLinkIds) {
+            let link = Game.getObjectById(linkId);
+            if (link) newControllerLinks.push(link);
         }
         for (let linkId of this._baseLinkIds) {
             let link = Game.getObjectById(linkId);
@@ -35,6 +45,7 @@ module.exports = class LinkOp extends BaseChildOp {
         }
     
         this._sourceLinks = newSourceLinks;
+        this._controllerLinks = newControllerLinks;
         this._baseLinks = newBaseLinks;
     }
 
@@ -45,12 +56,15 @@ module.exports = class LinkOp extends BaseChildOp {
     _strategy() {
         let links = this._baseOp.links;
         let newSourceLinkIds = [];
-        let newBaseLinkIds = []
+        let newBaseLinkIds = [];
+        let newControllerLinkIds = [];
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
+            if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}})) newControllerLinkIds.push(link.id);
             else newBaseLinkIds.push(link.id);
         }
         this._sourceLinkIds = newSourceLinkIds;
+        this._controllerLinkIds = newControllerLinkIds;
         this._baseLinkIds = newBaseLinkIds;
         this.initTick();
 
@@ -67,7 +81,8 @@ module.exports = class LinkOp extends BaseChildOp {
     }    
 
     _command(){
-        let targetLink = this._baseLinks[0];
+        let targetLink = this._controllerLinks[0];
+        if (targetLink.energy > targetLink.energyCapacity / 2) targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
             if (sourceLink.energyCapacity <= sourceLink.energy * 2) {
                 sourceLink.transferEnergy(targetLink);
