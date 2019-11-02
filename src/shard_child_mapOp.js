@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number}}} ScoutInfo*/
+/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} ScoutInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 module.exports = class MapOp extends ChildOp {
@@ -28,6 +28,12 @@ module.exports = class MapOp extends ChildOp {
     getLastSeen(roomName) {
         if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].lastSeen;
         else return 0;
+    }
+
+    /**@param {String} roomName */
+    getHostileOwner(roomName) {
+        if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].hostileOwner;
+        else return false;
     }
 
     /**
@@ -105,11 +111,12 @@ module.exports = class MapOp extends ChildOp {
 
     _tactics() {
         for(let roomName in Game.rooms) {
-            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0}
+            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false}
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
             this._scoutInfo[roomName].lastSeen = Game.time;
+            this._scoutInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && room.controller.owner != null;
         }
     }
 

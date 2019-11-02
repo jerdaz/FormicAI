@@ -40,6 +40,7 @@ module.exports = class Main extends Operation {
             }
         }
         catch (err) {}
+        if(this._shards.length == 0) this._shards = [Game.shard.name];
     }
 
     get type() { return c.OPERATION_MAIN; }
@@ -84,27 +85,25 @@ module.exports = class Main extends Operation {
 
         // check for shard requests
         let myBasesCount = this._shardOp.baseCount;
-        if(Game.gcl.level >= 3 && (myBasesCount >= 2)) {
-            let interShardMem = this._loadInterShardMem();
-            let totalBases = 0;
-            for (let i=0; i < interShardMem.shards.length; i++) {
-                if (interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
-                if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
-                    let shardRequest = interShardMem.shards[i];
-                    if (shardRequest.request == c.SHARDREQUEST_BUILDER) {
-                        this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
-                        shardRequest.request = c.SHARDREQUEST_NONE;
-                        this._writeInterShardMem(interShardMem);
-                        break;
-                    }
+        let interShardMem = this._loadInterShardMem();
+        let totalBases = 0;
+        for (let i=0; i < interShardMem.shards.length; i++) {
+            if (interShardMem.shards[i] && interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
+            if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
+                let shardRequest = interShardMem.shards[i];
+                if (shardRequest && shardRequest.request == c.SHARDREQUEST_BUILDER) {
+                    this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
+                    shardRequest.request = c.SHARDREQUEST_NONE;
+                    this._writeInterShardMem(interShardMem);
+                    break;
                 }
             }
-            if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
-            else this._shardOp.setDirectiveMaxBases(myBasesCount);
-            if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
-                interShardMem.shards[this._shardNum].baseCount = myBasesCount;
-                this._writeInterShardMem(interShardMem);
-            }
+        }
+        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
+        else this._shardOp.setDirectiveMaxBases(myBasesCount);
+        if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
+            interShardMem.shards[this._shardNum].baseCount = myBasesCount;
+            this._writeInterShardMem(interShardMem);
         }
     }
 
@@ -140,7 +139,7 @@ module.exports = class Main extends Operation {
     /**@param {number} shardRequest */
     _requestCreep(shardRequest) {
         let interShardMem = this._loadInterShardMem();
-        if (interShardMem) {
+        if (interShardMem && interShardMem.shards[this._shardNum]) {
             interShardMem.shards[this._shardNum].request = shardRequest
             this._writeInterShardMem(interShardMem);
         }

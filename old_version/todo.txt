@@ -1,0 +1,101 @@
+/*
+test
+
+TODO NOW:
+P3: Implementeren random nummer die 'initiative' van room bepaalt, om ervoor te zorgen dat de rooms gelijdelijk productie reduceren in 1x
+P3: Memory loopt vol
+P3: Bug hunting
+P3: Typescrypt volledig implementeren
+P3: Profiling zelf schrijven en implementeren inclusief detectie script timeout
+P3: Classes implementeren (operators etc) en een alpha/beta test introduceren op een select aantal kamers.
+P4: pathfindering werkt niet helemaal goed in alle gevallen
+P5: Filler gaat, als hij idle is, de terminal leeghalen en fillen rond 75k. beter als hij geen cpu cycles verspilt.
+er lijkt iets mis te zijn met emergency spawn. indien er weinig energie beschikbaar is ontstaan hele kleine workers/transporters.
+bij het destroyen van een gebouw met inhoud zoals terminal, deze eerst netjes leegmaken.
+bij het destroyen van een gebouw, ervoor zorgen dat deze onmiddelijk wordt herbouwd, in plaats van na 300 ticks.
+een initialiser unclaimt wel een controller, maar claimt hem niet meer opnieuw.
+keeperkillers ook harversters laten healen als deze gewond zijn
+harversters kunnen niet snel genoeg wegvluchten van keepers als ze op swamp staan. vlucht roads bouwen?
+worker loopt weg nadat hij een construction site heeft gemaakt van deze construction site.. ?
+pathfinder van travelto aanpassen zodat hij niet naar een unwalkable destination gaat dit scheelt cpu.
+Wegen bouwen op plekken waar veel creeps komen: Iedere tick dat een creep op een niet-weg staat, zijn energiekosten vastleggen op die tile: 50% op plain, 80% op swamp.Na een uur voor iedere tile uitrekenen of een extra weg uitkan t.o.v. reparatiekosten en indien nodig deze (extra) bouwen.
+creeps lijken niet goed om elkaar heen te lopen als er eentje stilstaat en daardoor repathen. treedt op bij nieuwe basissen.
+defense: economie verbeteren zodat cannons goed gevuld blijven en workers/fillers spawnen
+construction sites vervangen door flags
+transporters worden niet goed recycled nu spawns niet meer iedere turn runnen
+alleen nog maar rooms met spawns runnen
+center rooms hebben erg agressieve defense. defense logic verbeteren of misschien de attack uitzitten. nu zorgt hij voor base shutdown.
+oude spawns niet meer runnen en hun 'roomdistance' opruimen in harvestareas
+containers repairen door workers..?
+het oppakken van energie drops gaat niet goed omdat ze geen structure zijn en daarom reserved energie niet initialiseert. gaat waarschijnlijk ook mis bij tombstones.
+upgraders energie laten pakken en upgraden tegelijk. minder carry parts maken is niet nodig
+defenders werken niet goed lijkt het. check of ze wel spawnen
+traveler implementeren voor ik nieuwe aanval doe
+towers beter fillen, maar niet om te repairen
+construction sites opruimen die niet meer gebouwd kunnen worden
+defenders werken niet meer goed
+containers ook gebruiken om transporters in te laten storen, mits deze niet bij een source staan. dit maakt transporters wat efficienter, vooral als er nog geen links zijn.
+scouts optimaliseren: herschrijven zodat scout een eigen rol wordt. Huidige scout wordt 'reserver'. de nieuwe scout gaat actief ontdekken, 1 scout per basis. deze houdt een timer bij wanneer hij voor het laatst een room heeft bezocht en ontdekt degene die het langst niet bezocht is. de scout onthoudt in de room: is er een andere basis, zijn er keeper lairs, zijn er vijandelijke creeps, is hij doodgemaakt, is hij vastgelopen etc. de resultaten van deze scout worden gebruikt voor findharvestrooms isvalid ipv de huidgie werkwijze. in de toekomst wordt dit gebruikt voor coloniseren.
+base 1: defense code eerst heal invaders dood laten maken. defenders optimaliseren dat tough voor zit
+base 2: harvest area code controleren. spawn is idle en breidt niet uit.
+transporters ook losse energie op laten pakken als ze er in de buurt zijn, vooral bij overflow
+scouts veel move parts geven (5:1) ipv het bouwen van roads naar controllers.
+goede code voor vaststellen of een room harvestarea is: niet indien ik er nieuw scout en er zitten vijanden, wel als ik er eenmaal harversters naartoe heb gestuurd, dan in ieder geval een tick of 1500. roomcache fixen met ttl daarvoor
+geen defenders spawnen als er alleen scouts zijn. uitzondering van keeper room weer weghalen!! verder cachen dat er vijanden zitten...
+zodra we op harvester/transport niveau zitten, workers spawnen specifiek voor rooms die een worker nodig hebben en verder niet meer (idle systeem alleen voor harvester/transporter niveau)
+meerdere torens gecoördineerd laten repairen/healen
+creeps (harvester/transporter) hun eigen dood laten voorspellen en opnieuw een vervanger laten spawnen. Liefst vanuit creep zelf. spawner gaat dan eerst replacen alvorens nieuw te spawnen.
+pathfinding: path cachen. kijken of het pad van de volgende beurt een botsing oplevert met een creep. in dat geval herpadvinden en ze om elkaar laten lopen. bij botsing volgende beurt altijd pad opnieuw bereken. Vooruit berekend pad niet op basis van creeps
+defenders recyclen als er geen vijand meer is. niet te grote bodys spawnen, maar in verhouding met de threat.
+spawn code: er worden te veel scouts gespawned. alleen nodig wanneer er geen harverster meer zijn.
+spawn code: scout alleen spawnen als er voldoende harvesters zijn!!! vooral in home area. Het lijkt er op dat ze niet in de goede prio harvest gebieden reserven met claim parts
+spawn code: slim goed creep size op basis van beschikbare energie en noodscenario.
+bug in harvest area code: w7s41 is geselecteerd voor w8s41. dit komt doordat hij eerst gevonden wordt met een hoge depth. als hij later met een betere depth wordt gevonden, wordt dat genegeerd omdat hij al in het resultaat zit.
+screeps auto recyclen / suicide (op cointainer!)
+externe worker hoeft alleen nog maar weg te bouwen en te onderhouden, niet meer container (dit doet de harvester). het is handig als de worker pas komt als de container af is.
+roomcache repareren (is nu leeg)
+flags object maken dat flags van een kleur gesorteerd teruggeeft in array
+colonizer aanpassen zodat hij naar eigen yellow flag gaat ipv global yellow flag
+colonisten aanpassen zodat ze verschillende rollen hebben. er voor zorgen dat een workercolonist niet een worker wordt, dan gaat de telling niet goed. in plaats daarvan gewoon worker functie aanroepen vanuit worker colonist.
+spawn code: creep juiste body geven om te overleven bij gevecht
+defenders ook ranged combat geven.
+(energy,creep,loss) voorspellen wanneer NPC invaders verschijnen en alvast defender sturen
+met de autobuilder er rekening mee houden dat er al een container staat.
+workers automatisch op remote containers afsturen als ze kapot zijn.
+road autobuilding homebase
+basis bouwen volgens template
+auto nuke defense
+mineralen gedropped door NPC invaders oppakken en naar store brengen (en energy isfull code op aanpassen)
+creeps laten suicen of recyclen of healen als ze beschadigd zijn en hun werk niet meer kunnen doen.
+muren automatisch bouwen
+creeps laten vluchten bij aanvallen.
+couriers voor upgrader repareren en implementeren
+upgrader goed implementeren icm courier. upgraders spawnen op basis van inhoud van storage.
+filler zichzelf weer volgooien als hij idle is. 2 filler per basis zijn nodig.
+opruimen memory van structures die kapot zijn (needsrepair)_
+ervoor zorgen dat screeps zelfmoord plegen of regenereren wanneer ze dreigen dood te gaan, zodat ze niet hun energie laten vallen
+algemene bibliotheek met functies maken voor findharvestflags
+worker dead replacement goed implementeren
+memory cleanup voor alle object typen
+transporter en worker code splitsen
+transporters verschil leren tussen roomcontroller container en source container en de juiste legen/vullen
+    - automatisch spawn voordat ze dood gaan.
+upgrader implementeren
+volgorde runnen creeps slimmer maken
+worker slim laten bepalen wat hij wel/niet doet.
+automatisch extern minen
+automatisch juiste spawnsize, minimum, maximum body size en juiste tactische volgorde van body sizes
+automatisch bouwen (roads, containers, extensions, tower, storage, links, walls, rampards)
+
+TODO HIGHER ROOMLVL: test
+links
+mineralen
+labs
+trading
+colonization
+automatische colonization
+automatic attack
+
+DEFENSE(automatic): IF ATTACKED
+ATTACK(manual): IF OUT OF EXPANSION ROOM
+*/
