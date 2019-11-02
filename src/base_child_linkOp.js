@@ -61,7 +61,9 @@ module.exports = class LinkOp extends BaseChildOp {
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
             if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}})) newControllerLinkIds.push(link.id);
-            else newBaseLinkIds.push(link.id);
+            let baseLink = link.pos.findClosestInRange(FIND_STRUCTURES,{filter: {structureType: STRUCTURE_STORAGE}});
+            if (baseLink) newBaseLinkIds.push(baseLink.id);
+            
         }
         this._sourceLinkIds = newSourceLinkIds;
         this._controllerLinkIds = newControllerLinkIds;
