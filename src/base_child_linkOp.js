@@ -54,7 +54,7 @@ module.exports = class LinkOp extends BaseChildOp {
         this._baseLinkIds = newBaseLinkIds;
         this.initTick();
 
-        if (this._baseOp.phase >= c.BASE_PHASE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
+        if (this._baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
     }
 
     _tactics() {

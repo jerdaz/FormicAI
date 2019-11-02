@@ -29,13 +29,13 @@ module.exports = class HarvestingOp extends BaseChildOp {
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
-        } else if (this.baseOp.phase >= c.BASE_PHASE_LINKS && links.length >=1) {
+        } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_SMALL}, 1)
         } else if (this.baseOp.storage) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, 1)
         }
 
-        if (this.baseOp.phase >= c.BASE_PHASE_LINKS) {
+        if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
             let base = this.baseOp.base;
             if(links.length == 0) {
                 let result = PathFinder.search(source.pos, this.baseOp.centerPos)
