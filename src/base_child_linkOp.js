@@ -56,18 +56,18 @@ module.exports = class LinkOp extends BaseChildOp {
     _strategy() {
         let links = this._baseOp.links;
         let newSourceLinkIds = [];
-        let newBaseLinkIds = [];
         let newControllerLinkIds = [];
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
-            if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}})) newControllerLinkIds.push(link.id);
-            let baseLink = link.pos.findClosestInRange(FIND_STRUCTURES,{filter: {structureType: STRUCTURE_STORAGE}});
-            if (baseLink) newBaseLinkIds.push(baseLink.id);
-            
+            if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
         }
         this._sourceLinkIds = newSourceLinkIds;
         this._controllerLinkIds = newControllerLinkIds;
-        this._baseLinkIds = newBaseLinkIds;
+
+        if (this._baseOp.storage) {
+            let newBaseLink = this._baseOp.storage.pos.findClosestByPath(FIND_STRUCTURES,{filter: {structureType: STRUCTURE_LINK}});
+            if (newBaseLink) this._baseLinkIds = [newBaseLink.id];
+        } else this._baseLinkIds = [];
         this.initTick();
 
         if (this._baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)

@@ -180,6 +180,7 @@ module.exports = class CreepOp extends ChildOp {
                 this._moveTo(source.pos, {range:1});
                 if      (source instanceof Source)    creep.harvest(source);
                 else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
+                else if (source instanceof Ruin) creep.withdraw(source, RESOURCE_ENERGY);
                 else if (source instanceof Tombstone) creep.withdraw(source, RESOURCE_ENERGY);
                 else if (source instanceof Resource) creep.pickup(source);
                 else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
@@ -239,6 +240,7 @@ module.exports = class CreepOp extends ChildOp {
         let result;
         roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
         roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
+        roomObjects = roomObjects.concat(room.find(FIND_RUINS, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
         roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
                                                                                                 ) && o.store.energy > 0
                                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
