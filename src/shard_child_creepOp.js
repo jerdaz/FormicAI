@@ -212,6 +212,14 @@ module.exports = class CreepOp extends ChildOp {
         
             case STATE_MOVING:
                 if (this._destPos) this._moveTo(this._destPos);
+                if (_.size(creep.carry) < creep.carryCapacity) {
+                    let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1, {filter: o => {return o.store.energy > 0}})[0];
+                    if (tombstone) creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    else {
+                        let dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: {resourceType: RESOURCE_ENERGY}})[0];
+                        creep.pickup(dropped_energy);
+                    }
+                }
                 break;
             case STATE_CLAIMING:
                 if (dest) {
