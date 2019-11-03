@@ -114,7 +114,9 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if( this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
-        if (this.links.length > 0) this._phase = c.BASE_PHASE_LINKS;
+        if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
+        else return;
+        if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;
