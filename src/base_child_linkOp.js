@@ -70,11 +70,12 @@ module.exports = class LinkOp extends BaseChildOp {
         } else this._baseLinkIds = [];
         this.initTick();
 
-        if (this._baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
+        if (this._baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && this._baseLinkIds.length>0) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, 1)
     }
 
     _tactics() {
         if (!this.baseOp.storage) return;
+        if (this._baseLinkIds.length == 0) return;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let source = this._baseLinks[0];
@@ -96,6 +97,4 @@ module.exports = class LinkOp extends BaseChildOp {
             }
         }
     }
-
-
 }
