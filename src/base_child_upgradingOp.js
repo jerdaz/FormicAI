@@ -25,7 +25,10 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (link) body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
             let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
-            if (this.baseOp.phase >= c.BASE_PHASE_EOL) {workerCount = 1; maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4) * 7 }
+            if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
+                if (workerCount > 1) workerCount = 1;
+                maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4) * 7 
+            }
             if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) workerCount = 1;
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
         }
