@@ -283,7 +283,8 @@ module.exports = class CreepOp extends ChildOp {
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
                 let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
-                    {if(this._mapOp.getHostileOwner(roomName)) return Infinity; }
+                    {   let roomInfo = this._mapOp.getRoomInfo(roomName);
+                        if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
                 if (route instanceof Array && route.length > 2) {
                     dest = new RoomPosition(25,25,route[1].room)
