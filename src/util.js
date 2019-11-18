@@ -27,12 +27,12 @@ module.exports = class Util {
 
     /**
      * @param {string} id 
-     * @returns {RoomObjectEx}
+     * @returns {RoomObjectEx|null}
     */
     static getRoomObject(id) {
         let ret = Game.getObjectById(id)
         if (ret instanceof RoomObject) return ret;
-        else throw Error('Not a roomobject');
+        else return null;
     }
 
     /**

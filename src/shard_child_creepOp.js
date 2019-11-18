@@ -168,8 +168,7 @@ module.exports = class CreepOp extends ChildOp {
         let destObj = U.getRoomObject(this._destId);
         switch (this._state) {
             case STATE_FINDENERGY:
-                let store = sourceObj.store;
-                if (sourceObj && store && store[RESOURCE_ENERGY] == 0) sourceObj = null;
+                if (sourceObj && sourceObj.store && sourceObj.store[RESOURCE_ENERGY] == 0) sourceObj = null;
                 if(sourceObj == undefined) {
                     sourceObj = this._findEnergySource();
                     if (sourceObj && sourceObj.id) this._sourceId = sourceObj.id;
