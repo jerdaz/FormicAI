@@ -15,18 +15,25 @@ module.exports = class UpgradingOp extends BaseChildOp {
     }
 
     _strategy() {
+        let controller = this.baseOp.base.controller;
+        let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
+            let body = [MOVE,CARRY,WORK];
+            let maxSize = MAX_CREEP_SIZE;
+            if (link) body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
             let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
-            if (this.baseOp.phase >= c.BASE_PHASE_EOL && workerCount > 2) workerCount = 2
+            if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
+                if (workerCount > 1) workerCount = 1;
+                maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4) * 7 
+            }
             if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) workerCount = 1;
-            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, workerCount)
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
         }
 
         if(this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) {
-            let controller = this.baseOp.base.controller;
             let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
             if (!link) {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
