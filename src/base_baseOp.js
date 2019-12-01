@@ -112,7 +112,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._phase = c.BASE_PHASE_BIRTH;
         if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
         else return;
-        if( this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        if( this.storage.store.energy >= this._base.energyCapacityAvailable * 2) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
