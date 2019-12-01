@@ -22,7 +22,7 @@ module.exports = class FillingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.dest;
             if (!(dest instanceof StructureSpawn || dest instanceof StructureExtension)
-            || (creepOp.instruction != c.COMMAND_TRANSFER)
+            || (creepOp.instruction != c.COMMAND_FILL)
             || (dest.energy && dest.energy == dest.energyCapacity) ) 
             {
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
