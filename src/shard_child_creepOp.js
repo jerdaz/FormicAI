@@ -178,6 +178,23 @@ module.exports = class CreepOp extends ChildOp {
             case STATE_RETRIEVING:
                 if (sourceObj == null) break;
                 this._moveTo(sourceObj.pos, {range:1});
+
+                // also pick up stuff on the way
+                let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1)[0];
+                if (tombstone) {
+                    let res = creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    // also withdraw other stuff & bring to terminal if that is destination
+                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
+                }
+                else {
+                    let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
+                    if (dropped_resource) {
+                        if (dropped_resource.resourceType == RESOURCE_ENERGY) creep.pickup(dropped_resource);
+                        // also withdraw other stuff & bring to terminal if that is destination
+                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
+                    }
+                }
+
                 if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
                 else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,RESOURCE_ENERGY);
                 else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
@@ -213,20 +230,6 @@ module.exports = class CreepOp extends ChildOp {
         
             case STATE_MOVING:
                 if (this._destPos) this._moveTo(this._destPos);
-                if (_.size(creep.carry) < creep.carryCapacity) {
-                    let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1, {filter: o => {return o.store.energy > 0}})[0];
-                    if (tombstone) {
-                        let res = creep.withdraw(tombstone, RESOURCE_ENERGY);
-                        // also withdraw other stuff & bring to terminal if that is destination
-                        if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
-                    }
-                    else {
-                        let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
-                        if (dropped_resource.resourceType == RESOURCE_ENERGY) creep.pickup(dropped_resource);
-                        // also withdraw other stuff & bring to terminal if that is destination
-                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
-                    }
-                }
                 break;
             case STATE_CLAIMING:
                 if (destObj) {
