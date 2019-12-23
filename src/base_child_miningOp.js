@@ -32,11 +32,13 @@ module.exports = class MiningOp extends BaseChildOp {
     }
 
     _tactics() {
-        if (!this.baseOp.terminal) return;
+        let terminal = this.baseOp.terminal
+        if (!terminal) return;
+
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let mineral = Game.getObjectById(this._mineralId);
-            creepOp.instructHarvest(mineral)
+            creepOp.instructTransfer(mineral, terminal);
         }
     }
 }

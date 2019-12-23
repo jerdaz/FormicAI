@@ -179,10 +179,11 @@ module.exports = class CreepOp extends ChildOp {
                 if (sourceObj == null) break;
                 this._moveTo(sourceObj.pos, {range:1});
                 if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj);
+                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,RESOURCE_ENERGY);
                 else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
 
@@ -202,7 +203,7 @@ module.exports = class CreepOp extends ChildOp {
                         /**@type {number} */
                         let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, RESOURCE_ENERGY);
+                        if (result != OK) result = creep.transfer(destObj, /**@type {ResourceConstant}*/ ( Object.keys(creep.store)[0]));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != c.MY_SIGN)) creep.signController(destObj, c.MY_SIGN);
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
