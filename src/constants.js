@@ -1,5 +1,5 @@
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot ',
+    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
 
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
@@ -29,8 +29,9 @@ module.exports = {
     BASE_PHASE_BIRTH: 0,
     BASE_PHASE_HARVESTER: 1,
     BASE_PHASE_STORED_ENERGY: 2,
-    BASE_PHASE_LINKS: 3,
-    BASE_PHASE_EOL: 4,
+    BASE_PHASE_SOURCE_LINKS: 3,
+    BASE_PHASE_CONTROLLER_LINK: 4,
+    BASE_PHASE_EOL: 5,
 
     ROLE_NONE:  0,
     ROLE_FILLER: 1,

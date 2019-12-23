@@ -20,9 +20,19 @@ module.exports = class Util {
         return Math.floor(Math.random() * x) == 0;
     }
 
-    /**@param {string} id */
-    static getObj(id) {
-        return Game.getObjectById(id);
+    // /**@param {string} id */
+    // static getObj(id) {
+    //     return Game.getObjectById(id);
+    // }
+
+    /**
+     * @param {string} id 
+     * @returns {RoomObjectEx|null}
+    */
+    static getRoomObject(id) {
+        let ret = Game.getObjectById(id)
+        if (ret instanceof RoomObject) return ret;
+        else return null;
     }
 
     /**

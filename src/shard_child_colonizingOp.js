@@ -74,16 +74,17 @@ module.exports = class ColonizingOp extends ShardChildOp {
                         } else {
                             let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                             let roomNames = [];
-                            for (let exit in exits) if (exits[exit] != lastRoomName) roomNames.push(exits[exit]);
+                            for (let exit in exits) if (exits[exit] != lastRoomName && Game.map.isRoomAvailable(exits[exit])) roomNames.push(exits[exit]);
                             roomNames.sort((a,b) => {
-                                    return this._map.getLastSeen(b) - this._map.getLastSeen(a) + Math.random() - 0.5;
+                                    let scoutInfoA = this._map.getRoomInfo(a);
+                                    let scoutInfoB = this._map.getRoomInfo(b);
+                                    if (scoutInfoA && scoutInfoB) return scoutInfoB.lastSeen - scoutInfoA.lastSeen + Math.random() - 0.5;
+                                    return 0;
                                 })
                             if (roomNames.length > 0) destRoomName = roomNames.pop();
                             else destRoomName = lastRoomName
-                            let exit_side = 0;
-                            if (destRoomName) exit_side = room.findExitTo(destRoomName);
-                            let dest = new RoomPosition(25, 25, destRoomName);
-                            if (exit_side>0) {
+                            if (destRoomName) {
+                                let dest = new RoomPosition(25, 25, destRoomName);
                                 if (dest) creepOp.instructMoveTo(dest)
                                 this._lastRoomName[creep.name] = room.name;
                             }

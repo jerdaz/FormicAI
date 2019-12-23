@@ -14,8 +14,11 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
      * @param {Operation} parent
-     * @param {BaseOp} [baseOp] */
-    constructor(parent, shardOp, baseOp) {
+     * @param {BaseOp} [baseOp] 
+     * @param {MapOp} mapOp
+     * @param {Creep} creep
+     * */
+    constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
         this._state = STATE_NONE;
         this._instruct = c.COMMAND_NONE;
@@ -23,12 +26,18 @@ module.exports = class CreepOp extends ChildOp {
         this._destId = '';
         this._destPos = null;
         this._baseOp = baseOp;
-        this._creep = null;
+        this._creep = creep;
+        this._mapOp = mapOp;
+        /**@type {RoomPosition | null} */
+        this._lastMoveToDest = null
+        /**@type {RoomPosition | null} */
+        this._lastMoveToInterimDest = null
+        this._lastPos = creep.pos
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
     get dest() {
-        return U.getObj(this._destId);
+        return U.getRoomObject(this._destId);
     }
 
     get pos() {
@@ -102,14 +111,11 @@ module.exports = class CreepOp extends ChildOp {
     // }
     
     _firstRun() {
-        if (this._creep == null ) throw Error('creep undefined');
         this._creep.notifyWhenAttacked(false);
     }
 
 
     _tactics() {
-        if (this._creep == null ) throw Error('creep undefined');
-
         switch (this._instruct) {
             case c.COMMAND_NONE:
                 if (this._baseOp) {
@@ -122,8 +128,6 @@ module.exports = class CreepOp extends ChildOp {
     }
     
     _command() {
-        if (this._creep == undefined ) throw Error('creep undefined');
-
         let creep = this._creep;
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
@@ -158,64 +162,76 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         }
 
-        let source = U.getObj(this._sourceId);
-        let dest = U.getObj(this._destId);
+        /**@type {RoomObjectEx | null} */
+        let sourceObj = U.getRoomObject(this._sourceId);
+        /**@type {RoomObjectEx | null} */
+        let destObj = U.getRoomObject(this._destId);
         switch (this._state) {
             case STATE_FINDENERGY:
-                if (source && source.store && source.store.energy == 0) source = undefined;
-                if (source && source.energy === 0) source = undefined;
-                if (source && source.amount === 0) source = undefined;
-                if(source == undefined) {
-                    source = this._findEnergySource();
-                    if (source) this._sourceId = source.id;
+                if (sourceObj && sourceObj.store && sourceObj.store[RESOURCE_ENERGY] == 0) sourceObj = null;
+                if(sourceObj == undefined) {
+                    sourceObj = this._findEnergySource();
+                    if (sourceObj && sourceObj.id) this._sourceId = sourceObj.id;
                     else this._sourceId = '';
                 }
                 //deliberate fallthrough to retrieving
             case STATE_RETRIEVING:
-                if (source == null) break;
-                creep.moveTo(source, {range:1});
-                if      (source instanceof Source)    creep.harvest(source);
-                else if (source instanceof Structure) creep.withdraw(source, RESOURCE_ENERGY);
-                else if (source instanceof Tombstone) creep.withdraw(source, RESOURCE_ENERGY);
-                else if (source instanceof Resource) creep.pickup(source);
-                else throw Error('Cannot retrieve from object ' + source + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                if (sourceObj == null) break;
+                this._moveTo(sourceObj.pos, {range:1});
+                if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
+                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
+                else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
 
             case STATE_DROPENERGY:
-                if (dest && dest.store && _.size(dest.store) == dest.storeCapacity) dest = undefined;
-                if (dest && dest.energy && dest.energy == dest.energyCapacity) dest = undefined;
-                if (dest == undefined) {
-                    dest = this._findEnergySink();
-                    if (dest) this._destId = dest.id;
+                if (destObj && destObj.store && destObj.store.getFreeCapacity[RESOURCE_ENERGY] <= 0) destObj = null;
+                if (destObj == null) {
+                    destObj = this._findEnergySink();
+                    if (destObj && destObj.id) this._destId = destObj.id;
                     else this._destId = ''
                 }
                 //deliberate fallthrough to delivering
             case STATE_DELIVERING:
-                if(!dest) this._instruct = c.COMMAND_NONE;
+                if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
-                    creep.moveTo(dest, {range:1});
-                    if      (dest instanceof Structure) {
-                        let result = creep.transfer(dest, RESOURCE_ENERGY);
-                        if (result == OK && dest instanceof StructureController && (dest.sign == null || dest.sign.text != c.MY_SIGN)) creep.signController(dest, c.MY_SIGN);
+                    this._moveTo(destObj.pos, {range:1});
+                    if      (destObj instanceof Structure) {
+                        /**@type {number} */
+                        let result = -1000;
+                        if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
+                        if (result != OK) result = creep.transfer(destObj, RESOURCE_ENERGY);
+                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != c.MY_SIGN)) creep.signController(destObj, c.MY_SIGN);
                     }
-                    else if (dest instanceof ConstructionSite) creep.build(dest);
-                    else throw Error('Cannot deliver to object ' + dest + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    else if (destObj instanceof ConstructionSite) creep.build(destObj);
+                    else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 }
                 break;
         
             case STATE_MOVING:
-                if (this._destPos) creep.moveTo(this._destPos);
+                if (this._destPos) this._moveTo(this._destPos);
+                if (_.size(creep.carry) < creep.carryCapacity) {
+                    let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1, {filter: o => {return o.store.energy > 0}})[0];
+                    if (tombstone) creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    else {
+                        let dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: {resourceType: RESOURCE_ENERGY}})[0];
+                        creep.pickup(dropped_energy);
+                    }
+                }
                 break;
             case STATE_CLAIMING:
-                if (dest) {
-                    creep.moveTo(dest, {range:1});
-                    creep.claimController(dest);
+                if (destObj) {
+                    this._moveTo(destObj.pos, {range:1});
+                    if (destObj instanceof StructureController) creep.claimController(destObj);
                 }
+
+            this._lastPos = this._creep.pos;
         }    
     }
 
     _findEnergySource() {
-        if (!this._creep) throw Error('invalid creep')
         let room = this._creep.room;
         /**@type {RoomObject[]} */
         let roomObjects = [];
@@ -223,6 +239,7 @@ module.exports = class CreepOp extends ChildOp {
         let result;
         roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
         roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
+        roomObjects = roomObjects.concat(room.find(FIND_RUINS, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
         roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
                                                                                                 ) && o.store.energy > 0
                                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
@@ -237,7 +254,6 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     _findEnergySink() {
-        if (!this._creep) throw Error('invalid creep')
         let room = this._creep.room;
         /**@type {RoomObject[]} */
         let roomObjects = [];
@@ -252,5 +268,32 @@ module.exports = class CreepOp extends ChildOp {
         return result;        
     }
 
+    /**
+     * @arg {RoomPosition} pos 
+     * @arg {MoveToOpts} [opts]
+    */
+    _moveTo(pos, opts) {
+        let optsCopy = Object.assign(opts||{});
+        /**@type {RoomPosition | null} */
+        let dest = pos;
+        let myPos = this._creep.pos;
+        if (myPos.roomName != dest.roomName) {
+            optsCopy.range = 20;
+            if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
+            if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
+            else {
+                let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
+                    {   let roomInfo = this._mapOp.getRoomInfo(roomName);
+                        if(roomInfo && roomInfo.hostileOwner) return Infinity; }
+                });
+                if (route instanceof Array && route.length > 2) {
+                    dest = new RoomPosition(25,25,route[1].room)
+                    this._lastMoveToInterimDest = dest;
+                }
+            }
+        }
+        this._creep.moveTo(dest, optsCopy);
+        this._lastMoveToDest = pos;
+    }
 }
 

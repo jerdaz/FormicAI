@@ -11,6 +11,8 @@ const HarvestingOp = require('./base_child_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_child_linkOp');
 
+const UNCLAIM_TIME = 3000;
+
 module.exports = class BaseOp extends ShardChildOp{
     /** 
      * @param {Base} base 
@@ -43,6 +45,8 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
+
+        this._unclaimTimer = 0;
     }
 
 
@@ -100,19 +104,26 @@ module.exports = class BaseOp extends ShardChildOp{
         if ((this.spawns.length == 0) && this.buildingOp.creepCount == 0) {
             this._shardOp.requestBuilder(this.name);
         }
-        if (this.spawns.length == 0 && this._base.find(FIND_HOSTILE_CREEPS).length > 0) this._base.controller.unclaim();
     }
 
     _strategy() {
+        let level = this.base.controller.level;
+
         this._phase = c.BASE_PHASE_BIRTH;
         if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
         else return;
-        if( this.storage.store.energy >= this._base.energyCapacityAvailable) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        if( this.storage.store.energy >= this._base.energyCapacityAvailable * 2) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
-        if (this.links.length > 0) this._phase = c.BASE_PHASE_LINKS;
+        if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
+        else return;
+        if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;
+
+        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
+        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
+        else if (this.spawns.length>0) this._unclaimTimer = 0;
     }
 
 }

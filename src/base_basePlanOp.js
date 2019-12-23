@@ -57,6 +57,17 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     }
 
+    _strategy(){
+        let base = this.baseOp.base;
+        if (base.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
+        let firstSpawn = this._baseOp.spawns[0];
+        if (!firstSpawn) return;
+        let lookResult = firstSpawn.pos.lookFor(LOOK_STRUCTURES);
+        if (!(_.find(lookResult, { structureType: STRUCTURE_RAMPART}))) {
+            firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
+        }
+    }
+
     _tactics() {
         let room = this.baseOp.base;
         let baseOp = this._baseOp;
@@ -111,6 +122,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
         if (!base.controller) throw Error();
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
         let pos = new RoomPosition(x, y, base.name)
+        let terrain = pos.lookFor(LOOK_TERRAIN);
+        if (_.includes(terrain,'wall')) return false;
         let structures = pos.lookFor(LOOK_STRUCTURES);
         let countStructures = 0;
         for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
