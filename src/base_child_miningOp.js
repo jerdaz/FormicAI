@@ -23,11 +23,15 @@ module.exports = class MiningOp extends BaseChildOp {
 
     _strategy() {
         /**@type {Source | null} */
-        let mineral = Game.getObjectById(this._mineralId);
+        let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
+        let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),o => o.structureType == STRUCTURE_EXTRACTOR);
         if (!mineral) throw Error('Source not found')
 
-        if (this.baseOp.terminal) {
+        if (this.baseOp.terminal && extractor) {
              this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 1)
+        }
+        else if (this.baseOp.terminal) {
+            mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR);
         }
     }
 
@@ -37,8 +41,9 @@ module.exports = class MiningOp extends BaseChildOp {
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let mineral = Game.getObjectById(this._mineralId);
-            creepOp.instructTransfer(mineral, terminal);
+            let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
+            let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),o => o.structureType == STRUCTURE_EXTRACTOR);
+            if (extractor) creepOp.instructTransfer(extractor, terminal);
         }
     }
 }
