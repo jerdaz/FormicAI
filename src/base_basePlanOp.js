@@ -8,7 +8,8 @@ const baseBuildTemplate = [
     {type: STRUCTURE_EXTENSION},
     {type: STRUCTURE_TOWER},
     {type: STRUCTURE_STORAGE},
-    {type: STRUCTURE_LINK, max:1}
+    {type: STRUCTURE_LINK, max:1},
+    {type: STRUCTURE_TERMINAL}
 ]
 
 const MAX_CENTER_DISTANCE = 15;
@@ -23,7 +24,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
         // determine out center of the base
         /**@type {RoomPosition | undefined} */
         this._centerPos = undefined;
-
     }
 
 
