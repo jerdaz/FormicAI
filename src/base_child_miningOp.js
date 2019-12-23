@@ -22,12 +22,15 @@ module.exports = class MiningOp extends BaseChildOp {
     }
 
     _strategy() {
+        let terminal = this.baseOp.terminal
         /**@type {Source | null} */
         let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
         let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),o => o.structureType == STRUCTURE_EXTRACTOR)[0];
         if (!mineral) throw Error('Source not found')
-        if (this._baseOp.terminal && extractor) {
-             this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 1)
+        if (terminal && extractor) {
+            let creepCount = 1;
+            if (terminal.store.getFreeCapacity() == 0) creepCount = 0;
+            this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
         }
         else if (this._baseOp.terminal) {
             U.l(mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR ));
