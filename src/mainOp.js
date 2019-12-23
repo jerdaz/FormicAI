@@ -99,6 +99,7 @@ module.exports = class Main extends Operation {
                 }
             }
         }
+        if (totalBases == 0) totalBases = myBasesCount;
         if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
         if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {

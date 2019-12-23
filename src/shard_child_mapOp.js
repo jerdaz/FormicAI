@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} ScoutInfo*/
+/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 module.exports = class MapOp extends ChildOp {
@@ -12,28 +12,16 @@ module.exports = class MapOp extends ChildOp {
         this._parent = shardOp;
         /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
-        /**@type {ScoutInfo} */
-        this._scoutInfo = {};
+        /**@type {RoomInfo} */
+        this._roomInfo = {};
     }
 
     get type() {return c.OPERATION_MAP}
 
     /**@param {String} roomName */
-    getLastHostile(roomName) {
-        if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].lastSeenHostile;
-        else return 0;
-    }
-
-    /**@param {String} roomName */
-    getLastSeen(roomName) {
-        if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].lastSeen;
-        else return 0;
-    }
-
-    /**@param {String} roomName */
-    getHostileOwner(roomName) {
-        if (this._scoutInfo[roomName]) return this._scoutInfo[roomName].hostileOwner;
-        else return false;
+    getRoomInfo(roomName) {
+        if (this._roomInfo[roomName]) return this._roomInfo[roomName];
+        else return null;
     }
 
     /**
@@ -52,7 +40,7 @@ module.exports = class MapOp extends ChildOp {
             let closestBase = {roomName: '', dist:10000}
             for (let baseName in this._baseDist) {
 
-                if (!(lastSeenHostile && this._scoutInfo[baseName] && (Game.time - this._scoutInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
+                if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
                     let route = Game.map.findRoute(roomName, baseName);
                     if (route instanceof Array && route.length < closestBase.dist) {
                         closestBase.roomName = baseName;
@@ -111,15 +99,13 @@ module.exports = class MapOp extends ChildOp {
 
     _tactics() {
         for(let roomName in Game.rooms) {
-            if (this._scoutInfo[roomName] == undefined) this._scoutInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+            if (this._roomInfo[roomName] == undefined) this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false}
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
-            if (hostiles.length>0) this._scoutInfo[roomName].lastSeenHostile = Game.time;
-            this._scoutInfo[roomName].lastSeen = Game.time;
-            this._scoutInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && room.controller.owner != null;
+            if (hostiles.length>0) this._roomInfo[roomName].lastSeenHostile = Game.time;
+            this._roomInfo[roomName].lastSeen = Game.time;
+            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && room.controller.owner != null;
         }
     }
-
-
 }
 

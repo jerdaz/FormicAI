@@ -12,7 +12,7 @@ module.exports = class FillingOp extends BaseChildOp {
     _strategy() {
         let template = {body:[MOVE,CARRY,WORK]}
         let creepCount = 2;
-        if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER) creepCount = 1;
+        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) creepCount = 1;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
         this._baseOp.spawningOp.ltRequestSpawn(this, template, creepCount)
     }
@@ -22,7 +22,7 @@ module.exports = class FillingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let dest = creepOp.dest;
             if (!(dest instanceof StructureSpawn || dest instanceof StructureExtension)
-            || (creepOp.instruction != c.COMMAND_TRANSFER)
+            || (creepOp.instruction != c.COMMAND_FILL)
             || (dest.energy && dest.energy == dest.energyCapacity) ) 
             {
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
