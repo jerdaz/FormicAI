@@ -278,7 +278,6 @@ module.exports = class CreepOp extends ChildOp {
         let dest = pos;
         let myPos = this._creep.pos;
         if (myPos.roomName != dest.roomName) {
-            optsCopy.range = 20;
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
@@ -287,6 +286,7 @@ module.exports = class CreepOp extends ChildOp {
                         if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
                 if (route instanceof Array && route.length > 2) {
+                    optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
                 }
