@@ -131,24 +131,24 @@ module.exports = class CreepOp extends ChildOp {
         let creep = this._creep;
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
-                if (creep.carry.energy == 0) {
+                if (creep.store.getUsedCapacity() == 0) {
                     this._state = STATE_RETRIEVING;
                 }
-                if (creep.carry.energy == creep.carryCapacity) {
+                if (creep.store.getFreeCapacity() == 0) {
                     this._state = STATE_DROPENERGY;
                 }
                 if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
             case c.COMMAND_FILL:
-                if (creep.carry.energy == 0) this._state = STATE_FINDENERGY;
-                if (creep.carry.energy == creep.carryCapacity) {
+                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_FINDENERGY;
+                if (creep.store.getFreeCapacity() == 0) {
                     this._state = STATE_DELIVERING;
                 }
                 if (this._state == STATE_NONE) this._state = STATE_FINDENERGY;
                 break;
             case c.COMMAND_TRANSFER:
-                if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
-                if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
+                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_RETRIEVING;
+                if (creep.store.getFreeCapacity() == 0) this._state = STATE_DELIVERING;
                 if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
             case c.COMMAND_MOVETO:
@@ -179,7 +179,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (sourceObj == null) break;
                 this._moveTo(sourceObj.pos, {range:1});
                 if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj);
                 else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
