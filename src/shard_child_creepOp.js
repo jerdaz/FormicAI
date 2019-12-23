@@ -203,7 +203,7 @@ module.exports = class CreepOp extends ChildOp {
                         /**@type {number} */
                         let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, /**@type {ResourceConstant}*/ ( Object.keys(creep.store)[0]));
+                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != c.MY_SIGN)) creep.signController(destObj, c.MY_SIGN);
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
@@ -215,10 +215,16 @@ module.exports = class CreepOp extends ChildOp {
                 if (this._destPos) this._moveTo(this._destPos);
                 if (_.size(creep.carry) < creep.carryCapacity) {
                     let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1, {filter: o => {return o.store.energy > 0}})[0];
-                    if (tombstone) creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    if (tombstone) {
+                        let res = creep.withdraw(tombstone, RESOURCE_ENERGY);
+                        // also withdraw other stuff & bring to terminal if that is destination
+                        if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
+                    }
                     else {
-                        let dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: {resourceType: RESOURCE_ENERGY}})[0];
-                        creep.pickup(dropped_energy);
+                        let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
+                        if (dropped_resource.resourceType == RESOURCE_ENERGY) creep.pickup(dropped_resource);
+                        // also withdraw other stuff & bring to terminal if that is destination
+                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
                     }
                 }
                 break;

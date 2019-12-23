@@ -25,11 +25,12 @@ module.exports = class MiningOp extends BaseChildOp {
         let terminal = this.baseOp.terminal
         /**@type {Source | null} */
         let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
-        let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),o => o.structureType == STRUCTURE_EXTRACTOR)[0];
+        let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),{structureType: STRUCTURE_EXTRACTOR})[0];
         if (!mineral) throw Error('Source not found')
         if (terminal && extractor) {
             let creepCount = 1;
             if (terminal.store.getFreeCapacity() == 0) creepCount = 0;
+            if (mineral.mineralAmount == 0) creepCount = 0;
             this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
         }
         else if (this._baseOp.terminal) {
@@ -44,8 +45,8 @@ module.exports = class MiningOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
-            let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),o => o.structureType == STRUCTURE_EXTRACTOR);
-            if (extractor) creepOp.instructTransfer(extractor, terminal);
+            let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),{structureType: STRUCTURE_EXTRACTOR})[0];
+            if (extractor) creepOp.instructTransfer(mineral, terminal);
         }
     }
 }
