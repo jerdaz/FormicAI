@@ -11,6 +11,7 @@ const HarvestingOp = require('./base_child_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_child_linkOp');
 const MiningOp = require('./base_child_miningOp');
+const MarketOp = require('./base_child_marketOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -35,6 +36,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
         this.addChildOp(new MiningOp(this));
+        this.addChildOp(new MarketOp(this));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {

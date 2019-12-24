@@ -13,14 +13,21 @@ module.exports = class Main extends Operation {
         super();
         U.l('INIT MAIN');
         for (let memObj in Memory) {
-            // @ts-ignore
-            if (memObj != 'maxCPU') delete Memory[memObj];
+            switch (memObj) {
+                case 'maxCPU':
+                case 'bank':
+                    return;
+                default:
+                    delete Memory[memObj];
+                    return;
+            }
         }
         Memory.creeps = {};
         Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
+        Memory.bank = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
