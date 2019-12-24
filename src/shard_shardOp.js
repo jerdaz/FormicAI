@@ -139,6 +139,10 @@ module.exports = class ShardOp extends ChildOp {
             let split = creepName.split('_');
             let roomName = /*creep.memory.baseName ||*/ split[0];
             let opType = /*creep.memory.operationType ||*/ parseInt(split[1]);
+            if (opType > c.OPERATION_MAX) {
+                creep.suicide();
+                continue;
+            }
             let opInstance = parseInt(split[2])||0;
             if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
