@@ -83,7 +83,7 @@ module.exports = class LinkOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let storage = this._baseOp.storage
             let terminal = this._baseOp.terminal;
-            creepOp.instructTransfer(baseLink, storage);
+            if (baseLink.store.energy >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
         }
     }    
 

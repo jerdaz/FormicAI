@@ -2,6 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
+const TERMINAL_FILL_AMOUNT = 1000;
+
 module.exports = class FillingOp extends BaseChildOp {
     get type() {return c.OPERATION_FILLING}
 
@@ -25,9 +27,12 @@ module.exports = class FillingOp extends BaseChildOp {
             || (creepOp.instruction != c.COMMAND_FILL)
             || (dest.energy && dest.energy == dest.energyCapacity) ) 
             {
-                let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {any}*/ o) => {
-                    return  (o.energy < o.energyCapacity)
-                            && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER);
+                let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
+                    let store = /**@type {any} */ (o).store;
+                    if (store == undefined) return false
+                    return  (store.energy < store.getCapacity(RESOURCE_ENERGY))
+                            && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || 
+                                (o.structureType == STRUCTURE_TERMINAL && store.energy < TERMINAL_FILL_AMOUNT));
                     }})
                 if (dest) creepOp.instructFill(dest);
             }
