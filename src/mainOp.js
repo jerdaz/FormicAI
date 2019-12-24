@@ -16,10 +16,10 @@ module.exports = class Main extends Operation {
             switch (memObj) {
                 case 'maxCPU':
                 case 'bank':
-                    return;
+                    break;
                 default:
                     delete Memory[memObj];
-                    return;
+                    break;
             }
         }
         Memory.creeps = {};

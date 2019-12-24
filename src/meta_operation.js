@@ -50,13 +50,6 @@ module.exports = class Operation {
             } catch(err) {this._debug.logError(err)};
         }
 
-        if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
-            if(this._debug.verbose) this._debug.logState('support', this)
-            try {
-                this._support();
-                if (this._runSupport) this._runSupport = false;
-            } catch(err) {this._debug.logError(err)};
-        }
         if (this._runStrategy || Game.time % STRATEGY_INTERVAL == this._tickOffset % STRATEGY_INTERVAL) {
             if(this._debug.verbose) this._debug.logState('strategy', this)
             try {
@@ -79,6 +72,13 @@ module.exports = class Operation {
             try {
                 childOp.run();
             } catch(err) {this._debug.logError(err)}
+        }
+        if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
+            if(this._debug.verbose) this._debug.logState('support', this)
+            try {
+                this._support();
+                if (this._runSupport) this._runSupport = false;
+            } catch(err) {this._debug.logError(err)};
         }
         if(this._debug.verbose) this._debug.logState('end', this)
     }

@@ -13,11 +13,30 @@ module.exports = class ColonizingOp extends ShardChildOp {
     
     get type() {return c.OPERATION_BANK}
 
+    // reallocate unallocated credits
+    _support() {
+        let allocatedCredits = 0;
+        for (let baseName in Memory.bank) {
+            let room = Game.rooms[baseName];
+            if (room.controller && room.controller.my) {
+                allocatedCredits += Memory.bank[baseName];
+            } else {
+                delete Memory.bank[baseName];
+            }
+        }
+        let unallocatedCredits = Game.market.credits - allocatedCredits;
+        let giftSize = unallocatedCredits / _.size(Memory.bank);
+        for (let baseName in Memory.bank) {
+            Memory.bank[baseName] += giftSize;
+        }
+    }
+
+    // allocate transaction credits.
     _command() {
-        for (let transaction of Game.market.incomingTransactions) {
+        for (let transaction of Game.market.outgoingTransactions) {
             if (transaction.time != Game.time - 1) break;
             let senderName = transaction.from;
-            if (transaction.order && transaction.order.type == ORDER_SELL) {
+            if (transaction.order) {
                 let totalPrice = transaction.amount * transaction.order.price;
                 this._allocateCredits(transaction.from, totalPrice)
             }

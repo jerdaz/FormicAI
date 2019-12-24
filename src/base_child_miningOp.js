@@ -34,7 +34,7 @@ module.exports = class MiningOp extends BaseChildOp {
             this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
         }
         else if (this._baseOp.terminal) {
-            U.l(mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR ));
+            mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR );
         }
     }
 
