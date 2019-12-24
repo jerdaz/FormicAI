@@ -72,6 +72,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get centerPos() { return this.basePlanOp.baseCenter;}
     get directive(){ return this._directive;}
     get base() {return this._base;}
+    get credits() {return this._shardOp.bank.getCredits(this._name)}
 
     initTick() {
         super.initTick();

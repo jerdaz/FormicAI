@@ -32,6 +32,8 @@ module.exports = class ShardOp extends ChildOp {
 
     get name() {return Game.shard.name};
 
+    get bank() {return this._bank}
+
     /**@returns {Number} */
     get baseCount() {
         return this._baseOpsMap.size;

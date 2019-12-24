@@ -27,7 +27,7 @@ module.exports = class Main extends Operation {
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
-        Memory.bank = {};
+        if (Memory.bank == undefined) Memory.bank = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);

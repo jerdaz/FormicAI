@@ -17,20 +17,21 @@ module.exports = class MarketOp extends BaseChildOp {
     _firstRun() {
     }
 
-    _strategy() {
+    _tactics() {
         let baseOp = this._baseOp;
         let terminal = this._baseOp.terminal;
         if (terminal == undefined) return;
+        let market = Game.market;
+
+        // sell minerals
         for (let resourceName in terminal.store) {
             let resourceType = /**@type {ResourceConstant} */ (resourceName);
             if (resourceType == RESOURCE_ENERGY) continue;
             let amount = terminal.store[resourceType];
-            let market = Game.market;
             let orders = market.getAllOrders({type:ORDER_BUY, resourceType: resourceType});
             //sort high to low price
             orders = orders.sort((a,b) => {
                 return b.price - a.price;
-                return 0;
             })
             for (let order of orders) {
                 if (amount <= 0) break;
@@ -40,11 +41,21 @@ module.exports = class MarketOp extends BaseChildOp {
                 else break;
              }
         }
-    }
 
-    _tactics() {
-    }    
-
-    _command(){
+        // buy energy
+        let credits = this._baseOp.credits;
+        if (credits > 0) {
+            let orders = market.getAllOrders({type:ORDER_SELL, resourceType: RESOURCE_ENERGY})
+            //sort low to high
+            orders = orders.sort((a,b) => {
+                return a.price - b.price;
+            });
+            for (let order of orders) {
+                if (credits <= 0) break;
+                let dealAmount = Math.min(order.amount, credits / order.price, c.MAX_TRANSACTION)
+                let res = market.deal(order.id, dealAmount, this._baseOp.name);
+                if (res == OK) credits -= dealAmount * order.price;
+            }
+        }
     }
 }
