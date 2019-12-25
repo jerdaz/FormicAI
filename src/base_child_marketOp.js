@@ -9,6 +9,7 @@ module.exports = class MarketOp extends BaseChildOp {
     constructor(baseOp) {
         super(baseOp);
         this._energyPrice = 0;
+        this._verbose = true;
     }
 
     get type() {return c.OPERATION_MARKET}
@@ -20,7 +21,7 @@ module.exports = class MarketOp extends BaseChildOp {
     _firstRun() {
     }
 
-    _tactics() {
+    _strategy() {
         let baseOp = this._baseOp;
         let terminal = this._baseOp.terminal;
         if (terminal == undefined) return;
@@ -31,35 +32,51 @@ module.exports = class MarketOp extends BaseChildOp {
             let resourceType = /**@type {ResourceConstant} */ (resourceName);
             if (resourceType == RESOURCE_ENERGY) continue;
             let amount = terminal.store[resourceType];
+            this._log({base: baseOp.name, Trying_to_sell: resourceType, amount:amount, energyPrice: this._energyPrice})
+            /**@type {OrderEx[]} */
             let orders = market.getAllOrders({type:ORDER_BUY, resourceType: resourceType});
+            //calculate net price
+            for (let order of orders) {
+                order.transactionCost = this._energyPrice * market.calcTransactionCost(1,order.roomName||this._baseOp.name, this._baseOp.name);
+                order.netPrice = order.transactionCost + order.price;
+            }
             //sort high to low price
             orders = orders.sort((a,b) => {
-                let priceA = a.price + this._energyPrice * market.calcTransactionCost(1,a.roomName||this._baseOp.name, this._baseOp.name)
-                let priceB = b.price + this._energyPrice * market.calcTransactionCost(1,b.roomName||this._baseOp.name, this._baseOp.name)
-                return priceB - priceA;
+                return (b.netPrice||b.price) - (a.netPrice||a.price);
             })
+            this._log('Sorted Orders:');
+            this._log(orders);
             for (let order of orders) {
                 if (amount <= 0) break;
                 let dealAmount = Math.min(order.amount, amount, c.MAX_TRANSACTION);
+                this._log({deal: order, amount:amount})
                 let res = market.deal(order.id, dealAmount, this._baseOp.name)
                 if (res == OK) amount -= dealAmount;
-                else break;
+                this._log({result: res});
+                if(res != OK) break;
              }
         }
 
         // buy energy
         let credits = this._baseOp.credits;
         if (credits > MIN_MARKET_CREDITS) {
+            /**@type {OrderEx[]} */
             let orders = market.getAllOrders({type:ORDER_SELL, resourceType: RESOURCE_ENERGY})
+            //calculate net price
+            for (let order of orders) {
+                order.transactionCost = market.calcTransactionCost(1,order.roomName||this._baseOp.name, this._baseOp.name);
+                order.netPrice = (1-order.transactionCost) * order.price;
+            }
             //sort low to high
             orders = orders.sort((a,b) => {
-                let priceA = a.price * (1-market.calcTransactionCost(1,a.roomName||this._baseOp.name, this._baseOp.name));
-                let priceB = b.price * (1-market.calcTransactionCost(1,a.roomName||this._baseOp.name, this._baseOp.name));
-                return priceA - priceB;
+                return (a.netPrice||a.price) - (b.netPrice||b.price);
             });
+            this._log('Sorted Orders:');
+            this._log(orders);
             for (let order of orders) {
                 if (credits <= 0) break;
                 let dealAmount = Math.min(order.amount, credits / order.price, c.MAX_TRANSACTION)
+                this._log({deal: order, amount:dealAmount})
                 let res = market.deal(order.id, dealAmount, this._baseOp.name);
                 if (res == OK) credits -= dealAmount * order.price;
                 else break;

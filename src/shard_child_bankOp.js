@@ -2,8 +2,6 @@ const U = require('./util');
 const c = require('./constants');
 const ShardChildOp = require('./shard_shardChildOp');
 
-const VERBOSE = true;
-
 //credits to keep as a reserve
 const RESERVE_CREDITS = 1000;
 
@@ -14,6 +12,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
      * */
     constructor(parent, shardOp) {
         super(parent, shardOp);
+        this._verbose = true;
     }
     
     get type() {return c.OPERATION_BANK}
@@ -28,11 +27,10 @@ module.exports = class ColonizingOp extends ShardChildOp {
 
     // allocate transaction credits.
     _command() {
-        if (VERBOSE) U.l('== BEGIN MARKET OPERATION COMMAND PROCESS ==')
         for (let transaction of Game.market.outgoingTransactions) {
             if (transaction.time != Game.time - 1) break;
-            if (VERBOSE) U.l('Processing outgoing transaction:')
-            if (VERBOSE) U.l(transaction)
+            this._log('Processing outgoing transaction:')
+            this._log(transaction)
             let senderName = transaction.from;
             if (transaction.order) {
                 let totalPrice = transaction.amount * transaction.order.price;
@@ -41,15 +39,14 @@ module.exports = class ColonizingOp extends ShardChildOp {
         }
         for (let transaction of Game.market.incomingTransactions) {
             if (transaction.time != Game.time - 1) break;
-            if (VERBOSE) U.l('Processing incoming transaction:')
-            if (VERBOSE) U.l(transaction)
+            this._log('Processing incoming transaction:')
+            this._log(transaction)
             let receiverName = transaction.to;
             if (transaction.order) {
                 let totalPrice = -1 * transaction.amount * transaction.order.price;
                 this._allocateCredits(receiverName, totalPrice)
             }
         }
-        if (VERBOSE) U.l('== END MARKET OPERATION COMMAND PROCESS ==')
     }
 
     /**
@@ -60,7 +57,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
         if (Game.market.credits < RESERVE_CREDITS) return;
         if (Memory.bank[baseName] == undefined) Memory.bank[baseName] = 0;
         let newBalance = Math.round(Memory.bank[baseName] + amount * 1000) / 1000;
-        if (VERBOSE) U.l({Task: 'Allocating credits', baseName: baseName, oldCredits: Memory.bank[baseName], amount: amount, newBalance: newBalance})
+        this._log({Task: 'Allocating credits', baseName: baseName, oldCredits: Memory.bank[baseName], amount: amount, newBalance: newBalance})
         Memory.bank[baseName] = newBalance;
     }
 }
