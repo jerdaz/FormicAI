@@ -102,6 +102,13 @@ module.exports = class Operation {
     _strategy() {}
     _tactics() {}
     _command() {}
+
+    /**
+     * @param {any} message 
+     */
+    _log(message) {
+        if (this._verbose) U.l(message)
+    }
 }
 
 
