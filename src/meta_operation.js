@@ -18,6 +18,7 @@ module.exports = class Operation {
         this._debug = /** @type {any}*/(Game).debug;
         this._tickOffset = _.random(0,SUPPORT_INTERVAL - 1)
         this._verbose = false;
+        this._tickFirstLog = true;
     }
 
     get type() {
@@ -40,9 +41,10 @@ module.exports = class Operation {
     }
 
     run() {
-        if (this._verbose) U.l('== RUN OP: ' + this.constructor.name + '==')
+        if (this._verbose) 
         //last resort cpu overflow prevention.
         if (Game.cpu.bucket < Game.cpu.getUsed() + Game.cpu.limit) throw Error('Out of CPU');
+        if (this._verbose) this._tickFirstLog = true;
 
         if (this._bFirstRun) {
             if(this._verbose) this._debug.logState('FIRSTRUN:', this)
@@ -83,7 +85,6 @@ module.exports = class Operation {
             } catch(err) {this._debug.logError(err)};
         }
         if(this._verbose) this._debug.logState('end', this)
-        if (this._verbose) U.l('== END OP: ' + this.constructor.name + '==')
     }
 
     /**@param {ChildOp} childOp */
@@ -107,6 +108,10 @@ module.exports = class Operation {
      * @param {any} message 
      */
     _log(message) {
+        if (this._tickFirstLog) {
+            U.l('== RUN OP: ' + this.constructor.name + ' ==')
+            this._tickFirstLog = false;
+        } 
         if (this._verbose) U.l(message)
     }
 }

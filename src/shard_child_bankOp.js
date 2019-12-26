@@ -5,7 +5,7 @@ const ShardChildOp = require('./shard_shardChildOp');
 //credits to keep as a reserve
 const RESERVE_CREDITS = 1000;
 
-module.exports = class ColonizingOp extends ShardChildOp {
+module.exports = class BankOp extends ShardChildOp {
     /**
      * @param {ShardOp}  shardOp
      * @param {Operation}  parent
