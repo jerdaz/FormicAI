@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
-const MIN_MARKET_CREDITS = 100;
+const MIN_MARKET_CREDITS = 10;
 
 module.exports = class MarketOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */

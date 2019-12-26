@@ -3,7 +3,7 @@ const c = require('./constants');
 const ShardChildOp = require('./shard_shardChildOp');
 
 //credits to keep as a reserve
-const RESERVE_CREDITS = 1000;
+const RESERVE_CREDITS = 0;
 
 module.exports = class BankOp extends ShardChildOp {
     /**
@@ -56,7 +56,7 @@ module.exports = class BankOp extends ShardChildOp {
     _allocateCredits(baseName, amount) {
         if (Game.market.credits < RESERVE_CREDITS) return;
         if (Memory.bank[baseName] == undefined) Memory.bank[baseName] = 0;
-        let newBalance = Math.round(Memory.bank[baseName] + amount * 1000) / 1000;
+        let newBalance = Math.round((Memory.bank[baseName] + amount) * 1000) / 1000;
         this._log({Task: 'Allocating credits', baseName: baseName, oldCredits: Memory.bank[baseName], amount: amount, newBalance: newBalance})
         Memory.bank[baseName] = newBalance;
     }
