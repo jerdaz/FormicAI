@@ -64,7 +64,7 @@ module.exports = class MarketOp extends BaseChildOp {
             let orders = market.getAllOrders({type:ORDER_SELL, resourceType: RESOURCE_ENERGY})
             //calculate net price
             for (let order of orders) {
-                order.transactionCost = market.calcTransactionCost(1,order.roomName||this._baseOp.name, this._baseOp.name);
+                order.transactionCost = market.calcTransactionCost(1000,order.roomName||this._baseOp.name, this._baseOp.name)/1000;
                 order.netPrice = (1-order.transactionCost) * order.price;
             }
             //sort low to high
@@ -83,7 +83,7 @@ module.exports = class MarketOp extends BaseChildOp {
             }
             //calculate and save current local energyprice
             if (orders[0]) {
-                this._energyPrice = orders[0].price * (1-market.calcTransactionCost(1,orders[0].roomName||this._baseOp.name, this._baseOp.name));
+                this._energyPrice = orders[0].price * (1-market.calcTransactionCost(1000,orders[0].roomName||this._baseOp.name, this._baseOp.name)/1000);
             }
         }
     }
