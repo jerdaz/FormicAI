@@ -3,14 +3,14 @@ const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
 const MIN_MARKET_CREDITS = 10;
-const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY
+const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2
 
 module.exports = class MarketOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
         this._energyPrice = 0;
-        this._verbose = false;
+        this._verbose = true;
     }
 
     get type() {return c.OPERATION_MARKET}
@@ -30,9 +30,11 @@ module.exports = class MarketOp extends BaseChildOp {
 
         //first try to send resources to own terminals
         for (let resourceName in terminal.store) {
-            let resourceType = /**@type {ResourceConstant} */ (resourceName);
+            let resourceType = /**@type {ResourceConstant} */ (resourceName); 
+            if (resourceType == RESOURCE_ENERGY) continue;
             let amount = terminal.store[resourceType];
             if (amount > 3 * MIN_STOCK_PILE_SIZE) {
+                this._log({trying_to_send_from:terminal.pos.roomName})
                 let terminals = _.filter(Game.structures, o => {
                         if (o.structureType == STRUCTURE_TERMINAL) {
                             let terminal = /**@type {StructureTerminal} */ (o);
@@ -45,7 +47,11 @@ module.exports = class MarketOp extends BaseChildOp {
                                                 - Game.map.getRoomLinearDistance(this._baseOp.name, b.pos.roomName)
                                                 })
                     let terminalTo = terminals[0];
-                    if (terminal.send(resourceType, amount - 2 * MIN_STOCK_PILE_SIZE, terminalTo.pos.roomName) == OK) return;
+                    let sendAmount = Math.min(amount - 2 * MIN_STOCK_PILE_SIZE, 2 * MIN_STOCK_PILE_SIZE)
+                    this._log({sending_to: terminalTo.pos.roomName, amount: sendAmount, type: resourceType})
+                    let result = terminal.send(resourceType, sendAmount, terminalTo.pos.roomName);
+                    this._log({result: result})
+                    if (result == OK) return;
                 }
             }
         }        
