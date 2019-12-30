@@ -2,12 +2,15 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
+const SCOUT_INTERVAL = 15000;
+
 module.exports = class ScoutOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
+        this._lastSpawn = Game.time + Math.random() * SCOUT_INTERVAL;
     }
 
     get type() {return c.OPERATION_SCOUTING}
@@ -17,7 +20,12 @@ module.exports = class ScoutOp extends BaseChildOp {
     }
 
     _strategy() {
-        this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},1)
+        let creepCount = 0;
+        if (Game.time - this._lastSpawn > SCOUT_INTERVAL ) {
+                creepCount = 1;
+                this._lastSpawn = Game.time;
+        } else 
+        this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
     _tactics() {
