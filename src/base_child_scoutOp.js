@@ -17,7 +17,7 @@ module.exports = class ScoutOp extends BaseChildOp {
     }
 
     _strategy() {
-        this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1},1)
+        this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},1)
     }
 
     _tactics() {

@@ -154,7 +154,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         let base = baseOp.base;
         let minLength = template.minLength;
         let maxLength = template.maxLength;
-        if (!minLength) minLength = 3
+        if (!minLength) minLength = Math.min(3,maxLength||3);
         if (!maxLength || maxLength > MAX_CREEP_SIZE) maxLength = MAX_CREEP_SIZE;
 
         /**@type {BodyPartConstant[]} */
