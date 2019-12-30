@@ -10,7 +10,7 @@ module.exports = class MarketOp extends BaseChildOp {
     constructor(baseOp) {
         super(baseOp);
         this._energyPrice = 0;
-        this._verbose = true;
+        this._verbose = false;
     }
 
     get type() {return c.OPERATION_MARKET}
