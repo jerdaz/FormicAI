@@ -108,7 +108,7 @@ module.exports = class Operation {
      * @param {any} message 
      */
     _log(message) {
-        if (this._tickFirstLog) {
+        if (this._verbose && this._tickFirstLog) {
             U.l('== RUN OP: ' + this.constructor.name + ' ==')
             this._tickFirstLog = false;
         } 
