@@ -10,6 +10,8 @@ const ColonizingOp = require('./shard_child_colonizingOp');
 const HarvestingOp = require('./base_child_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_child_linkOp');
+const MiningOp = require('./base_child_miningOp');
+const MarketOp = require('./base_child_marketOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -33,6 +35,8 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new ColonizingOp(this,shardOp, this));
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
+        this.addChildOp(new MiningOp(this));
+        this.addChildOp(new MarketOp(this));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {
@@ -61,12 +65,14 @@ module.exports = class BaseOp extends ShardChildOp{
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
     get links() {return /**@type {StructureLink[]} */ (this._structures[STRUCTURE_LINK]) || [] }
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
+    get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
     get name() {return this._name}
     get phase() {return this._phase}
     get centerPos() { return this.basePlanOp.baseCenter;}
     get directive(){ return this._directive;}
     get base() {return this._base;}
+    get credits() {return this._shardOp.bank.getCredits(this._name)}
 
     initTick() {
         super.initTick();

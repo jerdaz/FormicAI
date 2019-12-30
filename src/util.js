@@ -98,5 +98,20 @@ module.exports = class Util {
         }
         return true;
     }
+
+    /** @param {GenericStore} store */
+    static getLargestStoreResource(store) {
+        let amount = 0;
+        /**@type {ResourceConstant} */
+        let type = RESOURCE_ENERGY;
+        for (let keyName in store) {
+            let resourceType = /**@type {ResourceConstant} */ (keyName);
+            if (store[resourceType] > amount) {
+                amount = store[resourceType];
+                type = resourceType;
+            }
+        }
+        return type;
+    }
 }
 
