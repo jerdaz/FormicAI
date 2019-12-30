@@ -3,6 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
 const MIN_MARKET_CREDITS = 10;
+const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY
 
 module.exports = class MarketOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -26,6 +27,28 @@ module.exports = class MarketOp extends BaseChildOp {
         let terminal = this._baseOp.terminal;
         if (terminal == undefined) return;
         let market = Game.market;
+
+        //first try to send resources to own terminals
+        for (let resourceName in terminal.store) {
+            let resourceType = /**@type {ResourceConstant} */ (resourceName);
+            let amount = terminal.store[resourceType];
+            if (amount > 3 * MIN_STOCK_PILE_SIZE) {
+                let terminals = _.filter(Game.structures, o => {
+                        if (o.structureType == STRUCTURE_TERMINAL) {
+                            let terminal = /**@type {StructureTerminal} */ (o);
+                            if (terminal.store[resourceType] < MIN_STOCK_PILE_SIZE) return true;
+                        }
+                        return false;
+                    });
+                if (terminals.length > 0) {
+                    terminals.sort((a,b) => {return Game.map.getRoomLinearDistance(this._baseOp.name, a.pos.roomName)
+                                                - Game.map.getRoomLinearDistance(this._baseOp.name, b.pos.roomName)
+                                                })
+                    let terminalTo = terminals[0];
+                    if (terminal.send(resourceType, amount - 2 * MIN_STOCK_PILE_SIZE, terminalTo.pos.roomName) == OK) return;
+                }
+            }
+        }        
 
         // sell minerals
         for (let resourceName in terminal.store) {
