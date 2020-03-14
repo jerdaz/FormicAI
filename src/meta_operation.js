@@ -4,6 +4,7 @@ const c = require('./constants');
 const SUPPORT_INTERVAL = 1000
 const STRATEGY_INTERVAL = 100
 const TACTICS_INTERVAL = 10
+const MAX_OPERATION_CPU = 100
 
 //unique id of Operation
 let idIndex = 0;
@@ -18,7 +19,7 @@ module.exports = class Operation {
         this._debug = /** @type {any}*/(Game).debug;
         this._tickOffset = _.random(0,SUPPORT_INTERVAL - 1)
         this._verbose = false;
-        this._verboseAll = true
+        this._verboseAll = false // if true, log all running operations
         this._tickFirstLog = true;
     }
 
@@ -46,10 +47,10 @@ module.exports = class Operation {
     }
 
     run() {
-        if (this._verbose) 
         //last resort cpu overflow prevention.
-        if (Game.cpu.bucket < Game.cpu.getUsed() + Game.cpu.limit) throw Error('Out of CPU');
-        if (this._verboseAll) (U.l({RUNNING: this.type, name: this.name}))
+        let cpuStart = Game.cpu.getUsed();
+        if (Game.cpu.bucket < cpuStart + Game.cpu.limit) throw Error('Out of CPU');
+        if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
         if (this._bFirstRun) {
             try {
@@ -84,6 +85,7 @@ module.exports = class Operation {
                 if (this._runSupport) this._runSupport = false;
             } catch(err) {this._debug.logError(err)};
         }
+        if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) U.l({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart})
     }
 
     /**@param {ChildOp} childOp */

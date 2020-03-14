@@ -12,7 +12,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_TERMINAL}
 ]
 
-const MAX_CENTER_DISTANCE = 15;
+const MAX_CENTER_DISTANCE = 17;
 
 module.exports = class BasePlanOp extends BaseChildOp{
     /** 
