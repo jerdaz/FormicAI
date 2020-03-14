@@ -13,14 +13,21 @@ module.exports = class Main extends Operation {
         super();
         U.l('INIT MAIN');
         for (let memObj in Memory) {
-            // @ts-ignore
-            if (memObj != 'maxCPU') delete Memory[memObj];
+            switch (memObj) {
+                case 'maxCPU':
+                case 'bank':
+                    break;
+                default:
+                    delete Memory[memObj];
+                    break;
+            }
         }
         Memory.creeps = {};
         Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
+        if (Memory.bank == undefined) Memory.bank = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -48,6 +55,10 @@ module.exports = class Main extends Operation {
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
     /**@param {number} shardRequest */
     requestCreep(shardRequest) { this._requestCreep(shardRequest); }
+
+    _support() {
+        if (Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
+    }
 
     _strategy() {
         // // divide cpu evenly between shards

@@ -60,6 +60,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
             this._spawnPrio[c.OPERATION_COLONIZING] = 10;
+            this._spawnPrio[c.OPERATION_SCOUTING] = 1;
         }
     }
 
@@ -153,7 +154,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         let base = baseOp.base;
         let minLength = template.minLength;
         let maxLength = template.maxLength;
-        if (!minLength) minLength = 3
+        if (!minLength) minLength = Math.min(3,maxLength||3);
         if (!maxLength || maxLength > MAX_CREEP_SIZE) maxLength = MAX_CREEP_SIZE;
 
         /**@type {BodyPartConstant[]} */

@@ -131,24 +131,24 @@ module.exports = class CreepOp extends ChildOp {
         let creep = this._creep;
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
-                if (creep.carry.energy == 0) {
+                if (creep.store.getUsedCapacity() == 0) {
                     this._state = STATE_RETRIEVING;
                 }
-                if (creep.carry.energy == creep.carryCapacity) {
+                if (creep.store.getFreeCapacity() == 0) {
                     this._state = STATE_DROPENERGY;
                 }
                 if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
             case c.COMMAND_FILL:
-                if (creep.carry.energy == 0) this._state = STATE_FINDENERGY;
-                if (creep.carry.energy == creep.carryCapacity) {
+                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_FINDENERGY;
+                if (creep.store.getFreeCapacity() == 0) {
                     this._state = STATE_DELIVERING;
                 }
                 if (this._state == STATE_NONE) this._state = STATE_FINDENERGY;
                 break;
             case c.COMMAND_TRANSFER:
-                if (creep.carry.energy == 0) this._state = STATE_RETRIEVING;
-                if (creep.carry.energy == creep.carryCapacity) this._state = STATE_DELIVERING;
+                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_RETRIEVING;
+                if (creep.store.getFreeCapacity() == 0) this._state = STATE_DELIVERING;
                 if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
                 break;
             case c.COMMAND_MOVETO:
@@ -178,11 +178,29 @@ module.exports = class CreepOp extends ChildOp {
             case STATE_RETRIEVING:
                 if (sourceObj == null) break;
                 this._moveTo(sourceObj.pos, {range:1});
+
+                // also pick up stuff on the way
+                let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1)[0];
+                if (tombstone) {
+                    let res = creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    // also withdraw other stuff & bring to terminal if that is destination
+                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
+                }
+                else {
+                    let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
+                    if (dropped_resource) {
+                        if (dropped_resource.resourceType == RESOURCE_ENERGY) creep.pickup(dropped_resource);
+                        // also withdraw other stuff & bring to terminal if that is destination
+                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
+                    }
+                }
+
                 if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,RESOURCE_ENERGY);
                 else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, RESOURCE_ENERGY);
                 else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
 
@@ -202,7 +220,7 @@ module.exports = class CreepOp extends ChildOp {
                         /**@type {number} */
                         let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, RESOURCE_ENERGY);
+                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != c.MY_SIGN)) creep.signController(destObj, c.MY_SIGN);
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
@@ -212,14 +230,6 @@ module.exports = class CreepOp extends ChildOp {
         
             case STATE_MOVING:
                 if (this._destPos) this._moveTo(this._destPos);
-                if (_.size(creep.carry) < creep.carryCapacity) {
-                    let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1, {filter: o => {return o.store.energy > 0}})[0];
-                    if (tombstone) creep.withdraw(tombstone, RESOURCE_ENERGY);
-                    else {
-                        let dropped_energy = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: {resourceType: RESOURCE_ENERGY}})[0];
-                        creep.pickup(dropped_energy);
-                    }
-                }
                 break;
             case STATE_CLAIMING:
                 if (destObj) {
@@ -240,12 +250,14 @@ module.exports = class CreepOp extends ChildOp {
         roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
         roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
         roomObjects = roomObjects.concat(room.find(FIND_RUINS, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
-        roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE || o.structureType == STRUCTURE_TERMINAL
+        roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE 
                                                                                                 ) && o.store.energy > 0
                                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
                                                                                         }   
                                                                         }))
-        roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0}}));        
+        roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0
+                                                                                        || o.structureType == STRUCTURE_TERMINAL && o.store.energy > c.MAX_TRANSACTION * 2    
+                                                                                        }}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
         if (result == null) {
             result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
@@ -278,7 +290,6 @@ module.exports = class CreepOp extends ChildOp {
         let dest = pos;
         let myPos = this._creep.pos;
         if (myPos.roomName != dest.roomName) {
-            optsCopy.range = 20;
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
@@ -287,6 +298,7 @@ module.exports = class CreepOp extends ChildOp {
                         if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
                 if (route instanceof Array && route.length > 2) {
+                    optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
                 }

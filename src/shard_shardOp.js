@@ -3,6 +3,7 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const BaseOp = require('./base_baseOp');
 const MapOp = require('./shard_child_mapOp');
+const BankOp = require('./shard_child_bankOp')
 const ColonizingOp = require('./shard_child_colonizingOp');
 
 module.exports = class ShardOp extends ChildOp {
@@ -22,12 +23,16 @@ module.exports = class ShardOp extends ChildOp {
         /**@type {MapOp} */
         this._map = new MapOp(this);
         this.addChildOp(this._map);
+        this._bank = new BankOp(this, this);
+        this.addChildOp(this._bank);
         this._teamShardColonizing = new ColonizingOp(this, this);
     }
 
     get type() {return c.OPERATION_SHARD}
 
     get name() {return Game.shard.name};
+
+    get bank() {return this._bank}
 
     /**@returns {Number} */
     get baseCount() {
@@ -139,6 +144,10 @@ module.exports = class ShardOp extends ChildOp {
             let split = creepName.split('_');
             let roomName = /*creep.memory.baseName ||*/ split[0];
             let opType = /*creep.memory.operationType ||*/ parseInt(split[1]);
+            if (opType > c.OPERATION_MAX) {
+                creep.suicide();
+                continue;
+            }
             let opInstance = parseInt(split[2])||0;
             if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]

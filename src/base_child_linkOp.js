@@ -77,11 +77,14 @@ module.exports = class LinkOp extends BaseChildOp {
 
     _tactics() {
         if (!this.baseOp.storage) return;
-        if (this._baseLinkIds.length == 0) return;
+        let baseLink = this._baseLinks[0];
+        if (baseLink == null) return;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let source = this._baseLinks[0];
-            creepOp.instructTransfer(source, this.baseOp.storage)
+            let storage = this._baseOp.storage
+            let terminal = this._baseOp.terminal;
+            if (baseLink.store.energy >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+            else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
         }
     }    
 

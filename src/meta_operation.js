@@ -4,6 +4,7 @@ const c = require('./constants');
 const SUPPORT_INTERVAL = 1000
 const STRATEGY_INTERVAL = 100
 const TACTICS_INTERVAL = 10
+const MAX_OPERATION_CPU = 100
 
 //unique id of Operation
 let idIndex = 0;
@@ -17,10 +18,17 @@ module.exports = class Operation {
         /**@type {Debug} */
         this._debug = /** @type {any}*/(Game).debug;
         this._tickOffset = _.random(0,SUPPORT_INTERVAL - 1)
+        this._verbose = false;
+        this._verboseAll = false // if true, log all running operations
+        this._tickFirstLog = true;
     }
 
     get type() {
         return c.OPERATION_NONE;
+    }
+
+    get name() {
+        return '';
     }
 
     get childOps() {
@@ -40,38 +48,29 @@ module.exports = class Operation {
 
     run() {
         //last resort cpu overflow prevention.
-        if (Game.cpu.bucket < Game.cpu.getUsed() + Game.cpu.limit) throw Error('Out of CPU');
+        let cpuStart = Game.cpu.getUsed();
+        if (Game.cpu.bucket < cpuStart + Game.cpu.limit) throw Error('Out of CPU');
+        if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
         if (this._bFirstRun) {
-            if(this._debug.verbose) this._debug.logState('firstRun', this)
             try {
                 this._firstRun();
                 this._bFirstRun = false;
             } catch(err) {this._debug.logError(err)};
         }
 
-        if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
-            if(this._debug.verbose) this._debug.logState('support', this)
-            try {
-                this._support();
-                if (this._runSupport) this._runSupport = false;
-            } catch(err) {this._debug.logError(err)};
-        }
         if (this._runStrategy || Game.time % STRATEGY_INTERVAL == this._tickOffset % STRATEGY_INTERVAL) {
-            if(this._debug.verbose) this._debug.logState('strategy', this)
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
             } catch(err) {this._debug.logError(err)};
         }
         if (this._runTactics || Game.time % TACTICS_INTERVAL == this._tickOffset % TACTICS_INTERVAL) {
-            if(this._debug.verbose) this._debug.logState('tactics', this)
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
             } catch(err) {this._debug.logError(err)};
         }
-        if(this._debug.verbose) this._debug.logState('command', this)
         try {
             this._command();
         } catch(err) {this._debug.logError(err)};
@@ -80,7 +79,13 @@ module.exports = class Operation {
                 childOp.run();
             } catch(err) {this._debug.logError(err)}
         }
-        if(this._debug.verbose) this._debug.logState('end', this)
+        if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
+            try {
+                this._support();
+                if (this._runSupport) this._runSupport = false;
+            } catch(err) {this._debug.logError(err)};
+        }
+        if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) U.l({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart})
     }
 
     /**@param {ChildOp} childOp */
@@ -99,6 +104,17 @@ module.exports = class Operation {
     _strategy() {}
     _tactics() {}
     _command() {}
+
+    /**
+     * @param {any} message 
+     */
+    _log(message) {
+        if (this._verbose && this._tickFirstLog) {
+            U.l('== RUN OP: ' + this.constructor.name + ' ==')
+            this._tickFirstLog = false;
+        } 
+        if (this._verbose) U.l(message)
+    }
 }
 
 

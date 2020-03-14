@@ -18,6 +18,7 @@ declare type ColonizingOp = import('./shard_child_colonizingOp');
 
 declare interface Base extends Room {controller: StructureController};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};
+declare interface OrderEx extends Order {transactionCost?: number, netPrice?: number}
 declare var _ = import('lodash');
 
 declare interface Instruction {command: number};
