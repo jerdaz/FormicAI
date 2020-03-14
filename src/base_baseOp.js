@@ -55,7 +55,6 @@ module.exports = class BaseOp extends ShardChildOp{
         this._unclaimTimer = 0;
     }
 
-
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
