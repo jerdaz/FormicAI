@@ -84,6 +84,7 @@ module.exports = class LinkOp extends BaseChildOp {
             let storage = this._baseOp.storage
             let terminal = this._baseOp.terminal;
             if (baseLink.store.energy >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+            else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
         }
     }    
 

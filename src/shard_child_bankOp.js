@@ -12,7 +12,7 @@ module.exports = class BankOp extends ShardChildOp {
      * */
     constructor(parent, shardOp) {
         super(parent, shardOp);
-        this._verbose = true;
+        this._verbose = false;
     }
     
     get type() {return c.OPERATION_BANK}
