@@ -56,6 +56,10 @@ module.exports = class Main extends Operation {
     /**@param {number} shardRequest */
     requestCreep(shardRequest) { this._requestCreep(shardRequest); }
 
+    _support() {
+        if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
+    }
+
     _strategy() {
         // // divide cpu evenly between shards
         // let totalCPU = 0;

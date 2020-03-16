@@ -12,7 +12,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_TERMINAL}
 ]
 
-const MAX_CENTER_DISTANCE = 15;
+const MAX_CENTER_DISTANCE = 20;
 
 module.exports = class BasePlanOp extends BaseChildOp{
     /** 
@@ -96,7 +96,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
     
         let i=1;
         loop:
-        while (i<50) {
+        while (i<=50) {
             for(x = -1 * i;x<=1*i;x++ ) {
                 for (y = -1 * i; y<= 1*i; y++) {
                     if ( (x+y) % 2 == 0 && BasePlanOp._isValidBuildingSpot(x_+x, y_+y, this._baseOp))
