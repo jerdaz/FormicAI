@@ -98,6 +98,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         /**@type {number[][]} */
         let terrainArray = [];
         for (let x = 0; x<MAX_ROOM_SIZE; x++) {
+            terrainArray[x] = [];
             for (let y=0; y<MAX_ROOM_SIZE; y++) {
                 terrainArray[x][y] = terrain.get(x,y);
             }

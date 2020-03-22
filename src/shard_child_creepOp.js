@@ -306,17 +306,17 @@ module.exports = class CreepOp extends ChildOp {
         }
 
         //mark hostile rooms unwalkable
-        optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            let roomInfo = this._mapop.getRoomInfo(roomName);
-            if (roomInfo && roomInfo.hostileOwner) {
-                for (let x =0; x<50;x++) {
-                    for (let y = 0; y<50; y++){
-                        costMatrix.set(x,y,255);
-                    }
-                }
-            }
-        }
-        
+        // optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
+        //     let roomInfo = this._mapop.getRoomInfo(roomName);
+        //     if (roomInfo && roomInfo.hostileOwner) {
+        //         for (let x =0; x<50;x++) {
+        //             for (let y = 0; y<50; y++){
+        //                 costMatrix.set(x,y,255);
+        //             }
+        //         }
+        //     }
+        // }
+
         this._creep.moveTo(dest, optsCopy);
         this._lastMoveToDest = pos;
     }
