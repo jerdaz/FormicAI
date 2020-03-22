@@ -3,7 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
 const MIN_MARKET_CREDITS = 10;
-const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2
+const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 //this is equal to 1 full transporter creep;
 
 module.exports = class MarketOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -25,13 +25,14 @@ module.exports = class MarketOp extends BaseChildOp {
     _strategy() {
         let baseOp = this._baseOp;
         let terminal = this._baseOp.terminal;
-        if (terminal == undefined) return;
+        if (terminal == null || terminal.cooldown > 0) return;
         let market = Game.market;
 
         //first try to send resources to own terminals
+        // this will spread resources through the empire
         for (let resourceName in terminal.store) {
-            let resourceType = /**@type {ResourceConstant} */ (resourceName); 
-            if (resourceType == RESOURCE_ENERGY) continue;
+            let resourceType = /**@type {ResourceConstant} */ (resourceName);  // don't send energy
+            if (resourceType == RESOURCE_ENERGY) continue; 
             let amount = terminal.store[resourceType];
             if (amount > 3 * MIN_STOCK_PILE_SIZE) {
                 this._log({trying_to_send_from:terminal.pos.roomName})
