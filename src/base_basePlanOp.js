@@ -116,7 +116,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             /**@type {RoomPosition[]} */
             let newCheckSpots = [];
             for (let checkSpot of checkSpots) {
-         git co       let x = checkSpot.x;
+                let x = checkSpot.x;
                 let y = checkSpot.y;
                 if (BasePlanOp._isValidBuildingSpot(x,y, this.baseOp)) {
                     validSpot = new RoomPosition(x,y, roomName);
