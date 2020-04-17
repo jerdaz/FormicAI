@@ -1,0 +1,4 @@
+child creep:
+transfer accepteert nu een resource type. 
+
+de creepOp moet nu alleen dit type resource oppakken indien die wordt meegegeven.

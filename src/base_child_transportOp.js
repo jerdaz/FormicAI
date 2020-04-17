@@ -3,7 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
 
-module.exports = class LinkOp extends BaseChildOp {
+module.exports = class TransportOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
@@ -83,7 +83,9 @@ module.exports = class LinkOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let storage = this._baseOp.storage
             let terminal = this._baseOp.terminal;
-            if (baseLink.store.energy >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+            let lab = this._baseOp.labs[0]
+            if (baseLink.store[RESOURCE_ENERGY] >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+            else if (terminal && terminal.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE]>0 && lab && lab.store && lab.store.getFreeCapacity(RESOURCE_CATALYZED_GHODIUM_ALKALIDE) ) creepOp.instructTransfer(terminal, lab, RESOURCE_CATALYZED_GHODIUM_ALKALIDE)
             else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
         }
     }    

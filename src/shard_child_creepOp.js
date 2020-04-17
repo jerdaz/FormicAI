@@ -25,6 +25,8 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = '';
         this._destId = '';
         this._destPos = null;
+        /**@type {ResourceConstant | null} */
+        this._resourceType = null
         this._baseOp = baseOp;
         this._creep = creep;
         this._mapOp = mapOp;
@@ -67,15 +69,18 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = ''
         this._destId = dest.id;
         this._instruct = c.COMMAND_FILL
+        this._resourceType = null;
     }
 
     /**
      * @param {Source | Structure} source
-     * @param {Structure | ConstructionSite} dest */
-    instructTransfer(source, dest) {
+     * @param {Structure | ConstructionSite} dest 
+     * @param {ResourceConstant | undefined} [resourceType] */
+    instructTransfer(source, dest, resourceType) {
         this._sourceId = source.id;
         this._destId = dest.id;
-        this._instruct = c.COMMAND_TRANSFER
+        this._instruct = c.COMMAND_TRANSFER;
+        this._resourceType = resourceType||null;
     }
     
     /**@param {RoomPosition} dest */
@@ -100,6 +105,7 @@ module.exports = class CreepOp extends ChildOp {
     instructHarvest(source) {
         this._instruct = c.COMMAND_HARVEST;
         this._sourceId = source.id;
+        this._resourceType = null;
     }
 
 

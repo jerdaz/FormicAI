@@ -9,7 +9,7 @@ const ShardChildOp = require('./shard_shardChildOp');
 const ColonizingOp = require('./shard_child_colonizingOp');
 const HarvestingOp = require('./base_child_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
-const LinkOp = require('./base_child_linkOp');
+const LinkOp = require('./base_child_transportOp');
 const MiningOp = require('./base_child_miningOp');
 const MarketOp = require('./base_child_marketOp');
 const ScoutOp = require('./base_child_scoutOp')
@@ -68,6 +68,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
+    get labs() {return /**@type {StructureLab[]} */ (this._structures[STRUCTURE_LAB])||[]}
     get name() {return this._name}
     get phase() {return this._phase}
     get centerPos() { return this.basePlanOp.baseCenter;}
