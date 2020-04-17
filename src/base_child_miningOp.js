@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_baseChildOp');
 
 const HARVESTER_SIZE_BIG = 48;
 const HARVESTER_SIZE_SMALL = 6*3;
-const TERMINAL_RESERVE_CAPACITY = TERMINAL_CAPACITY * 0.1;
+const TERMINAL_RESERVE_CAPACITY = (CARRY_CAPACITY * 50 / 3) ;
 
 module.exports = class MiningOp extends BaseChildOp {
     /** 
