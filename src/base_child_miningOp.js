@@ -2,8 +2,9 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_baseChildOp');
 
-const HARVESTER_SIZE_BIG = 48
-const HARVESTER_SIZE_SMALL = 6*3
+const HARVESTER_SIZE_BIG = 48;
+const HARVESTER_SIZE_SMALL = 6*3;
+const TERMINAL_RESERVE_CAPACITY = TERMINAL_CAPACITY * 0.1;
 
 module.exports = class MiningOp extends BaseChildOp {
     /** 
@@ -29,7 +30,7 @@ module.exports = class MiningOp extends BaseChildOp {
         if (!mineral) throw Error('Source not found')
         if (terminal && extractor) {
             let creepCount = 1;
-            if (terminal.store.getFreeCapacity() <= TERMINAL_CAPACITY * 0.9) creepCount = 0;
+            if (terminal.store.getFreeCapacity() <= TERMINAL_RESERVE_CAPACITY) creepCount = 0;
             if (mineral.mineralAmount == 0) creepCount = 0;
             this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
         }
