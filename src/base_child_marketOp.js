@@ -4,10 +4,19 @@ const BaseChildOp = require('./base_baseChildOp');
 
 const MIN_MARKET_CREDITS = 10;
 const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 //this is equal to 1 full transporter creep;
-const TERMINAL_STORAGE = {
-    RESOURCE_ENERGY : 10,
-    RESOU
+/**@type {{[index:string]:number}} */
+let TERMINAL_MAX_STORAGE = {
+    RESOURCE_ENERGY : 100000,
+    RESOURCE_CATALYZED_GHODIUM_ACID : 10000
 }
+
+/** STOCKPILE logic
+ * > Maxamount: send 50% of maxamount to other room
+ * > Maxamount: actively sell (50% max)
+ * < 50% maxamount: try to buy from market (50% max)
+ * < 25% maxamount: receive   from other room
+ * 
+ */
 
 
 module.exports = class MarketOp extends BaseChildOp {
@@ -37,15 +46,15 @@ module.exports = class MarketOp extends BaseChildOp {
         //first try to send resources to own terminals
         // this will spread resources through the empire
         for (let resourceName in terminal.store) {
-            let resourceType = /**@type {ResourceConstant} */ (resourceName);  // don't send energy
-            if (resourceType == RESOURCE_ENERGY) continue; 
+            let resourceType = /**@type {ResourceConstant} */ (resourceName);
             let amount = terminal.store[resourceType];
-            if (amount > 3 * MIN_STOCK_PILE_SIZE) {
+            let maxAmount = TERMINAL_MAX_STORAGE[resourceType];
+            if (amount > maxAmount) {
                 this._log({trying_to_send_from:terminal.pos.roomName})
                 let terminals = _.filter(Game.structures, o => {
                         if (o.structureType == STRUCTURE_TERMINAL) {
                             let terminal = /**@type {StructureTerminal} */ (o);
-                            if (terminal.store[resourceType] < MIN_STOCK_PILE_SIZE) return true;
+                            if (terminal.store[resourceType] < maxAmount / 4) return true;
                         }
                         return false;
                     });
@@ -54,7 +63,7 @@ module.exports = class MarketOp extends BaseChildOp {
                                                 - Game.map.getRoomLinearDistance(this._baseOp.name, b.pos.roomName)
                                                 })
                     let terminalTo = terminals[0];
-                    let sendAmount = Math.min(amount - 2 * MIN_STOCK_PILE_SIZE, 2 * MIN_STOCK_PILE_SIZE)
+                    let sendAmount = Math.min(amount - maxAmount/2, maxAmount/2)
                     this._log({sending_to: terminalTo.pos.roomName, amount: sendAmount, type: resourceType})
                     let result = terminal.send(resourceType, sendAmount, terminalTo.pos.roomName);
                     this._log({result: result})
@@ -69,6 +78,7 @@ module.exports = class MarketOp extends BaseChildOp {
             let resourceType = /**@type {ResourceConstant} */ (resourceName);
             if (resourceType == RESOURCE_ENERGY) continue;
             let amount = terminal.store[resourceType];
+            if (amount< TERMINAL_MAX_STORAGE[resourceType] || 0) continue 
             //this._log({base: baseOp.name, Trying_to_sell: resourceType, amount:amount, energyPrice: this._energyPrice})
             /**@type {OrderEx[]} */
             let orders = market.getAllOrders({type:ORDER_BUY, resourceType: resourceType});
@@ -95,34 +105,37 @@ module.exports = class MarketOp extends BaseChildOp {
         }
 
         // buy resources
-        let buyType = RESOURCE_ENERGY;
         let credits = this._baseOp.credits;
         if (credits > MIN_MARKET_CREDITS) {
-            //this._log({base: baseOp.name, Trying_to_buy: 'energy', energyPrice: this._energyPrice})
-            /**@type {OrderEx[]} */
-            let orders = market.getAllOrders({type:ORDER_SELL, resourceType: buyType})
-            //calculate net price
-            for (let order of orders) {
-                order.transactionCost = market.calcTransactionCost(1000,order.roomName||this._baseOp.name, this._baseOp.name)/1000;
-                order.netPrice = order.price / (1-order.transactionCost);
-            }
-            //sort low to high
-            orders = orders.sort((a,b) => {
-                return (a.netPrice||a.price) - (b.netPrice||b.price);
-            });
-            this._log('Sorted Orders:');
-            this._log(orders);
-            for (let order of orders) {
-                if (credits <= 0) break;
-                let dealAmount = Math.min(order.amount, credits / order.price, c.MAX_TRANSACTION)
-                this._log({deal: order, amount:dealAmount})
-                let res = market.deal(order.id, dealAmount, this._baseOp.name);
-                if (res == OK) credits -= dealAmount * order.price;
-                else break;
-            }
-            //calculate and save current local energyprice
-            if (orders[0]) {
-                this._resourcePrice[buyType] = orders[0].price / (1-market.calcTransactionCost(1000,orders[0].roomName||this._baseOp.name, this._baseOp.name)/1000);
+            for (let buyType in TERMINAL_MAX_STORAGE) {
+                let resourceType = /**@type {ResourceConstant} */ (buyType)
+                if (terminal.store[resourceType]> TERMINAL_MAX_STORAGE[resourceType]/2) continue;
+                //this._log({base: baseOp.name, Trying_to_buy: 'energy', energyPrice: this._energyPrice})
+                /**@type {OrderEx[]} */
+                let orders = market.getAllOrders({type:ORDER_SELL, resourceType:  resourceType})
+                //calculate net price
+                for (let order of orders) {
+                    order.transactionCost = market.calcTransactionCost(1000,order.roomName||this._baseOp.name, this._baseOp.name)/1000;
+                    order.netPrice = order.price / (1-order.transactionCost);
+                }
+                //sort low to high
+                orders = orders.sort((a,b) => {
+                    return (a.netPrice||a.price) - (b.netPrice||b.price);
+                });
+                this._log('Sorted Orders:');
+                this._log(orders);
+                for (let order of orders) {
+                    if (credits <= 0) break;
+                    let dealAmount = Math.min(order.amount, credits / order.price, c.MAX_TRANSACTION)
+                    this._log({deal: order, amount:dealAmount})
+                    let res = market.deal(order.id, dealAmount, this._baseOp.name);
+                    if (res == OK) credits -= dealAmount * order.price;
+                    else break;
+                }
+                //calculate and save current local price
+                if (orders[0]) {
+                    this._resourcePrice[resourceType] = orders[0].price / (1-market.calcTransactionCost(1000,orders[0].roomName||this._baseOp.name, this._baseOp.name)/1000);
+                }
             }
         }
     }
