@@ -25,8 +25,8 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = '';
         this._destId = '';
         this._destPos = null;
-        /**@type {ResourceConstant | null} */
-        this._resourceType = null
+        /**@type {ResourceConstant} */
+        this._resourceType = RESOURCE_ENERGY;
         this._baseOp = baseOp;
         this._creep = creep;
         this._mapOp = mapOp;
@@ -69,7 +69,7 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = ''
         this._destId = dest.id;
         this._instruct = c.COMMAND_FILL
-        this._resourceType = null;
+        this._resourceType = RESOURCE_ENERGY;
     }
 
     /**
@@ -80,7 +80,7 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = source.id;
         this._destId = dest.id;
         this._instruct = c.COMMAND_TRANSFER;
-        this._resourceType = resourceType||null;
+        this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
     /**@param {RoomPosition} dest */
@@ -105,7 +105,7 @@ module.exports = class CreepOp extends ChildOp {
     instructHarvest(source) {
         this._instruct = c.COMMAND_HARVEST;
         this._sourceId = source.id;
-        this._resourceType = null;
+        this._resourceType = RESOURCE_ENERGY;
     }
 
 
@@ -172,9 +172,10 @@ module.exports = class CreepOp extends ChildOp {
         let sourceObj = U.getRoomObject(this._sourceId);
         /**@type {RoomObjectEx | null} */
         let destObj = U.getRoomObject(this._destId);
+        let resourceType = this._resourceType;
         switch (this._state) {
             case STATE_FINDENERGY:
-                if (sourceObj && sourceObj.store && sourceObj.store[RESOURCE_ENERGY] == 0) sourceObj = null;
+                if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
                 if(sourceObj == undefined) {
                     sourceObj = this._findEnergySource();
                     if (sourceObj && sourceObj.id) this._sourceId = sourceObj.id;
@@ -188,30 +189,30 @@ module.exports = class CreepOp extends ChildOp {
                 // also pick up stuff on the way
                 let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1)[0];
                 if (tombstone) {
-                    let res = creep.withdraw(tombstone, RESOURCE_ENERGY);
+                    let res = creep.withdraw(tombstone, resourceType);
                     // also withdraw other stuff & bring to terminal if that is destination
                     if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
                 }
                 else {
                     let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
                     if (dropped_resource) {
-                        if (dropped_resource.resourceType == RESOURCE_ENERGY) creep.pickup(dropped_resource);
+                        if (dropped_resource.resourceType == resourceType) creep.pickup(dropped_resource);
                         // also withdraw other stuff & bring to terminal if that is destination
                         else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
                     }
                 }
 
                 if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,RESOURCE_ENERGY);
-                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, RESOURCE_ENERGY);
-                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, RESOURCE_ENERGY);
+                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,resourceType);
+                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, resourceType);
                 else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
                 else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
 
             case STATE_DROPENERGY:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity[RESOURCE_ENERGY] <= 0) destObj = null;
+                if (destObj && destObj.store && destObj.store.getFreeCapacity[resourceType] <= 0) destObj = null;
                 if (destObj == null) {
                     destObj = this._findEnergySink();
                     if (destObj && destObj.id) this._destId = destObj.id;
