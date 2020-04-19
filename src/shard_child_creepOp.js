@@ -35,6 +35,7 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomPosition | null} */
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
+        this._isBoosted = false;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -42,10 +43,19 @@ module.exports = class CreepOp extends ChildOp {
         return U.getRoomObject(this._destId);
     }
 
+    get isBoosted() {return this._isBoosted}
+    /**@param {boolean} bool */
+    set isBoosted(bool) {this._isBoosted = bool}
+
+
     get pos() {
         if (this._creep == undefined ) throw Error('creep undefined');
 
         return this._creep.pos;
+    }
+
+    get age() {
+        return CREEP_LIFE_TIME - (this._creep.ticksToLive||0);
     }
 
 

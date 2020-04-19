@@ -71,7 +71,8 @@ module.exports = class TransportOp extends BaseChildOp {
         this.initTick();
 
         let creepCount = 0;
-        if (this._baseLinkIds.length>0) creepCount = 1;
+        if (this._baseLinkIds.length>0) creepCount++;
+        if (this.baseOp.labs.length>0) creepCount++;
         this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, creepCount)
     }
 
@@ -79,14 +80,20 @@ module.exports = class TransportOp extends BaseChildOp {
         if (!this.baseOp.storage) return;
         let baseLink = this._baseLinks[0];
         if (baseLink == null) return;
+        let creepNumber = 0;
+        let storage = this._baseOp.storage
+        let terminal = this._baseOp.terminal;
+        let lab = this._baseOp.labs[0]
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let storage = this._baseOp.storage
-            let terminal = this._baseOp.terminal;
-            let lab = this._baseOp.labs[0]
-            if (baseLink.store[RESOURCE_ENERGY] >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
-            else if (terminal && terminal.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE]>0 && lab && lab.store && lab.store.getFreeCapacity(RESOURCE_CATALYZED_GHODIUM_ALKALIDE) ) creepOp.instructTransfer(terminal, lab, RESOURCE_CATALYZED_GHODIUM_ALKALIDE)
-            else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
+            if (creepNumber == 0) { //first creep transfers between storage and base link
+                if (baseLink.store[RESOURCE_ENERGY] >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+                else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
+            }
+            else if (creepNumber == 1) { //second creep transfers between terminal and storage
+                if (terminal && terminal.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE]>0 && lab && lab.store && lab.store.getFreeCapacity(RESOURCE_CATALYZED_GHODIUM_ALKALIDE) ) creepOp.instructTransfer(terminal, lab, RESOURCE_CATALYZED_GHODIUM_ALKALIDE)
+            }
+            creepNumber++;
         }
     }    
 

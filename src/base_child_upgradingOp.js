@@ -48,12 +48,27 @@ module.exports = class UpgradingOp extends BaseChildOp {
     _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let dest = creepOp.dest;
-            if (!(dest instanceof StructureController)
-            || (creepOp.instruction != c.COMMAND_TRANSFER) )
-            {
-                let dest = this._baseOp.base.controller;
-                if (dest) creepOp.instructFill(dest);
+            let creep = creepOp.creep;
+            let lab = this.baseOp.labs[0];
+            if (lab && !creepOp.isBoosted && creepOp.age <=50 && lab.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE] >= LAB_BOOST_MINERAL) {
+                let result = lab.boostCreep(creepOp.creep)
+                switch(result) {
+                    case OK:
+                        creepOp.isBoosted = true;
+                        return;
+                    case ERR_NOT_IN_RANGE:
+                        creepOp.instructMoveTo(lab);
+                        return;
+                }
+                
+            } else {
+                let dest = creepOp.dest;
+                if (!(dest instanceof StructureController)
+                || (creepOp.instruction != c.COMMAND_TRANSFER) )
+                {
+                    let dest = this._baseOp.base.controller;
+                    if (dest) creepOp.instructFill(dest);
+                }
             }
         }
     }

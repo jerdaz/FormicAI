@@ -116,7 +116,10 @@ module.exports = class MarketOp extends BaseChildOp {
                 //calculate net price
                 for (let order of orders) {
                     order.transactionCost = market.calcTransactionCost(1000,order.roomName||this._baseOp.name, this._baseOp.name)/1000;
-                    order.netPrice = order.price / (1-order.transactionCost);
+                    // if energy, calculate effective price including transport.
+                    if (resourceType == RESOURCE_ENERGY) order.netPrice = order.price * 1/(1-order.transactionCost);
+                    // if other resource, calculate based on energy price
+                    else order.netPrice = order.price + order.transactionCost * (this._resourcePrice[RESOURCE_ENERGY]||0);
                 }
                 //sort low to high
                 orders = orders.sort((a,b) => {
