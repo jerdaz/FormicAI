@@ -47,6 +47,7 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {boolean} bool */
     set isBoosted(bool) {this._isBoosted = bool}
 
+    get creep() {return this._creep};
 
     get pos() {
         if (this._creep == undefined ) throw Error('creep undefined');

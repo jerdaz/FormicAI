@@ -7,7 +7,7 @@ const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 
 /**@type {{[index:string]:number}} */
 let TERMINAL_MAX_STORAGE = {
     energy : 100000,
-    XGHO2 : 10000
+    XGH2O : 10000
 }
 
 /** STOCKPILE logic
@@ -25,7 +25,7 @@ module.exports = class MarketOp extends BaseChildOp {
         super(baseOp);
         /**@type {{[index:string]:number}} */
         this._resourcePrice = {};
-        this._verbose = true;
+        this._verbose = false;
     }
 
     get type() {return c.OPERATION_MARKET}
@@ -93,14 +93,14 @@ module.exports = class MarketOp extends BaseChildOp {
             })
             this._log('Sorted Orders:');
             this._log(orders);
-            for (let order of orders) {
+            let order = orders[0]
+            if (order) {
                 if (amount <= 0) break;
                 let dealAmount = Math.min(order.amount, amount, c.MAX_TRANSACTION);
                 this._log({deal: order, amount:amount})
                 let res = market.deal(order.id, dealAmount, this._baseOp.name)
-                if (res == OK) amount -= dealAmount;
                 this._log({result: res});
-                if(res != OK) break;
+                if (res == OK) return; // succesful deal stop;
              }
         }
 
@@ -127,17 +127,16 @@ module.exports = class MarketOp extends BaseChildOp {
                 });
                 this._log('Sorted Orders:');
                 this._log(orders);
-                for (let order of orders) {
-                    if (credits <= 0) break;
+                let order = orders[0];
+                if (order) {
                     let dealAmount = Math.min(order.amount, credits / order.price, c.MAX_TRANSACTION)
                     this._log({deal: order, amount:dealAmount})
                     let res = market.deal(order.id, dealAmount, this._baseOp.name);
-                    if (res == OK) credits -= dealAmount * order.price;
-                    else break;
-                }
-                //calculate and save current local price
-                if (orders[0]) {
-                    this._resourcePrice[resourceType] = orders[0].price / (1-market.calcTransactionCost(1000,orders[0].roomName||this._baseOp.name, this._baseOp.name)/1000);
+                    if (res == OK) {
+                        //calculate and save current local price
+                        this._resourcePrice[resourceType] = orders[0].price / (1-market.calcTransactionCost(1000,orders[0].roomName||this._baseOp.name, this._baseOp.name)/1000);
+                        return;
+                    }
                 }
             }
         }

@@ -50,7 +50,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = creepOp.creep;
             let lab = this.baseOp.labs[0];
-            if (lab && !creepOp.isBoosted && creepOp.age <=50 && lab.store[RESOURCE_CATALYZED_GHODIUM_ALKALIDE] >= LAB_BOOST_MINERAL) {
+            if (lab && !creepOp.isBoosted && creepOp.age <=100 && lab.store[RESOURCE_CATALYZED_GHODIUM_ACID] >= LAB_BOOST_MINERAL) {
                 let result = lab.boostCreep(creepOp.creep)
                 switch(result) {
                     case OK:
