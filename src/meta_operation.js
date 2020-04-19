@@ -112,7 +112,7 @@ module.exports = class Operation {
      */
     _log(message) {
         if (this._verbose && this._tickFirstLog) {
-            U.l('== RUN OP: ' + this.constructor.name + ' ==')
+            U.l('== RUN OP: ' + this.constructor.name + ' ' + this.name + ' ==')
             this._tickFirstLog = false;
         } 
         if (this._verbose) U.l(message)

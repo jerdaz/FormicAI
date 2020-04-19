@@ -6,8 +6,8 @@ const MIN_MARKET_CREDITS = 10;
 const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 //this is equal to 1 full transporter creep;
 /**@type {{[index:string]:number}} */
 let TERMINAL_MAX_STORAGE = {
-    RESOURCE_ENERGY : 100000,
-    RESOURCE_CATALYZED_GHODIUM_ACID : 10000
+    energy : 100000,
+    XGHO2 : 10000
 }
 
 /** STOCKPILE logic
@@ -25,7 +25,7 @@ module.exports = class MarketOp extends BaseChildOp {
         super(baseOp);
         /**@type {{[index:string]:number}} */
         this._resourcePrice = {};
-        this._verbose = false;
+        this._verbose = true;
     }
 
     get type() {return c.OPERATION_MARKET}
@@ -110,7 +110,7 @@ module.exports = class MarketOp extends BaseChildOp {
             for (let buyType in TERMINAL_MAX_STORAGE) {
                 let resourceType = /**@type {ResourceConstant} */ (buyType)
                 if (terminal.store[resourceType]> TERMINAL_MAX_STORAGE[resourceType]/2) continue;
-                //this._log({base: baseOp.name, Trying_to_buy: 'energy', energyPrice: this._energyPrice})
+                this._log({base: baseOp.name, Trying_to_buy: resourceType, resourcePrices: this._resourcePrice})
                 /**@type {OrderEx[]} */
                 let orders = market.getAllOrders({type:ORDER_SELL, resourceType:  resourceType})
                 //calculate net price
