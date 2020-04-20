@@ -42,7 +42,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
                 case STRUCTURE_LAB: //fix labs with incorrect resource types
-                    if (structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy;
+                    if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
                 case STRUCTURE_EXTENSION:
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
