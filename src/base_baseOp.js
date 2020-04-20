@@ -4,7 +4,7 @@ const FillingOp = require('./base_child_fillingOp');
 const UpgradingOp = require('./base_child_upgradingOp');
 const BuildingOp = require('./base_child_buildingOp');
 const SpawningOp = require ('./base_child_spawningOp');
-const TowerOp = require('./base_child_towerOp');
+const TowerOp = require('./base_child_defenseOp');
 const ShardChildOp = require('./shard_shardChildOp');
 const ColonizingOp = require('./shard_child_colonizingOp');
 const HarvestingOp = require('./base_child_harvestingOp');
@@ -75,6 +75,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get directive(){ return this._directive;}
     get base() {return this._base;}
     get credits() {return this._shardOp.bank.getCredits(this._name)}
+    get events() {return this._base.getEventLog()};
 
     initTick() {
         super.initTick();
@@ -102,6 +103,10 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {number} requestType} */
     requestShardColonization(shard, requestType) {
         this.spawningOp.requestShardColonizers(shard, requestType);
+    }
+
+    activateSafemode() {
+        this._base.controller.activateSafeMode();
     }
 
     _firstRun() {

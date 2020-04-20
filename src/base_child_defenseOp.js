@@ -30,6 +30,30 @@ module.exports = class TowerOp extends BaseChildOp {
                 continue;
             }        
         }
+
+        if (hostile) {
+            let activateSafeMode = false;
+            for (let event of this.baseOp.events) {
+                if (event.event == EVENT_ATTACK_CONTROLLER) activateSafeMode = true;
+                else if (event.event == EVENT_ATTACK && event.data.damage > 0) {
+                    let object = Game.getObjectById(event.objectId);
+                    if (object && object.structureType) {
+                        let structureType = object.structureType;
+                        switch (structureType) {
+                            case STRUCTURE_WALL:
+                            case STRUCTURE_RAMPART:
+                                break;
+                            default:
+                                activateSafeMode = true;
+                        }
+                    }
+                }
+                if (activateSafeMode) {
+                    this.baseOp.activateSafemode();
+                    break;
+                }
+            }
+        }
     }
 
     /**@returns {Creep | undefined} */
