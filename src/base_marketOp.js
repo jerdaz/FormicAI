@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const BaseChildOp = require('./base_childOp');
 
 const MIN_MARKET_CREDITS = 10;
 const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 //this is equal to 1 full transporter creep;

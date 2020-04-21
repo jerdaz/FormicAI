@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const ShardChildOp = require('./shard_shardChildOp');
+const ShardChildOp = require('./shard_childOp');
 
 //credits to keep as a reserve
 const RESERVE_CREDITS = 0;

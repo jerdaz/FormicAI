@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const BaseChildOp = require('./base_childOp');
 
 const SCOUT_INTERVAL = 15000;
 
