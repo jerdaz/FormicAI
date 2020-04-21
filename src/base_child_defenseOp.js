@@ -32,12 +32,12 @@ module.exports = class TowerOp extends BaseChildOp {
         }
 
         if (hostile) {
-            let activateSafeMode = false;
             for (let event of this.baseOp.events) {
+                let activateSafeMode = false;
                 if (event.event == EVENT_ATTACK_CONTROLLER) activateSafeMode = true;
                 else if (event.event == EVENT_ATTACK && event.data.damage > 0) {
-                    let object = Game.getObjectById(event.objectId);
-                    if (object && object.structureType) {
+                    let object = Game.getObjectById(event.data.targetId);
+                    if (object && object.structureType != undefined && object.my) {
                         let structureType = object.structureType;
                         switch (structureType) {
                             case STRUCTURE_WALL:
