@@ -8,6 +8,9 @@ module.exports = function(grunt) {
     var ptr = grunt.option('ptr') ? true : config.ptr
 
     grunt.loadNpmTasks('grunt-screeps');
+    grunt.loadNpmTasks('grunt-file-append')
+
+    var currentdate = new Date();
 
     grunt.initConfig({
         screeps: {
@@ -20,6 +23,22 @@ module.exports = function(grunt) {
             dist: {
                 src: ['src/*.js']
             }
-        }
+        },
+
+        // Add version variable using current timestamp.
+        file_append: {
+            versioning: {
+              files: [
+                {
+                  append: "\nglobal.SCRIPT_VERSION = "+ currentdate.toDateString() + "\n",
+                  input: 'src/version_template.js',
+                  output: 'src/version.js',
+                }
+              ]
+            }
+          },
+  
     });
+
+    grunt.registerTask('default',  ['file_append:versioning', 'screeps']);
 }
