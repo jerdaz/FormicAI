@@ -1,6 +1,6 @@
-let U = require('../util');
-const c = require('../constants');
-let ShardChildOp = require('../shard/meta_shardChildOp');
+let U = require('./util');
+const c = require('./constants');
+let ShardChildOp = require('./shard_shardChildOp');
 
 module.exports = class BaseChildOp extends ShardChildOp {
     /**

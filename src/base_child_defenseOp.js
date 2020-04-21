@@ -1,6 +1,6 @@
-let U = require('../util');
-const c = require('../constants');
-const BaseChildOp = require('./meta_baseChildOp');
+let U = require('./util');
+const c = require('./constants');
+const BaseChildOp = require('./base_baseChildOp');
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000
 
@@ -11,8 +11,8 @@ module.exports = class TowerOp extends BaseChildOp {
         let hostile = this._getInvader();
         let base = this._baseOp.base;
         let towers = this._baseOp.towers;
-        let creepsHit = base.find(FIND_MY_CREEPS, {filter: (/**@type {Creep}*/creep) => {return (creep.hits < creep.hitsMax );}} );
-        let structuresHit = base.find(FIND_STRUCTURES, {filter: (/**@type {Structure}*/structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level)}});
+        let creepsHit = base.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
+        let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level)}});
         for (let tower of towers) {
             if (hostile) {
                 tower.attack(hostile);
