@@ -1,10 +1,10 @@
-const U = require('./util');
-const c = require('./constants');
-const ChildOp = require('./meta_childOp');
-const BaseOp = require('./base_baseOp');
-const MapOp = require('./shard_child_mapOp');
-const BankOp = require('./shard_child_bankOp')
-const ColonizingOp = require('./shard_child_colonizingOp');
+const U = require('../util');
+const c = require('../constants');
+const ChildOp = require('../meta_childOp');
+const BaseOp = require('../base/baseOp');
+const MapOp = require('./mapOp');
+const BankOp = require('./bankOp')
+const ColonizingOp = require('./colonizingOp');
 
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */

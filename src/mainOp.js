@@ -1,7 +1,7 @@
 let U = require('./util');
 let c = require('./constants');
 let Operation = require('./meta_operation');
-let ShardOp = require('./shard_shardOp');
+let ShardOp = require('./shard/shardOp');
 
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;

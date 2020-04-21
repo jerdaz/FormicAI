@@ -1,6 +1,6 @@
-const U = require('./util');
-const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const U = require('../util');
+const c = require('../constants');
+const BaseChildOp = require('./meta_baseChildOp');
 
 const MAX_WALL_HEIGHT = 0.01;
 
@@ -17,7 +17,7 @@ module.exports = class BuildingOp extends BaseChildOp {
         let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
         if (constructionCount > 0) creepCount = 8;
         else if (level >= 2 
-             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter:  (/**@type {Structure}*/ o) => {return o.hits < MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                                                                               && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
                                       ).length>0
                 ) {
@@ -34,8 +34,8 @@ module.exports = class BuildingOp extends BaseChildOp {
                 /**@type {Structure|ConstructionSite|null}  */
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                 if (!dest) {
-                    let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3}});
-                    structures.sort((a,b) => {return a.hits - b.hits});
+                    let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/o) => {return o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3}});
+                    structures.sort((/**@type {Structure}*/a,/**@type {Structure}*/b) => {return a.hits - b.hits});
                     dest = structures[0];
                 }
                 if (dest) creepOp.instructFill(dest);

@@ -1,18 +1,18 @@
-const U = require('./util');
-const c = require('./constants');
-const FillingOp = require('./base_child_fillingOp');
-const UpgradingOp = require('./base_child_upgradingOp');
-const BuildingOp = require('./base_child_buildingOp');
-const SpawningOp = require ('./base_child_spawningOp');
-const TowerOp = require('./base_child_defenseOp');
-const ShardChildOp = require('./shard_shardChildOp');
-const ColonizingOp = require('./shard_child_colonizingOp');
-const HarvestingOp = require('./base_child_harvestingOp');
-const BasePlanOp = require('./base_basePlanOp');
-const LinkOp = require('./base_child_transportOp');
-const MiningOp = require('./base_child_miningOp');
-const MarketOp = require('./base_child_marketOp');
-const ScoutOp = require('./base_child_scoutOp')
+const U = require('../util');
+const c = require('../constants');
+const FillingOp = require('./fillingOp');
+const UpgradingOp = require('./upgradingOp');
+const BuildingOp = require('./buildingOp');
+const SpawningOp = require ('./spawningOp');
+const TowerOp = require('./defenseOp');
+const ShardChildOp = require('../shard/meta_shardChildOp');
+const ColonizingOp = require('../shard/colonizingOp');
+const HarvestingOp = require('./harvestingOp');
+const BasePlanOp = require('./basePlanOp');
+const LinkOp = require('./transportOp');
+const MiningOp = require('./miningOp');
+const MarketOp = require('./marketOp');
+const ScoutOp = require('./scoutOp')
 
 const UNCLAIM_TIME = 3000;
 

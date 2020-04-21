@@ -1,6 +1,6 @@
-const U = require('./util');
-const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const U = require('../util');
+const c = require('../constants');
+const BaseChildOp = require('./meta_baseChildOp');
 
 const HARVESTER_SIZE_BIG = 48;
 const HARVESTER_SIZE_SMALL = 6*3;

@@ -1,6 +1,6 @@
-const U = require('./util');
-const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const U = require('../util');
+const c = require('../constants');
+const BaseChildOp = require('./meta_baseChildOp');
 
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
 const REDUCE_UPGRADER_COUNT_LEVEL = 6

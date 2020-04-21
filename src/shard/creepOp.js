@@ -1,6 +1,6 @@
-const U = require('./util');
-const c = require('./constants');
-const ChildOp = require('./meta_childOp');
+const U = require('../util');
+const c = require('../constants');
+const ChildOp = require('../meta_childOp');
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;

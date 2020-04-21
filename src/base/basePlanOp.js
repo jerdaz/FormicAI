@@ -1,6 +1,6 @@
-const U = require('./util');
-const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const U = require('../util');
+const c = require('../constants');
+const BaseChildOp = require('./meta_baseChildOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
