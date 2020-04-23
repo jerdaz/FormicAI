@@ -6,6 +6,17 @@ module.exports = function(grunt) {
     var email = grunt.option('email') || config.email;
     var password = grunt.option('password') || config.password;
     var ptr = grunt.option('ptr') ? true : config.ptr
+    var server = undefined;
+
+    switch (grunt.option('server')) {
+      case 'sp2':
+        server = {
+          host: 'server2.screepspl.us',
+          port: 21025,
+          http: true
+        };
+        password = config.sp2_password;
+    }
 
     grunt.loadNpmTasks('grunt-screeps');
     grunt.loadNpmTasks('grunt-file-append')
@@ -15,6 +26,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         screeps: {
             options: {
+                server: server,
                 email: email,
                 password: password,
                 branch: branch,
