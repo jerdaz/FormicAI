@@ -3,13 +3,6 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const Version = require('./version')
 
-const STATE_NONE = 0;
-const STATE_RETRIEVING = 1;
-const STATE_DELIVERING = 2;
-const STATE_MOVING = 3;
-const STATE_CLAIMING = 4;
-const STATE_FINDENERGY = 5;
-const STATE_DROPENERGY = 6;
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
@@ -24,7 +17,7 @@ module.exports = class CreepOp extends ChildOp {
      * */
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
-        this._state = STATE_NONE;
+        this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
@@ -74,6 +67,10 @@ module.exports = class CreepOp extends ChildOp {
 
     get instruction() {
         return this._instruct;
+    }
+
+    get state() {
+        return this._state;
     }
 
     /**@param {Creep} creep */
@@ -162,33 +159,33 @@ module.exports = class CreepOp extends ChildOp {
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
                 if (creep.store.getUsedCapacity() == 0) {
-                    this._state = STATE_RETRIEVING;
+                    this._state = c.STATE_RETRIEVING;
                 }
                 if (creep.store.getFreeCapacity() == 0) {
-                    this._state = STATE_DROPENERGY;
+                    this._state = c.STATE_DROPENERGY;
                 }
-                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_RETRIEVING;
                 break;
             case c.COMMAND_FILL:
-                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_FINDENERGY;
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
                 if (creep.store.getFreeCapacity() == 0) {
-                    this._state = STATE_DELIVERING;
+                    this._state = c.STATE_DELIVERING;
                 }
-                if (this._state == STATE_NONE) this._state = STATE_FINDENERGY;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_FINDENERGY;
                 break;
             case c.COMMAND_TRANSFER:
-                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_RETRIEVING;
-                if (creep.store.getFreeCapacity() == 0) this._state = STATE_DELIVERING;
-                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
+                if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_RETRIEVING;
                 break;
             case c.COMMAND_MOVETO:
-                this._state=STATE_MOVING;
+                this._state=c.STATE_MOVING;
                 break;
             case c.COMMAND_CLAIMCONTROLLER:
-                this._state=STATE_CLAIMING
+                this._state=c.STATE_CLAIMING
                 break;
             case c.COMMAND_NONE:
-                this._state = STATE_NONE;
+                this._state = c.STATE_NONE;
                 break;
         }
 
@@ -198,7 +195,7 @@ module.exports = class CreepOp extends ChildOp {
         let destObj = U.getRoomObject(this._destId);
         let resourceType = this._resourceType;
         switch (this._state) {
-            case STATE_FINDENERGY:
+            case c.STATE_FINDENERGY:
                 if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
                 if(sourceObj == undefined) {
                     sourceObj = this._findEnergySource();
@@ -206,7 +203,7 @@ module.exports = class CreepOp extends ChildOp {
                     else this._sourceId = '';
                 }
                 //deliberate fallthrough to retrieving
-            case STATE_RETRIEVING:
+            case c.STATE_RETRIEVING:
                 if (sourceObj == null) break;
                 this._moveTo(sourceObj.pos, {range:1});
 
@@ -235,7 +232,7 @@ module.exports = class CreepOp extends ChildOp {
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 break;
 
-            case STATE_DROPENERGY:
+            case c.STATE_DROPENERGY:
                 if (destObj && destObj.store && destObj.store.getFreeCapacity[resourceType] <= 0) destObj = null;
                 if (destObj == null) {
                     destObj = this._findEnergySink();
@@ -243,7 +240,7 @@ module.exports = class CreepOp extends ChildOp {
                     else this._destId = ''
                 }
                 //deliberate fallthrough to delivering
-            case STATE_DELIVERING:
+            case c.STATE_DELIVERING:
                 if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
                     this._moveTo(destObj.pos, {range:1});
@@ -259,10 +256,10 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 break;
         
-            case STATE_MOVING:
+            case c.STATE_MOVING:
                 if (this._destPos) this._moveTo(this._destPos);
                 break;
-            case STATE_CLAIMING:
+            case c.STATE_CLAIMING:
                 if (destObj) {
                     this._moveTo(destObj.pos, {range:1});
                     if (destObj instanceof StructureController) creep.claimController(destObj);
@@ -307,7 +304,7 @@ module.exports = class CreepOp extends ChildOp {
             let storage = this._baseOp.storage
             if (storage && _.size(storage.store) < storage.storeCapacity) roomObjects.push (storage);
         }
-        result = this._creep.pos.findClosestByPath(roomObjects);
+        result = this._creep.pos.findClosestByPath(roomObjects, {ignoreCreeps:true});
         return result;        
     }
 

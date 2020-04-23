@@ -27,13 +27,18 @@ module.exports = class BuildingOp extends BaseChildOp {
     }
 
     _tactics() {
+        let transferedToUpgradingThisTick = false;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             if (creepOp.instruction != c.COMMAND_TRANSFER)  
             {
                 /**@type {Structure|ConstructionSite|null}  */
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                if (!dest) {
+                if (!dest && this.creepCount > 1 && !transferedToUpgradingThisTick) {
+                    creepOp.newParent(this._baseOp.upgradingOp);
+                    transferedToUpgradingThisTick = true;
+                }
+                else if (!dest) {
                     let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3}});
                     structures.sort((a,b) => {return a.hits - b.hits});
                     dest = structures[0];

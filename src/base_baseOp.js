@@ -60,6 +60,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
+    get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
     get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
@@ -125,7 +126,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._phase = c.BASE_PHASE_BIRTH;
         if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
         else return;
-        if( this.storage.store.energy >= this._base.energyCapacityAvailable * 2) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;

@@ -13,6 +13,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
     constructor (baseOp, sourceId, instance) {
         super(baseOp, instance);
         this._sourceId = sourceId;
+        this._harvesterCount = 1;
     }
 
     get type() {return c.OPERATION_HARVESTING}
@@ -32,7 +33,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_SMALL}, 1)
         } else if (this.baseOp.storage) {
-            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, 1)
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, Math.round(this._harvesterCount))
         }
 
         if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
@@ -52,9 +53,15 @@ module.exports = class HarvestingOp extends BaseChildOp {
 
     _tactics() {
         if (!this.baseOp.storage) return;
+        let source = Game.getObjectById(this._sourceId);
+        if (this.baseOp.phase < c.BASE_PHASE_SOURCE_LINKS && source.ticksToRegeneration<=c.TACTICS_INTERVAL) {
+            if (source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL) this._harvesterCount+=0.2;
+            else this._harvesterCount -= 0.001;
+            if (this._harvesterCount > 2) this._harvesterCount = 2;
+        } ;
+
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let source = Game.getObjectById(this._sourceId);
             creepOp.instructHarvest(source)
         }
     }

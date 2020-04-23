@@ -53,7 +53,7 @@ module.exports = class ShardChildOp extends ChildOp {
             if (this._baseOp) creep.memory.baseName = this._baseOp.name;
             else delete creep.memory.baseName;
             creep.memory.operationType = this.type;
-            creep.memory.operatonInstance = this.instance;
+            creep.memory.operationInstance = this.instance;
         }
 
     }

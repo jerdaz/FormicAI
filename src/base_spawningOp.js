@@ -17,6 +17,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
+        this._verbose = false;
     }
 
     get type() {return c.OPERATION_SPAWNING}
@@ -85,6 +86,8 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 if (body.length>0) {
                                     let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                     if (result != OK) spawnList.push(spawnItem);
+                                    this._log(body);
+                                    this._log(result);
                                 }
                             }
                         }
@@ -162,6 +165,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         var i=0;
         var maxEnergy = base.energyCapacityAvailable;
         if (baseOp.fillingOp.creepCount == 0) maxEnergy = base.energyAvailable;
+        this._log({fillingCreepcount: baseOp.fillingOp.creepCount, maxEnergy: maxEnergy});
 
         while (U.getCreepCost(result) <= maxEnergy && result.length < Math.min(maxLength + 1, MAX_CREEP_SIZE + 1)) {
             result.push(body[i++]);

@@ -17,13 +17,13 @@ module.exports = class UpgradingOp extends BaseChildOp {
     _strategy() {
         let controller = this.baseOp.base.controller;
         let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER /*&& this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL*/) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
             let body = [MOVE,CARRY,WORK];
             let maxSize = MAX_CREEP_SIZE;
             if (link) body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
-            let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            let workerCount = Math.floor((energy - ENERGY_RESERVE / 8 *controller.level ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
                 if (workerCount > 1) workerCount = 1;
@@ -57,7 +57,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
                         creepOp.isBoosted = true;
                         return;
                     case ERR_NOT_IN_RANGE:
-                        creepOp.instructMoveTo(lab);
+                        creepOp.instructMoveTo(lab.pos);
                         return;
                 }
                 
