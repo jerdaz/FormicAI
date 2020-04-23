@@ -1,5 +1,5 @@
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
+    MY_SIGN: '🐜🐜 FormicAI [VERSION] 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
 
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,

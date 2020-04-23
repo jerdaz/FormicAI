@@ -1,4 +1,9 @@
 // @ts-nocheck
+let versionString = ''
+
+module.exports = class Version {
+    get version() { return versionString}
+}
 
 
-global.SCRIPT_VERSION = Tue Apr 21 2020
+versionString = '2020-04-23'

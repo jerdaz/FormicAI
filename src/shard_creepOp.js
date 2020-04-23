@@ -1,6 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
+const Version = require('./version')
 
 const STATE_NONE = 0;
 const STATE_RETRIEVING = 1;
@@ -9,6 +10,9 @@ const STATE_MOVING = 3;
 const STATE_CLAIMING = 4;
 const STATE_FINDENERGY = 5;
 const STATE_DROPENERGY = 6;
+
+let version = new Version;
+const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
 
 module.exports = class CreepOp extends ChildOp {
     /**

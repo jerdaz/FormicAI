@@ -30,7 +30,7 @@ module.exports = function(grunt) {
             versioning: {
               files: [
                 {
-                  append: "\nglobal.SCRIPT_VERSION = "+ currentdate.toDateString() + "\n",
+                  append: "\nversionString = '"+ currentdate.toISOString().split('T')[0] + "'\n",
                   input: 'src/version_template.js',
                   output: 'src/version.js',
                 }
