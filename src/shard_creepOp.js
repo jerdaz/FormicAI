@@ -243,7 +243,7 @@ module.exports = class CreepOp extends ChildOp {
                         let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
                         if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != c.MY_SIGN)) creep.signController(destObj, c.MY_SIGN);
+                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');

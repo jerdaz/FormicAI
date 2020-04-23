@@ -149,7 +149,7 @@ module.exports = class ShardOp extends ChildOp {
                 continue;
             }
             let opInstance = parseInt(split[2])||0;
-            if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName]) {
+            if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName] && this._OperationIdByRoomByOpType[roomName][opType]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 
             }
