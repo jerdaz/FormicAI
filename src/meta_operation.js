@@ -4,7 +4,7 @@ const c = require('./constants');
 const SUPPORT_INTERVAL = 1000
 const STRATEGY_INTERVAL = 100
 const TACTICS_INTERVAL = 10
-const MAX_OPERATION_CPU = 100
+const MAX_OPERATION_CPU = Game.cpu.tickLimit;
 
 //unique id of Operation
 let idIndex = 0;
@@ -85,7 +85,9 @@ module.exports = class Operation {
                 if (this._runSupport) this._runSupport = false;
             } catch(err) {this._debug.logError(err)};
         }
-        if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) U.l({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart})
+        if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
+            Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));
+        }
     }
 
     /**@param {ChildOp} childOp */
@@ -110,7 +112,7 @@ module.exports = class Operation {
      */
     _log(message) {
         if (this._verbose && this._tickFirstLog) {
-            U.l('== RUN OP: ' + this.constructor.name + ' ==')
+            U.l('== RUN OP: ' + this.constructor.name + ' ' + this.name + ' ==')
             this._tickFirstLog = false;
         } 
         if (this._verbose) U.l(message)

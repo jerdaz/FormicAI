@@ -4,9 +4,10 @@
   "description": "Screeps fully autonomous bot",
   "main": "src/main.js",
   "dependencies": {
-    "@types/lodash": "^4.14.148",
-    "@types/screeps": "^2.5.4",
-    "grunt": "^1.0.4",
+    "@types/lodash": "^4.14.149",
+    "@types/screeps": "^3.1.0",
+    "grunt": "^1.1.0",
+    "grunt-file-append": "0.0.7",
     "grunt-screeps": "^1.4.0"
   },
   "devDependencies": {},

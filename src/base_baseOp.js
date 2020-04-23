@@ -1,18 +1,18 @@
 const U = require('./util');
 const c = require('./constants');
-const FillingOp = require('./base_child_fillingOp');
-const UpgradingOp = require('./base_child_upgradingOp');
-const BuildingOp = require('./base_child_buildingOp');
-const SpawningOp = require ('./base_child_spawningOp');
-const TowerOp = require('./base_child_towerOp');
-const ShardChildOp = require('./shard_shardChildOp');
-const ColonizingOp = require('./shard_child_colonizingOp');
-const HarvestingOp = require('./base_child_harvestingOp');
+const FillingOp = require('./base_fillingOp');
+const UpgradingOp = require('./base_upgradingOp');
+const BuildingOp = require('./base_buildingOp');
+const SpawningOp = require ('./base_spawningOp');
+const TowerOp = require('./base_defenseOp');
+const ShardChildOp = require('./shard_childOp');
+const ColonizingOp = require('./shard_colonizingOp');
+const HarvestingOp = require('./base_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
-const LinkOp = require('./base_child_linkOp');
-const MiningOp = require('./base_child_miningOp');
-const MarketOp = require('./base_child_marketOp');
-const ScoutOp = require('./base_child_scoutOp')
+const LinkOp = require('./base_transportOp');
+const MiningOp = require('./base_miningOp');
+const MarketOp = require('./base_marketOp');
+const ScoutOp = require('./base_scoutOp')
 
 const UNCLAIM_TIME = 3000;
 
@@ -36,7 +36,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new ColonizingOp(this,shardOp, this));
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
-        this.addChildOp(new MiningOp(this));
+        //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
 
@@ -68,12 +68,14 @@ module.exports = class BaseOp extends ShardChildOp{
     get storage() {return /**@type {StructureStorage | null}*/ ((this._structures[STRUCTURE_STORAGE]||[])[0])}
     get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
+    get labs() {return /**@type {StructureLab[]} */ (this._structures[STRUCTURE_LAB])||[]}
     get name() {return this._name}
     get phase() {return this._phase}
     get centerPos() { return this.basePlanOp.baseCenter;}
     get directive(){ return this._directive;}
     get base() {return this._base;}
     get credits() {return this._shardOp.bank.getCredits(this._name)}
+    get events() {return this._base.getEventLog()};
 
     initTick() {
         super.initTick();
@@ -101,6 +103,10 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {number} requestType} */
     requestShardColonization(shard, requestType) {
         this.spawningOp.requestShardColonizers(shard, requestType);
+    }
+
+    activateSafemode() {
+        this._base.controller.activateSafeMode();
     }
 
     _firstRun() {

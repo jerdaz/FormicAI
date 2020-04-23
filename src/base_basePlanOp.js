@@ -1,6 +1,6 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_baseChildOp');
+const BaseChildOp = require('./base_childOp');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
@@ -9,10 +9,12 @@ const baseBuildTemplate = [
     {type: STRUCTURE_TOWER},
     {type: STRUCTURE_STORAGE},
     {type: STRUCTURE_LINK, max:1},
-    {type: STRUCTURE_TERMINAL}
+    {type: STRUCTURE_TERMINAL},
+    {type: STRUCTURE_LAB, max:1}
 ]
 
-const MAX_CENTER_DISTANCE = 25;
+const MAX_ROOM_SIZE = 50;
+const TERRAIN_MASK_PLAIN = 0;
 
 module.exports = class BasePlanOp extends BaseChildOp{
     /** 
@@ -39,12 +41,13 @@ module.exports = class BasePlanOp extends BaseChildOp{
         //find & destroy extensions that have become unreachable.
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
+                case STRUCTURE_LAB: //fix labs with incorrect resource types
+                    if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
                 case STRUCTURE_EXTENSION:
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    // only do this for one base for now!!!!
-                    if (this._baseOp.name == 'E7N39' && !BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
+                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
                     break;
             }
         }
@@ -88,29 +91,57 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     
     _findBuildingSpot() {
+        const CHECK = 20;
+        const INVALID = 40;
         let centerPos = this.baseCenter;
-        let x_ = centerPos.x;
-        let y_ = centerPos.y;
-        let x = 0;
-        let y = 0;
-    
-        let i=1;
-        loop:
-        while (i<=50) {
-            for(x = -1 * i;x<=1*i;x++ ) {
-                for (y = -1 * i; y<= 1*i; y++) {
-                    if ( (x+y) % 2 == 0 && BasePlanOp._isValidBuildingSpot(x_+x, y_+y, this._baseOp))
-                        break loop;
+        let terrain = Game.map.getRoomTerrain(this.baseOp.name);
+        let roomName = this.baseOp.name;
+
+        /**@type {number[][]} */
+        let terrainArray = [];
+        for (let x = 0; x<MAX_ROOM_SIZE; x++) {
+            terrainArray[x] = [];
+            for (let y=0; y<MAX_ROOM_SIZE; y++) {
+                terrainArray[x][y] = terrain.get(x,y);
+            }
+        }
+
+        /**@type {RoomPosition|undefined} */
+        let validSpot = undefined;
+
+        /**@type {RoomPosition[]} */
+        let checkSpots = [];
+        checkSpots.push(centerPos);
+
+        while(checkSpots.length > 0 && validSpot == undefined) {
+            /**@type {RoomPosition[]} */
+            let newCheckSpots = [];
+            for (let checkSpot of checkSpots) {
+                let x = checkSpot.x;
+                let y = checkSpot.y;
+                if (BasePlanOp._isValidBuildingSpot(x,y, this.baseOp)) {
+                    validSpot = new RoomPosition(x,y, roomName);
+                    break;
+                }
+                else {
+                    terrainArray[x][y] = INVALID;
+                    for (let x_ = x-1; x_ <= x+1; x_++ ) {
+                        for (let y_ = y-1; y_<=y+1; y_++) {
+                            if (x==x_ || y==y_ || x_<2 || x_ > MAX_ROOM_SIZE-1 || y_ <2 || y_ > MAX_ROOM_SIZE-1) continue;
+                            let terrain = terrainArray[x_][y_];
+                            if (terrain == TERRAIN_MASK_SWAMP || terrain == TERRAIN_MASK_PLAIN ) {
+                                terrainArray[x_][y_] = CHECK;
+                                newCheckSpots.push(new RoomPosition(x_,y_, roomName));
+                            };
+                        }
+                    }
                 }
             }
-            i++;
+            checkSpots = newCheckSpots;
         }
-    
-        if (i<50) return new RoomPosition (x_+x,y_+y, this._baseOp.name);
-        return undefined;
 
-   
-
+        if (validSpot) return validSpot;
+        else return undefined;
     }
  
     /** 
@@ -135,7 +166,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let minerals = pos.findInRange(FIND_MINERALS,2);
         if (minerals.length > 0 ) return false;
         if (pos.inRangeTo(base.controller.pos,2)) return false;
-        if (pos.findPathTo(baseOp.centerPos,{ignoreCreeps:true, ignoreDestructibleStructures:true, ignoreRoads:true}).length > MAX_CENTER_DISTANCE) return false;
         let walkable = false;
         for(let i=-1; i<=1; i++) {
             for (let j=-1; j<=1; j++) {
