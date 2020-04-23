@@ -9,14 +9,31 @@ module.exports = function(grunt) {
     var server = undefined;
 
     switch (grunt.option('server')) {
-      case 'sp2':
+      case 'sp1':
         server = {
-          host: 'server2.screepspl.us',
+          host: 'server1.screepspl.us',
           port: 21025,
           http: true
         };
         password = config.sp2_password;
-    }
+        break;
+        case 'sp2':
+          server = {
+            host: 'server2.screepspl.us',
+            port: 21025,
+            http: true
+          };
+          password = config.sp2_password;
+          break;
+        case 'cogd':
+            server = {
+              host: 'screeps.cogd.io',
+              port: 21025,
+              http: true
+            };
+            password = config.cogd_password;
+            break;
+        }
 
     grunt.loadNpmTasks('grunt-screeps');
     grunt.loadNpmTasks('grunt-file-append')
