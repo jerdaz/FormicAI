@@ -142,13 +142,13 @@ module.exports = class ShardOp extends ChildOp {
         for (let creepName in Game.creeps) {
             let creep = U.getCreep(creepName);
             let split = creepName.split('_');
-            let roomName = /*creep.memory.baseName ||*/ split[0];
-            let opType = /*creep.memory.operationType ||*/ parseInt(split[1]);
+            let roomName = creep.memory.baseName || split[0];
+            let opType = creep.memory.operationType || parseInt(split[1]);
             if (opType > c.OPERATION_MAX) {
                 creep.suicide();
                 continue;
             }
-            let opInstance = parseInt(split[2])||0;
+            let opInstance = creep.memory.operationInstance || parseInt(split[2])||0;
             if (creep.hits> 0 && this._OperationIdByRoomByOpType[roomName] && this._OperationIdByRoomByOpType[roomName][opType]) {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 

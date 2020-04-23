@@ -53,6 +53,8 @@ module.exports = class CreepOp extends ChildOp {
 
     get creep() {return this._creep};
 
+    get name() {return this._creep.name};
+
     get pos() {
         if (this._creep == undefined ) throw Error('creep undefined');
 
