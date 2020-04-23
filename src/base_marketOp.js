@@ -7,7 +7,7 @@ const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 
 /**@type {{[index:string]:number}} */
 let TERMINAL_MAX_STORAGE = {
     energy : 100000,
-   // XGH2O : 10000
+    XGH2O : 10000
 }
 
 /** STOCKPILE logic
