@@ -81,6 +81,13 @@ module.exports = class CreepOp extends ChildOp {
         this._creep = creep;
     }
 
+    /**@param {ShardChildOp} newParent */
+    newParent(newParent) {
+        super.newParent(newParent);
+        this._creep.memory.operationType = newParent.type;
+        this._creep.memory.operationInstance = newParent.instance;
+    }
+
     /**@param {Structure | ConstructionSite} dest */
     instructFill(dest) {
         this._sourceId = ''
