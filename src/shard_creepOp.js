@@ -204,7 +204,10 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 //deliberate fallthrough to retrieving
             case c.STATE_RETRIEVING:
-                if (sourceObj == null) break;
+                if (sourceObj == null){
+                        //this._instruct = c.COMMAND_NONE; 
+                        break;
+                    }
                 this._moveTo(sourceObj.pos, {range:1});
 
                 // also pick up stuff on the way

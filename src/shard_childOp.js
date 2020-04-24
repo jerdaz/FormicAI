@@ -33,6 +33,16 @@ module.exports = class ShardChildOp extends ChildOp {
         return res;
     }
 
+    get idleCount() {
+        let res = 0;
+        let creepOps = /**@type {CreepOp[]}*/ (this.childOps[c.OPERATION_CREEP]);
+        if (!creepOps) return 0;
+        for (let creepOp of creepOps) {
+            if (creepOp.instruction == c.COMMAND_NONE) res++;
+        }
+        return res;
+    }
+
     initTick() {
         super.initTick();
         //remove dead creeps from runtime

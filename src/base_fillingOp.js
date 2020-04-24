@@ -17,7 +17,7 @@ module.exports = class FillingOp extends BaseChildOp {
     
     _strategy() {
         let template = {body:[MOVE,CARRY,WORK]}
-        let creepCount = 10;
+        let creepCount = 5;
         if (this.baseOp.storage) creepCount = 2;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY ) creepCount = 1;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
@@ -34,7 +34,7 @@ module.exports = class FillingOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let curDest = creepOp.dest;
-            if (!curDest) this._fillNewStructure(creepOp);
+            if (!curDest || creepOp.instruction == c.COMMAND_NONE) this._fillNewStructure(creepOp);
             if (curDest && curDest.store) {
                 let store = curDest.store;
                 if (store[RESOURCE_ENERGY] == store.getCapacity(RESOURCE_ENERGY)) this._fillNewStructure(creepOp);

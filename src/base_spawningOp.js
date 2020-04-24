@@ -131,12 +131,13 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let teamOp = spawnRequest.operation;
+            let shardChildOp = spawnRequest.operation;
+            if (shardChildOp.idleCount > 0) continue; //don't spawn if it has idle creeps
             let nCreeps = 0;
-            if (teamOp) nCreeps = teamOp.creepCount;
+            if (shardChildOp) nCreeps = shardChildOp.creepCount;
             if (spawnRequest.count > nCreeps) {
-                let opType = teamOp.type;
-                let opInstance = teamOp.instance;
+                let opType = shardChildOp.type;
+                let opInstance = shardChildOp.instance;
                 spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
             }
         }
