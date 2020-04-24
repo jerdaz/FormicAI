@@ -8,7 +8,7 @@ module.exports = class BuildingOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
-        this._creepCount = 0;
+        this._creepRequestCount = 0;
     }
     get type() {return c.OPERATION_BUILDING}
 
@@ -29,7 +29,7 @@ module.exports = class BuildingOp extends BaseChildOp {
             creepCount = 1;
         }
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
-        this._creepCount = creepCount;
+        this._creepRequestCount = creepCount;
     }
 
     _tactics() {
@@ -40,7 +40,7 @@ module.exports = class BuildingOp extends BaseChildOp {
             {
                 /**@type {Structure|ConstructionSite|null}  */
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                if (!dest && this.creepCount > this.creepCount && !transferedToUpgradingThisTick) {
+                if (!dest && this.creepCount > this._creepRequestCount && !transferedToUpgradingThisTick) {
                     creepOp.newParent(this._baseOp.upgradingOp);
                     transferedToUpgradingThisTick = true;
                 }

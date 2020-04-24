@@ -6,4 +6,4 @@ module.exports = class Version {
 }
 
 
-versionString = '2020-04-23'
+versionString = '2020-04-24'
