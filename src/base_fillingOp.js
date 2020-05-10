@@ -17,7 +17,7 @@ module.exports = class FillingOp extends BaseChildOp {
     
     _strategy() {
         let template = {body:[MOVE,CARRY,WORK]}
-        let creepCount = 5;
+        let creepCount = 10;
         if (this.baseOp.storage) creepCount = 2;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY ) creepCount = 1;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}

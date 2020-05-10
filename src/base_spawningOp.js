@@ -132,6 +132,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
             let shardChildOp = spawnRequest.operation;
+            this._log({idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
             if (shardChildOp.idleCount > 0) continue; //don't spawn if it has idle creeps
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;

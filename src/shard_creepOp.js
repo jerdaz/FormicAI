@@ -205,7 +205,7 @@ module.exports = class CreepOp extends ChildOp {
                 //deliberate fallthrough to retrieving
             case c.STATE_RETRIEVING:
                 if (sourceObj == null){
-                        //this._instruct = c.COMMAND_NONE; 
+                        this._instruct = c.COMMAND_NONE; 
                         break;
                     }
                 this._moveTo(sourceObj.pos, {range:1});
@@ -233,6 +233,7 @@ module.exports = class CreepOp extends ChildOp {
                 else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
                 else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                if (c.CREEP_EMOTES) creep.say('➤🚚')
                 break;
 
             case c.STATE_DROPENERGY:
@@ -257,18 +258,24 @@ module.exports = class CreepOp extends ChildOp {
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 }
+                if (c.CREEP_EMOTES) creep.say('🚚➤')
                 break;
         
             case c.STATE_MOVING:
                 if (this._destPos) this._moveTo(this._destPos);
+                if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
             case c.STATE_CLAIMING:
                 if (destObj) {
                     this._moveTo(destObj.pos, {range:1});
                     if (destObj instanceof StructureController) creep.claimController(destObj);
                 }
-
-            this._lastPos = this._creep.pos;
+                this._lastPos = this._creep.pos;
+                if (c.CREEP_EMOTES) creep.say('Claiming')
+                break;
+            case c.STATE_NONE:
+                if (c.CREEP_EMOTES) creep.say('💤')
+                break;
         }    
     }
 
