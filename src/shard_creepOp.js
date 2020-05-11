@@ -33,6 +33,8 @@ module.exports = class CreepOp extends ChildOp {
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
         this._isBoosted = false;
+        /**@type {number | null} */
+        this._cost = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -56,6 +58,18 @@ module.exports = class CreepOp extends ChildOp {
 
     get age() {
         return CREEP_LIFE_TIME - (this._creep.ticksToLive||0);
+    }
+
+    get creepCost() {
+        if (this._cost) return this._cost;
+        else {
+            let cost = 0;
+            for (let bodypart of this._creep.body) {
+                cost += BODYPART_COST[bodypart.type]
+            }
+            this._cost = cost;
+            return cost;
+        }
     }
 
 
@@ -323,15 +337,16 @@ module.exports = class CreepOp extends ChildOp {
      * @arg {MoveToOpts} [opts]
     */
     _moveTo(pos, opts) {
+        let creep = this._creep;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
         let dest = pos;
-        let myPos = this._creep.pos;
+        let myPos = creep.pos;
         if (myPos.roomName != dest.roomName) {
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
+                let route = Game.map.findRoute(creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
                     {   let roomInfo = this._mapOp.getRoomInfo(roomName);
                         if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
@@ -355,7 +370,11 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
-        this._creep.moveTo(dest, optsCopy);
+        let result = creep.moveTo(dest, optsCopy);
+        // if fatigued, save opportunity cost to map, for road building
+        if (result == ERR_TIRED) {
+            this._mapOp.registerFatigue(creep.pos, this.creepCost / CREEP_LIFE_TIME)
+        }
         this._lastMoveToDest = pos;
     }
 }

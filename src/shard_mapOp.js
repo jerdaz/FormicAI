@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
+/** @typedef {{[roomName:string]: {fatigueCost:number[][], lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 module.exports = class MapOp extends ChildOp {
@@ -97,9 +97,26 @@ module.exports = class MapOp extends ChildOp {
         return Game.map.describeExits(roomName);
     }    
 
+    /**@param {RoomPosition} pos
+     * @param {Number} cost
+     */
+    registerFatigue(pos, cost) {
+        let roomInfo = this.getRoomInfo(pos.roomName);
+        if (!roomInfo) return;
+        roomInfo.fatigueCost[pos.x][pos.y] += cost;
+    }
+
     _tactics() {
         for(let roomName in Game.rooms) {
-            if (this._roomInfo[roomName] == undefined) this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+            if (this._roomInfo[roomName] == undefined) {
+                this._roomInfo[roomName] = {fatigueCost: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+                for (let x=0; x<50;x++) {
+                    this._roomInfo[roomName].fatigueCost[x] = [];
+                    for (let y=0; y<50;y++) {
+                        this._roomInfo[roomName].fatigueCost[x][y] = 0;
+                    }
+                }
+            }
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) this._roomInfo[roomName].lastSeenHostile = Game.time;
