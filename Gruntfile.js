@@ -72,5 +72,5 @@ module.exports = function(grunt) {
   
     });
 
-    grunt.registerTask('default',  ['file_append:versioning', 'screeps']);
+    grunt.registerTask('default',  ['screeps']);
 }
