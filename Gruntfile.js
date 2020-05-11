@@ -25,6 +25,7 @@ module.exports = function(grunt) {
           };
           password = config.sp2_password;
           break;
+        default: 
         case 'cogd':
             server = {
               host: 'screeps.cogd.io',
@@ -32,6 +33,8 @@ module.exports = function(grunt) {
               http: true
             };
             password = config.cogd_password;
+            break;
+         case 'screeps':
             break;
         }
 
@@ -69,5 +72,5 @@ module.exports = function(grunt) {
   
     });
 
-    grunt.registerTask('default',  ['file_append:versioning', 'screeps']);
+    grunt.registerTask('default',  ['screeps']);
 }
