@@ -338,6 +338,9 @@ module.exports = class CreepOp extends ChildOp {
     */
     _moveTo(pos, opts) {
         let creep = this._creep;
+        let range = 0;
+        if (opts && opts.range) range = opts.range;
+        if (creep.pos.inRangeTo(pos,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
         let dest = pos;
