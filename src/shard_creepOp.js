@@ -271,8 +271,8 @@ module.exports = class CreepOp extends ChildOp {
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
-                if (c.CREEP_EMOTES) creep.say('🚚➤')
                 break;
         
             case c.STATE_MOVING:
@@ -374,8 +374,11 @@ module.exports = class CreepOp extends ChildOp {
         // if fatigued, save opportunity cost to map, for road building
         if (result == ERR_TIRED) {
             this._mapOp.registerFatigue(creep.pos, this.creepCost / CREEP_LIFE_TIME)
+        } else if (result == ERR_NO_PATH) {
+            this._instruct = c.COMMAND_NONE;
         }
         this._lastMoveToDest = pos;
+        return result;
     }
 }
 
