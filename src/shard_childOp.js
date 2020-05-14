@@ -17,6 +17,7 @@ module.exports = class ShardChildOp extends ChildOp {
         this._instance = instance || 0
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
+        this._lastIdle = 0;
         let baseName = '';
         if (baseOp) baseName = baseOp.name;
         else baseName = shardOp.name;
@@ -42,6 +43,14 @@ module.exports = class ShardChildOp extends ChildOp {
         }
         return res;
     }
+
+    /**@param {Number} time */
+    set lastIdle(time) {
+        this._lastIdle = time;
+    }
+
+    get lastIdle() { return this._lastIdle};
+    
 
     initTick() {
         super.initTick();

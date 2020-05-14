@@ -10,13 +10,14 @@ const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
 module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
-     * @param {Operation} parent
+     * @param {ShardChildOp} parent
      * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
      * */
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
+        this._parent = parent;
         this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -33,6 +34,8 @@ module.exports = class CreepOp extends ChildOp {
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
         this._isBoosted = false;
+        /**@type {number | null} */
+        this._cost = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -56,6 +59,18 @@ module.exports = class CreepOp extends ChildOp {
 
     get age() {
         return CREEP_LIFE_TIME - (this._creep.ticksToLive||0);
+    }
+
+    get creepCost() {
+        if (this._cost) return this._cost;
+        else {
+            let cost = 0;
+            for (let bodypart of this._creep.body) {
+                cost += BODYPART_COST[bodypart.type]
+            }
+            this._cost = cost;
+            return cost;
+        }
     }
 
 
@@ -247,18 +262,20 @@ module.exports = class CreepOp extends ChildOp {
             case c.STATE_DELIVERING:
                 if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
-                    this._moveTo(destObj.pos, {range:1});
+                    let range = 1;
+                    let result = -1000;
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
-                        let result = -1000;
-                        if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
+                        if (destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                        if (destObj instanceof StructureController) range = 3;
+                        if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
                     }
-                    else if (destObj instanceof ConstructionSite) creep.build(destObj);
+                    else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:1});
+                    if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
-                if (c.CREEP_EMOTES) creep.say('🚚➤')
                 break;
         
             case c.STATE_MOVING:
@@ -270,13 +287,15 @@ module.exports = class CreepOp extends ChildOp {
                     this._moveTo(destObj.pos, {range:1});
                     if (destObj instanceof StructureController) creep.claimController(destObj);
                 }
-                this._lastPos = this._creep.pos;
                 if (c.CREEP_EMOTES) creep.say('Claiming')
                 break;
             case c.STATE_NONE:
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
+        if (this._instruct== c.COMMAND_NONE) this._parent.lastIdle = Game.time;
+        if (!creep.pos.isEqualTo(this._lastPos)) this._registerCreepStep();
+        this._lastPos = this._creep.pos;
     }
 
     _findEnergySource() {
@@ -323,15 +342,19 @@ module.exports = class CreepOp extends ChildOp {
      * @arg {MoveToOpts} [opts]
     */
     _moveTo(pos, opts) {
+        let creep = this._creep;
+        let range = 0;
+        if (opts && opts.range) range = opts.range;
+        if (creep.pos.inRangeTo(pos,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
         let dest = pos;
-        let myPos = this._creep.pos;
+        let myPos = creep.pos;
         if (myPos.roomName != dest.roomName) {
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
+                let route = Game.map.findRoute(creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
                     {   let roomInfo = this._mapOp.getRoomInfo(roomName);
                         if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
@@ -355,8 +378,70 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
-        this._creep.moveTo(dest, optsCopy);
+        let result = creep.moveTo(dest, optsCopy);
+        if (result == ERR_NO_PATH) {
+            this._instruct = c.COMMAND_NONE;
+        }
         this._lastMoveToDest = pos;
+        return result;
     }
+
+    _registerCreepStep() {
+
+
+        let creep = this._creep;
+        let roomInfo = this._mapOp.getRoomInfo(creep.pos.roomName);
+        if (!roomInfo) return;
+        let moveParts = 0;
+        let otherParts = 0;
+        for (let bodyPart of creep.body) {
+            switch (bodyPart.type) {
+                case MOVE:
+                    moveParts++;
+                    break;
+                case CARRY:
+                    break;
+                default:
+                    otherParts++;
+            }
+        }
+        let fatigue = 0;
+        fatigue = otherParts;
+        this._log({f1: fatigue})
+        fatigue += this._calcResourcesWeight();
+        this._log({f2: fatigue})
+        fatigue *= 2;
+        this._log({f3: fatigue})
+        let stepTicks = Math.ceil(fatigue / moveParts / 2);
+        let stepTicksRoad = Math.ceil(fatigue / moveParts / 2 / 2);
+        let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME 
+        this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
+        if (opportunityCost > 0) {
+            this._mapOp.registerFatigue(creep.pos, opportunityCost);
+            //U.l({newstep: creep.pos, cost: opportunityCost, newCost: roomInfo.terrainArray[creep.pos.x][creep.pos.y]} )
+        }
+    }
+
+    _calcResourcesWeight() {
+        let creep = this._creep;
+        var totalCarry = creep.store.getUsedCapacity(), weight = 0;
+        for(var i = creep.body.length-1; i >= 0; i--) {
+            if(!totalCarry) {
+                break;
+            }
+            var part = creep.body[i];
+            if(part.type != CARRY || !part.hits) {
+                continue;
+            }
+            var boost = 1;
+            if(part.boost) {
+                boost = BOOSTS[CARRY][part.boost].capacity || 1;
+            }
+            totalCarry -= Math.min(totalCarry, CARRY_CAPACITY * boost);
+            weight++;
+        }
+        return weight;
+    }
+
 }
 

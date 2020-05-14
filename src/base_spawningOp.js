@@ -4,6 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
+const MAX_OPERATION_IDLE_TIME = 50;
 
 module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -132,10 +133,10 @@ module.exports = class SpawningOp extends BaseChildOp {
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
             let shardChildOp = spawnRequest.operation;
-            this._log({idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
-            if (shardChildOp.idleCount > 0) continue; //don't spawn if it has idle creeps
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
+            if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;
