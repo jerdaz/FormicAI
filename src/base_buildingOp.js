@@ -44,7 +44,7 @@ module.exports = class BuildingOp extends BaseChildOp {
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                 if (!dest) { //repair normal structures
                     let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {
-                        let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                        let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && o.hits < MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level] * 3;
                         if (!needRepair) return false;
                         else return true;
                     }});
