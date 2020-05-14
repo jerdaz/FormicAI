@@ -269,11 +269,11 @@ module.exports = class CreepOp extends ChildOp {
                         if (destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
                         if (destObj instanceof StructureController) range = 3;
                         if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {creep.signController(destObj, SIGN);range =1};
+                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
                     }
                     else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:1});
+                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:range});
                     if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
                 break;
