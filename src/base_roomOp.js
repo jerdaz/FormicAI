@@ -30,7 +30,7 @@ module.exports = class roomOp extends BaseChildOp {
             for (let y=0; y<50; y++) {
                 let pos = new RoomPosition(x,y,this._roomName);
                 if (fatigueCost[x][y].fatigueCost > 0) {
-                    let hasRoad = _.filter(pos.lookFor(LOOK_STRUCTURES),{type:STRUCTURE_ROAD}).length > 0;
+                    let hasRoad = _.filter(pos.lookFor(LOOK_STRUCTURES),{structureType:STRUCTURE_ROAD}).length > 0;
                     if (!hasRoad) roadSites.push ({x: x, y:y, cost:fatigueCost[x][y].fatigueCost});
                 }
             }
@@ -39,7 +39,7 @@ module.exports = class roomOp extends BaseChildOp {
         roadSites.sort((a,b) => {
             return b.cost - a.cost;
         })
-        this._log(roadSites);
+        this._log({room: this._baseOp.name, roadSites});
         this._roadSites = roadSites;
     }
 

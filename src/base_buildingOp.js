@@ -3,12 +3,14 @@ const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
 const MAX_WALL_HEIGHT = 0.01;
+const ROAD_IDLE_REPAIR_TIME = 100;
 
 module.exports = class BuildingOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
         this._creepRequestCount = 0;
+        this._verbose = false;
     }
     get type() {return c.OPERATION_BUILDING}
 
@@ -40,18 +42,31 @@ module.exports = class BuildingOp extends BaseChildOp {
             {
                 /**@type {Structure|ConstructionSite|null}  */
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                if (!dest) {
-                    let structures = this._baseOp.base.find(FIND_STRUCTURES, {filter: o => {
+                if (!dest) { //repair normal structures
+                    let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {
                         let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
                         if (!needRepair) return false;
-                        if (o.structureType == STRUCTURE_ROAD) {
-                            let roomInfo = this._map.getRoomInfo(this._baseName);
-                            if (roomInfo && roomInfo.terrainArray[o.pos.x][o.pos.y].lastStep < Game.time - CREEP_LIFE_TIME) return false
-                        }
-                        return true;
+                        else return true;
                     }});
                     structures.sort((a,b) => {return a.hits - b.hits});
                     dest = structures[0];
+                }
+                if (!dest) { // repair roads
+                    let roads =this._baseOp.base.find(FIND_STRUCTURES, {filter: o => {
+                        let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                        if (!needRepair) return false;
+                        if (o.structureType == STRUCTURE_ROAD) {
+                            this._log({roadrepair: o.pos})
+                            let roomInfo = this._map.getRoomInfo(this._baseOp.name);
+                            if (!roomInfo) return false;
+                            this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
+                            if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                            this._log('canrepair');
+                            return true;
+                        }
+                        return false;
+                    }});
+                    dest = creepOp.pos.findClosestByPath(roads);
                 }
                 if (dest) creepOp.instructFill(dest);
                 else if (this.creepCount > this._creepRequestCount && !transferedToUpgradingThisTick) {
