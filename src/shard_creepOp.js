@@ -272,7 +272,6 @@ module.exports = class CreepOp extends ChildOp {
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                    this._moveTo(destObj.pos, {range:1});
                     if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
                 break;
