@@ -46,7 +46,23 @@ module.exports = class HarvestingOp extends BaseChildOp {
         if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
             let base = this.baseOp.base;
             if(links.length == 0) {
-                let result = PathFinder.search(source.pos, this.baseOp.centerPos)
+                //create roomcallback to prevent building on room edges;
+                let roomCallback = function(/**@type {string}*/ roomName) {
+                    let matrix = new PathFinder.CostMatrix;
+                    for (let i=0; i<c.MAX_ROOM_SIZE;i++) {
+                        matrix.set(i,0,255);
+                        matrix.set(i,1,255);
+                        matrix.set(i,c.MAX_ROOM_SIZE-1,255);
+                        matrix.set(i,c.MAX_ROOM_SIZE-2,255);
+                        matrix.set(0,i,255);
+                        matrix.set(1,i,255);
+                        matrix.set(c.MAX_ROOM_SIZE-1,i,255);
+                        matrix.set(c.MAX_ROOM_SIZE-2,i,255);
+                    }
+                    return matrix;
+
+                } 
+                let result = PathFinder.search(source.pos, this.baseOp.centerPos,{roomCallback: roomCallback} )
                 let pos = result.path[1];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
                 for(let structure of structures) structure.destroy();
