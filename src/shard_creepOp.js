@@ -262,16 +262,16 @@ module.exports = class CreepOp extends ChildOp {
             case c.STATE_DELIVERING:
                 if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
+                    let result = -1000;
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
-                        let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
+                        if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
-                        if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:1});
                     }
-                    else if (destObj instanceof ConstructionSite) creep.build(destObj);
+                    else if (destObj instanceof ConstructionSite) result = creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:1});
                     if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
                 break;
@@ -293,6 +293,7 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         }    
         if (this._instruct== c.COMMAND_NONE) this._parent.lastIdle = Game.time;
+        if (!creep.pos.isEqualTo(this._lastPos)) this._mapOp.registerCreepStep(creep.pos);
     }
 
     _findEnergySource() {

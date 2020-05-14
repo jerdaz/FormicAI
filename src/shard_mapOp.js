@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {fatigueCost:number[][], lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
+/** @typedef {{[roomName:string]: {terrainArray:{fatigueCost:Number, lastStep:Number}[][], lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 const MIN_ROAD_FATIGUE_COST =  -1 * c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
@@ -105,7 +105,14 @@ module.exports = class MapOp extends ChildOp {
     registerFatigue(pos, cost) {
         let roomInfo = this.getRoomInfo(pos.roomName);
         if (!roomInfo) return;
-        roomInfo.fatigueCost[pos.x][pos.y] += cost;
+        roomInfo.terrainArray[pos.x][pos.y].fatigueCost += cost;
+    }
+
+    /**@param {RoomPosition} pos */
+    registerCreepStep(pos) {
+        let roomInfo = this.getRoomInfo(pos.roomName);
+        if (!roomInfo) return;
+        roomInfo.terrainArray[pos.x][pos.y].lastStep = Game.time;
     }
 
     _support() {
@@ -119,7 +126,7 @@ module.exports = class MapOp extends ChildOp {
                     let repairCost = c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
                     if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
                     if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
-                    roomInfo.fatigueCost[x][y] = Math.max(MIN_ROAD_FATIGUE_COST, roomInfo.fatigueCost[x][y] -repairCost);
+                    roomInfo.terrainArray[x][y].fatigueCost = Math.max(MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost);
                 }
             }
         }
@@ -128,11 +135,11 @@ module.exports = class MapOp extends ChildOp {
     _tactics() {
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {fatigueCost: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false}
-                for (let x=0; x<50;x++) {
-                    this._roomInfo[roomName].fatigueCost[x] = [];
-                    for (let y=0; y<50;y++) {
-                        this._roomInfo[roomName].fatigueCost[x][y] = MIN_ROAD_FATIGUE_COST;
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+                for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
+                    this._roomInfo[roomName].terrainArray[x] = [];
+                    for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
+                        this._roomInfo[roomName].terrainArray[x][y] = {fatigueCost : MIN_ROAD_FATIGUE_COST, lastStep:0};
                     }
                 }
             }

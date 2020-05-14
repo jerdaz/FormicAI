@@ -23,15 +23,15 @@ module.exports = class roomOp extends BaseChildOp {
         //determine road locations
         let roomInfo = this._map.getRoomInfo(this._roomName);
         if (!roomInfo) return;
-        let fatigueCost = roomInfo.fatigueCost;
+        let fatigueCost = roomInfo.terrainArray;
         /**@type {{x:number, y:number, cost:number}[]} */
         let roadSites = []
         for (let x =0; x<50; x++) {
             for (let y=0; y<50; y++) {
                 let pos = new RoomPosition(x,y,this._roomName);
-                if (fatigueCost[x][y] > 0) {
+                if (fatigueCost[x][y].fatigueCost > 0) {
                     let hasRoad = _.filter(pos.lookFor(LOOK_STRUCTURES),{type:STRUCTURE_ROAD}).length > 0;
-                    if (!hasRoad) roadSites.push ({x: x, y:y, cost:fatigueCost[x][y]});
+                    if (!hasRoad) roadSites.push ({x: x, y:y, cost:fatigueCost[x][y].fatigueCost});
                 }
             }
         }

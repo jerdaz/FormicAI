@@ -42,7 +42,13 @@ module.exports = class BuildingOp extends BaseChildOp {
                 let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
                 if (!dest) {
                     let structures = this._baseOp.base.find(FIND_STRUCTURES, {filter: o => {
-                        return o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3
+                        let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                        if (!needRepair) return false;
+                        if (o.structureType == STRUCTURE_ROAD) {
+                            let roomInfo = this._map.getRoomInfo(this._baseName);
+                            if (roomInfo && roomInfo.terrainArray[o.pos.x][o.pos.y].lastStep < Game.time - CREEP_LIFE_TIME) return false
+                        }
+                        return true;
                     }});
                     structures.sort((a,b) => {return a.hits - b.hits});
                     dest = structures[0];
