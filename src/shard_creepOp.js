@@ -10,13 +10,14 @@ const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
 module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
-     * @param {Operation} parent
+     * @param {ShardChildOp} parent
      * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
      * */
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
+        this._parent = parent;
         this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -261,16 +262,17 @@ module.exports = class CreepOp extends ChildOp {
             case c.STATE_DELIVERING:
                 if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
-                    this._moveTo(destObj.pos, {range:1});
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
                         let result = -1000;
                         if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
                         if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
+                        if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:1});
                     }
                     else if (destObj instanceof ConstructionSite) creep.build(destObj);
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    this._moveTo(destObj.pos, {range:1});
                     if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
                 break;
@@ -291,6 +293,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
+        if (this._instruct== c.COMMAND_NONE) this._parent.lastIdle = Game.time;
     }
 
     _findEnergySource() {

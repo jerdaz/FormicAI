@@ -11,7 +11,7 @@ module.exports = class roomOp extends BaseChildOp {
         /**@type {{x:number, y:number, cost:number}[]} */
         this._roadSites = [];
         this._roomName = roomName;
-        this._verbose = true;
+        this._verbose = false;
     }
     get type() {return c.OPERATION_ROOM}
 
@@ -46,7 +46,7 @@ module.exports = class roomOp extends BaseChildOp {
     _tactics() {
         //place road building sites
         let room = Game.rooms[this._roomName];
-        if (this._roadSites.length > 0 && room.find(FIND_CONSTRUCTION_SITES).length < 3) {
+        if (this._roadSites.length > 0 && room.find(FIND_CONSTRUCTION_SITES).length < 2) {
             let site = this._roadSites[0]
             let result = room.createConstructionSite(site.x,site.y, STRUCTURE_ROAD);
             if (result == OK) this._roadSites.shift();
