@@ -75,7 +75,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let baseOp = this._baseOp;
         let structures = baseOp.myStructures;
 
-        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
+        if (room.find(FIND_MY_CONSTRUCTION_SITES).length >= c.MAX_CONSTRUCTION_SITES) return;
 
         for(let template of baseBuildTemplate) {
             let structureType = template.type;
