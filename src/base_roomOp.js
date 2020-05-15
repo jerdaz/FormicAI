@@ -2,6 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
+const MAX_ROAD_CONSTRUCTION_SITES = 5;
+
 module.exports = class roomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
      * @param {String} roomName
@@ -46,10 +48,12 @@ module.exports = class roomOp extends BaseChildOp {
     _tactics() {
         //place road building sites
         let room = Game.rooms[this._roomName];
-        if (this._roadSites.length > 0 && room.find(FIND_CONSTRUCTION_SITES).length < 2) {
+        let siteCount =  MAX_ROAD_CONSTRUCTION_SITES - room.find(FIND_CONSTRUCTION_SITES).length ;
+        while(siteCount > 0 && this._roadSites.length>0) {
             let site = this._roadSites[0]
             let result = room.createConstructionSite(site.x,site.y, STRUCTURE_ROAD);
-            if (result == OK) this._roadSites.shift();
+            this._roadSites.shift();
+            siteCount--;
         }
     }
 }
