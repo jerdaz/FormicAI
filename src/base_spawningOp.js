@@ -61,7 +61,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_LINK] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
-            this._spawnPrio[c.OPERATION_COLONIZING] = 10;
+            this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
         }
     }
