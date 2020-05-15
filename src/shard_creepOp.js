@@ -250,7 +250,7 @@ module.exports = class CreepOp extends ChildOp {
                 else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
                 if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
-                if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
+                //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
                 break;
 
             case c.STATE_DROPENERGY:
@@ -412,8 +412,6 @@ module.exports = class CreepOp extends ChildOp {
         this._log({f1: fatigue})
         fatigue += this._calcResourcesWeight();
         this._log({f2: fatigue})
-        fatigue *= 2;
-        this._log({f3: fatigue})
         let moveRate = 2;
         if (Game.map.getRoomTerrain(creep.pos.roomName).get(creep.pos.x,creep.pos.y) == TERRAIN_MASK_SWAMP) moveRate = 5;
         let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
