@@ -414,7 +414,7 @@ module.exports = class CreepOp extends ChildOp {
         this._log({f3: fatigue})
         let moveRate = 2;
         if (Game.map.getRoomTerrain(creep.pos.roomName).get(creep.pos.x,creep.pos.y) == TERRAIN_MASK_SWAMP) moveRate = 5;
-        let stepTicks = Math.ceil(fatigue / moveParts / moveRate );
+        let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
         let stepTicksRoad = Math.ceil(fatigue / moveParts);
         
         let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME 
