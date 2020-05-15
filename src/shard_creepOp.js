@@ -241,14 +241,16 @@ module.exports = class CreepOp extends ChildOp {
                     }
                 }
 
-                if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,resourceType);
-                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
-                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
+                let result = -1000
+                if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
+                else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
+                else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                if (c.CREEP_EMOTES) creep.say('➤🚚')
+                if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
+                if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
                 break;
 
             case c.STATE_DROPENERGY:
