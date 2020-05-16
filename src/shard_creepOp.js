@@ -36,6 +36,8 @@ module.exports = class CreepOp extends ChildOp {
         this._isBoosted = false;
         /**@type {number | null} */
         this._cost = null;
+        /**@type {boolean | null} */
+        this._hasWorkParts = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -46,6 +48,12 @@ module.exports = class CreepOp extends ChildOp {
     get isBoosted() {return this._isBoosted}
     /**@param {boolean} bool */
     set isBoosted(bool) {this._isBoosted = bool}
+    get hasWorkParts(){
+        if (this._hasWorkParts == null) {
+            this._hasWorkParts = this._creep.body.filter(o => {type:WORK}).length > 0;
+        }
+        return this._hasWorkParts;
+    }
 
     get creep() {return this._creep};
 
@@ -268,7 +276,7 @@ module.exports = class CreepOp extends ChildOp {
                     let result = -1000;
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
-                        if (destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                        if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
                         if (destObj instanceof StructureController) range = 3;
                         if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
