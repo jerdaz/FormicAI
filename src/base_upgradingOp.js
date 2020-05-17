@@ -39,7 +39,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
                 let pos = result.path[2];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
-                for(let structure of structures) structure.destroy();
+                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
                 pos.createConstructionSite(STRUCTURE_LINK);
             }
         }
