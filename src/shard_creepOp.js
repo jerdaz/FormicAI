@@ -50,7 +50,7 @@ module.exports = class CreepOp extends ChildOp {
     set isBoosted(bool) {this._isBoosted = bool}
     get hasWorkParts(){
         if (this._hasWorkParts == null) {
-            this._hasWorkParts = this._creep.body.filter(o => {type:WORK}).length > 0;
+            this._hasWorkParts = this._creep.body.filter(o => {return o.type == WORK}).length > 0;
         }
         return this._hasWorkParts;
     }
