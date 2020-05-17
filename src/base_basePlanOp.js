@@ -159,7 +159,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
         if (!ignoreStructures && countStructures > 0) return false;
         let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-        if (buildingsites.length > 0 ) return false;
+        if (!ignoreStructures && buildingsites.length > 0 ) return false;
         let sources = pos.findInRange(FIND_SOURCES,2);
         if (sources.length > 0) return false;
         let minerals = pos.findInRange(FIND_MINERALS,2);
