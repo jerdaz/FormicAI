@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
-const MAX_OPERATION_IDLE_TIME = 50;
+const MAX_OPERATION_IDLE_TIME = 25;
 
 module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
