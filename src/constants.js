@@ -8,6 +8,7 @@ module.exports = {
     COMMAND_CLAIMCONTROLLER: 3,
     COMMAND_FILL: 4,
     COMMAND_HARVEST: 5,
+    COMMAND_BUILD: 6,
 
     STATE_NONE: 0,
     STATE_RETRIEVING: 1,
@@ -75,5 +76,8 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
+
+    MAX_WALL_HEIGHT : 0.01,
+    ROAD_IDLE_REPAIR_TIME : 100,
 
 }

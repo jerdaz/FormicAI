@@ -120,6 +120,13 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = RESOURCE_ENERGY;
     }
 
+    instructBuild() {
+        this._sourceId = ''
+        this._destId = '';
+        this._instruct = c.COMMAND_BUILD;
+        this._resourceType = RESOURCE_ENERGY;
+    }
+
     /**
      * @param {Source | Structure} source
      * @param {Structure | ConstructionSite} dest 
@@ -211,6 +218,13 @@ module.exports = class CreepOp extends ChildOp {
             case c.COMMAND_CLAIMCONTROLLER:
                 this._state=c.STATE_CLAIMING
                 break;
+            case c.COMMAND_BUILD:
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_BUILDING;
+                }
+                if (this._state == c.STATE_NONE) this._state = c.STATE_BUILDING;
+                break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
                 break;
@@ -267,7 +281,6 @@ module.exports = class CreepOp extends ChildOp {
 
             case c.STATE_DROPENERGY:
             case c.STATE_FILLING:
-            case c.STATE_BUILDING:
                 if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= 0) destObj = null;
                 if (destObj == null) {
                     switch (this._state) {
@@ -277,15 +290,28 @@ module.exports = class CreepOp extends ChildOp {
                         case c.STATE_FILLING:
                             destObj = this._findFillTarget();
                             break;
-                        case c.STATE_BUILDING:
-                            destObj = this._findBuildTarget();
-                            break;
                     }
                     if (destObj && destObj.id) this._destId = destObj.id;
                     else this._destId = ''
                 }
                 this._deliver(destObj);
                 break;
+
+            case c.STATE_BUILDING:
+                if (destObj instanceof Structure) {
+                    let roomLevel = 1;
+                    if (this._baseOp) roomLevel = this._baseOp.level
+                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    if (!needRepair) destObj = null;
+                } ;
+                if (destObj == null) {
+                    destObj = this._findBuildTarget();
+                    if (destObj && destObj.id) this._destId = destObj.id;
+                    else this._destId = ''
+                }
+                this._deliver(destObj);
+                break;
+
 
             case c.STATE_DELIVERING:
                 this._deliver(destObj);
@@ -389,7 +415,38 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     _findBuildTarget() {
-
+        let creep = this._creep;
+        /**@type {Structure|ConstructionSite|null}  */
+        let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+        if (!dest) { //repair normal structures
+            let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
+                let roomLevel = 1;
+                if (this._baseOp) roomLevel = this._baseOp.level
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                if (!needRepair) return false;
+                else return true;
+            }});
+            structures.sort((a,b) => {return a.hits - b.hits});
+            dest = structures[0];
+        }
+        if (!dest) { // repair roads
+            let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                if (!needRepair) return false;
+                if (o.structureType == STRUCTURE_ROAD) {
+                    this._log({roadrepair: o.pos})
+                    let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
+                    if (!roomInfo) return false;
+                    this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
+                    if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                    this._log('canrepair');
+                    return true;
+                }
+                return false;
+            }});
+            dest = creep.pos.findClosestByPath(roads);
+        }
+        return dest;
     }
 
     /**
