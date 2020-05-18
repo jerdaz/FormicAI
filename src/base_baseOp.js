@@ -136,11 +136,9 @@ module.exports = class BaseOp extends ShardChildOp{
         if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
-        return;
 
         if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
         else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
         else if (this.spawns.length>0) this._unclaimTimer = 0;
     }
-
 }
