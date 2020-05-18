@@ -58,7 +58,13 @@ module.exports = class TowerOp extends BaseChildOp {
 
     /**@returns {Creep | undefined} */
     _getInvader() {
-        var invaders = this._baseOp.base.find(FIND_HOSTILE_CREEPS);
+        var invaders = _.filter(this._baseOp.base.find(FIND_HOSTILE_CREEPS),invader => {
+            //don't attack invaders on transition tiles to prevent simple drain tactics
+            if (invader.owner.username == c.INVADER_USERNAME) return true;
+            let pos = invader.pos;
+            if (pos.x == 0 || pos.y == 0 || pos.x == c.MAX_ROOM_SIZE - 1 || pos.y == c.MAX_ROOM_SIZE - 1) return false;
+            return true;
+        });
         var target = invaders[0];
         var targetHealParts = 0;
         for (var invader of invaders) {

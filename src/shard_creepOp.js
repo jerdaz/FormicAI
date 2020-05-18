@@ -38,6 +38,7 @@ module.exports = class CreepOp extends ChildOp {
         this._cost = null;
         /**@type {boolean | null} */
         this._hasWorkParts = null;
+        this._idleTime = 0;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -54,6 +55,8 @@ module.exports = class CreepOp extends ChildOp {
         }
         return this._hasWorkParts;
     }
+
+    get idleTime() {return this._idleTime}
 
     get creep() {return this._creep};
 
@@ -108,11 +111,19 @@ module.exports = class CreepOp extends ChildOp {
         this._creep.memory.operationInstance = newParent.instance;
     }
 
-    /**@param {Structure | ConstructionSite} dest */
+    /**@param {Structure | ConstructionSite} [dest] */
     instructFill(dest) {
         this._sourceId = ''
-        this._destId = dest.id;
+        if (dest) this._destId = dest.id;
+        else this._destId = '';
         this._instruct = c.COMMAND_FILL
+        this._resourceType = RESOURCE_ENERGY;
+    }
+
+    instructBuild() {
+        this._sourceId = ''
+        this._destId = '';
+        this._instruct = c.COMMAND_BUILD;
         this._resourceType = RESOURCE_ENERGY;
     }
 
@@ -187,25 +198,32 @@ module.exports = class CreepOp extends ChildOp {
                 if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_DROPENERGY;
                 }
-                if (this._state == c.STATE_NONE) this._state = c.STATE_RETRIEVING;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_DROPENERGY;
                 break;
             case c.COMMAND_FILL:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
                 if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_DELIVERING;
+                    this._state = c.STATE_FILLING;
                 }
-                if (this._state == c.STATE_NONE) this._state = c.STATE_FINDENERGY;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_FILLING;
                 break;
             case c.COMMAND_TRANSFER:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
                 if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
-                if (this._state == c.STATE_NONE) this._state = c.STATE_RETRIEVING;
+                if (this._state == c.STATE_NONE) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_MOVETO:
                 this._state=c.STATE_MOVING;
                 break;
             case c.COMMAND_CLAIMCONTROLLER:
                 this._state=c.STATE_CLAIMING
+                break;
+            case c.COMMAND_BUILD:
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_BUILDING;
+                }
+                if (this._state == c.STATE_NONE) this._state = c.STATE_BUILDING;
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
@@ -262,30 +280,41 @@ module.exports = class CreepOp extends ChildOp {
                 break;
 
             case c.STATE_DROPENERGY:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity[resourceType] <= 0) destObj = null;
+            case c.STATE_FILLING:
+                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= 0) destObj = null;
                 if (destObj == null) {
-                    destObj = this._findEnergySink();
+                    switch (this._state) {
+                        case c.STATE_DROPENERGY:
+                            destObj = this._findEnergySink();
+                            break;
+                        case c.STATE_FILLING:
+                            destObj = this._findFillTarget();
+                            break;
+                    }
                     if (destObj && destObj.id) this._destId = destObj.id;
                     else this._destId = ''
                 }
-                //deliberate fallthrough to delivering
-            case c.STATE_DELIVERING:
-                if(!destObj) this._instruct = c.COMMAND_NONE;
-                else {
-                    let range = 1;
-                    let result = -1000;
-                    if      (destObj instanceof Structure) {
-                        /**@type {number} */
-                        if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
-                        if (destObj instanceof StructureController) range = 3;
-                        if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
-                    }
-                    else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
-                    else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:range});
-                    if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
+                this._deliver(destObj);
+                break;
+
+            case c.STATE_BUILDING:
+                if (destObj instanceof Structure) {
+                    let roomLevel = 1;
+                    if (this._baseOp) roomLevel = this._baseOp.level
+                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    if (!needRepair) destObj = null;
+                } ;
+                if (destObj == null) {
+                    destObj = this._findBuildTarget();
+                    if (destObj && destObj.id) this._destId = destObj.id;
+                    else this._destId = ''
                 }
+                this._deliver(destObj);
+                break;
+
+
+            case c.STATE_DELIVERING:
+                this._deliver(destObj);
                 break;
         
             case c.STATE_MOVING:
@@ -303,9 +332,47 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
-        if (this._instruct== c.COMMAND_NONE) this._parent.lastIdle = Game.time;
+        if (this._instruct== c.COMMAND_NONE) {
+            this._parent.lastIdle = Game.time;
+            this._idleTime++;
+        } else this._idleTime = 0;
         if (!creep.pos.isEqualTo(this._lastPos)) this._registerCreepStep();
         this._lastPos = this._creep.pos;
+    }
+
+    /**@param {RoomObjectEx | null} [destObj] */
+    _deliver(destObj) {
+        let creep = this._creep;
+        if(!destObj) this._instruct = c.COMMAND_NONE;
+        else {
+            let range = 1;
+            let result = -1000;
+            if      (destObj instanceof Structure) {
+                /**@type {number} */
+                if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                if (destObj instanceof StructureController) range = 3;
+                if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
+                if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
+            }
+            else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
+            else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+            if (result == ERR_NOT_IN_RANGE) {
+                let destPos = destObj.pos;
+                if (destObj instanceof StructureLink) {
+                    // go to spot between link and source
+                    let source = destObj.pos.findInRange(FIND_SOURCES,2)[0];
+                    if (source) {
+                        let path = destObj.pos.findPathTo(source.pos)
+                        if (path.length > 0) { 
+                            destPos = new RoomPosition (path[0].x, path[0].y, destObj.pos.roomName);
+                            range = 0;
+                        }
+                    }
+                } 
+                this._moveTo(destPos, {range:range});
+            }
+            if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
+        }
     }
 
     _findEnergySource() {
@@ -345,6 +412,55 @@ module.exports = class CreepOp extends ChildOp {
         }
         result = this._creep.pos.findClosestByPath(roomObjects, {ignoreCreeps:true});
         return result;        
+    }
+
+    _findFillTarget() {
+        let creep = this._creep;
+        let dest = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
+            let store = /**@type {any} */ (o).store;
+            if (store == undefined) return false
+            return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
+                    && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB || 
+                        (o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION) 
+                       // || (o.structureType == STRUCTURE_STORAGE && store[RESOURCE_ENERGY] < this._baseOp.base.energyCapacityAvailable)
+                        );
+            }})
+        return dest;
+    }
+
+    _findBuildTarget() {
+        let creep = this._creep;
+        /**@type {Structure|ConstructionSite|null}  */
+        let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+        if (!dest) { //repair normal structures
+            let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
+                let roomLevel = 1;
+                if (this._baseOp) roomLevel = this._baseOp.level
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                if (!needRepair) return false;
+                else return true;
+            }});
+            structures.sort((a,b) => {return a.hits - b.hits});
+            dest = structures[0];
+        }
+        if (!dest) { // repair roads
+            let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                if (!needRepair) return false;
+                if (o.structureType == STRUCTURE_ROAD) {
+                    this._log({roadrepair: o.pos})
+                    let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
+                    if (!roomInfo) return false;
+                    this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
+                    if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                    this._log('canrepair');
+                    return true;
+                }
+                return false;
+            }});
+            dest = creep.pos.findClosestByPath(roads);
+        }
+        return dest;
     }
 
     /**

@@ -8,6 +8,7 @@ module.exports = {
     COMMAND_CLAIMCONTROLLER: 3,
     COMMAND_FILL: 4,
     COMMAND_HARVEST: 5,
+    COMMAND_BUILD: 6,
 
     STATE_NONE: 0,
     STATE_RETRIEVING: 1,
@@ -16,6 +17,8 @@ module.exports = {
     STATE_CLAIMING: 4,
     STATE_FINDENERGY: 5,
     STATE_DROPENERGY: 6,
+    STATE_FILLING: 7,
+    STATE_BUILDING: 8,
 
     OPERATION_NONE: 0,
     OPERATION_MAIN: 1,
@@ -73,5 +76,9 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
+    INVADER_USERNAME : 'Invader',
+
+    MAX_WALL_HEIGHT : 0.01,
+    ROAD_IDLE_REPAIR_TIME : 100,
 
 }
