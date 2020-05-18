@@ -120,7 +120,7 @@ module.exports = class MapOp extends ChildOp {
                     let repairCost = c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
                     if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
                     if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
-                    roomInfo.terrainArray[x][y].fatigueCost = Math.min(10*MIN_ROAD_FATIGUE_COST, Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost));
+                    roomInfo.terrainArray[x][y].fatigueCost = Math.min(2*MIN_ROAD_FATIGUE_COST, Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost));
                 }
             }
         }

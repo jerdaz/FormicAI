@@ -36,6 +36,8 @@ module.exports = class CreepOp extends ChildOp {
         this._isBoosted = false;
         /**@type {number | null} */
         this._cost = null;
+        /**@type {boolean | null} */
+        this._hasWorkParts = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -46,6 +48,12 @@ module.exports = class CreepOp extends ChildOp {
     get isBoosted() {return this._isBoosted}
     /**@param {boolean} bool */
     set isBoosted(bool) {this._isBoosted = bool}
+    get hasWorkParts(){
+        if (this._hasWorkParts == null) {
+            this._hasWorkParts = this._creep.body.filter(o => {return o.type == WORK}).length > 0;
+        }
+        return this._hasWorkParts;
+    }
 
     get creep() {return this._creep};
 
@@ -241,14 +249,16 @@ module.exports = class CreepOp extends ChildOp {
                     }
                 }
 
-                if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,resourceType);
-                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
-                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
+                let result = -1000
+                if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
+                else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
+                else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                if (c.CREEP_EMOTES) creep.say('➤🚚')
+                if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
+                //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
                 break;
 
             case c.STATE_DROPENERGY:
@@ -266,7 +276,7 @@ module.exports = class CreepOp extends ChildOp {
                     let result = -1000;
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
-                        if (destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                        if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
                         if (destObj instanceof StructureController) range = 3;
                         if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
                         if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
@@ -410,8 +420,6 @@ module.exports = class CreepOp extends ChildOp {
         this._log({f1: fatigue})
         fatigue += this._calcResourcesWeight();
         this._log({f2: fatigue})
-        fatigue *= 2;
-        this._log({f3: fatigue})
         let moveRate = 2;
         if (Game.map.getRoomTerrain(creep.pos.roomName).get(creep.pos.x,creep.pos.y) == TERRAIN_MASK_SWAMP) moveRate = 5;
         let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
