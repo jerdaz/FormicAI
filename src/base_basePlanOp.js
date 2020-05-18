@@ -76,22 +76,22 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let structures = baseOp.myStructures;
 
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        if (constructionSites.length >= c.MAX_CONSTRUCTION_SITES) return;
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
                 if (site.structureType != STRUCTURE_SPAWN && site.structureType != STRUCTURE_ROAD) site.remove();
             }
-        }
+        } else if (constructionSites.length < c.MAX_CONSTRUCTION_SITES ) {
 
-        for(let template of baseBuildTemplate) {
-            let structureType = template.type;
-            let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
-            curCount += _.filter(constructionSites, {structureType: structureType}).length;
-            if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
-                let pos = this._findBuildingSpot();
-                if (pos) pos.createConstructionSite(structureType);
-                else throw Error('WARNING: Cannot find building spot in room ' + room.name);
+            for(let template of baseBuildTemplate) {
+                let structureType = template.type;
+                let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
+                curCount += _.filter(constructionSites, {structureType: structureType}).length;
+                if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
+                    let pos = this._findBuildingSpot();
+                    if (pos) pos.createConstructionSite(structureType);
+                    else throw Error('WARNING: Cannot find building spot in room ' + room.name);
+                }
             }
         }
     }
