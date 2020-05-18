@@ -4,6 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
+const MAX_OPERATION_IDLE_TIME = 25;
 
 module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -60,7 +61,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_LINK] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
-            this._spawnPrio[c.OPERATION_COLONIZING] = 10;
+            this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
         }
     }
@@ -73,7 +74,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.creepCount >= this._spawnRequests[this._baseOp.fillingOp.id].count
+                && this._baseOp.fillingOp.creepCount >= 1
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -132,10 +133,10 @@ module.exports = class SpawningOp extends BaseChildOp {
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
             let shardChildOp = spawnRequest.operation;
-            this._log({idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
-            if (shardChildOp.idleCount > 0) continue; //don't spawn if it has idle creeps
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
+            if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;

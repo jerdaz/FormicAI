@@ -12,7 +12,8 @@ const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_transportOp');
 const MiningOp = require('./base_miningOp');
 const MarketOp = require('./base_marketOp');
-const ScoutOp = require('./base_scoutOp')
+const ScoutOp = require('./base_scoutOp');
+const RoomOp = require('./base_roomOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -39,6 +40,7 @@ module.exports = class BaseOp extends ShardChildOp{
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
+        this.addChildOp(new RoomOp(this, this._name));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {
@@ -77,6 +79,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get base() {return this._base;}
     get credits() {return this._shardOp.bank.getCredits(this._name)}
     get events() {return this._base.getEventLog()};
+    get level() { return this._base.controller.level};
 
     initTick() {
         super.initTick();

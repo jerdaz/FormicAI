@@ -10,13 +10,14 @@ const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
 module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
-     * @param {Operation} parent
+     * @param {ShardChildOp} parent
      * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
      * */
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
+        this._parent = parent;
         this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -33,6 +34,10 @@ module.exports = class CreepOp extends ChildOp {
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
         this._isBoosted = false;
+        /**@type {number | null} */
+        this._cost = null;
+        /**@type {boolean | null} */
+        this._hasWorkParts = null;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -43,6 +48,12 @@ module.exports = class CreepOp extends ChildOp {
     get isBoosted() {return this._isBoosted}
     /**@param {boolean} bool */
     set isBoosted(bool) {this._isBoosted = bool}
+    get hasWorkParts(){
+        if (this._hasWorkParts == null) {
+            this._hasWorkParts = this._creep.body.filter(o => {return o.type == WORK}).length > 0;
+        }
+        return this._hasWorkParts;
+    }
 
     get creep() {return this._creep};
 
@@ -56,6 +67,18 @@ module.exports = class CreepOp extends ChildOp {
 
     get age() {
         return CREEP_LIFE_TIME - (this._creep.ticksToLive||0);
+    }
+
+    get creepCost() {
+        if (this._cost) return this._cost;
+        else {
+            let cost = 0;
+            for (let bodypart of this._creep.body) {
+                cost += BODYPART_COST[bodypart.type]
+            }
+            this._cost = cost;
+            return cost;
+        }
     }
 
 
@@ -226,14 +249,16 @@ module.exports = class CreepOp extends ChildOp {
                     }
                 }
 
-                if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,resourceType);
-                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
-                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
+                let result = -1000
+                if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
+                else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
+                else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                if (c.CREEP_EMOTES) creep.say('➤🚚')
+                if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
+                //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
                 break;
 
             case c.STATE_DROPENERGY:
@@ -247,18 +272,20 @@ module.exports = class CreepOp extends ChildOp {
             case c.STATE_DELIVERING:
                 if(!destObj) this._instruct = c.COMMAND_NONE;
                 else {
-                    this._moveTo(destObj.pos, {range:1});
+                    let range = 1;
+                    let result = -1000;
                     if      (destObj instanceof Structure) {
                         /**@type {number} */
-                        let result = -1000;
-                        if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
+                        if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                        if (destObj instanceof StructureController) range = 3;
+                        if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
+                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
                     }
-                    else if (destObj instanceof ConstructionSite) creep.build(destObj);
+                    else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
                     else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:range});
+                    if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
                 }
-                if (c.CREEP_EMOTES) creep.say('🚚➤')
                 break;
         
             case c.STATE_MOVING:
@@ -270,13 +297,15 @@ module.exports = class CreepOp extends ChildOp {
                     this._moveTo(destObj.pos, {range:1});
                     if (destObj instanceof StructureController) creep.claimController(destObj);
                 }
-                this._lastPos = this._creep.pos;
                 if (c.CREEP_EMOTES) creep.say('Claiming')
                 break;
             case c.STATE_NONE:
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
+        if (this._instruct== c.COMMAND_NONE) this._parent.lastIdle = Game.time;
+        if (!creep.pos.isEqualTo(this._lastPos)) this._registerCreepStep();
+        this._lastPos = this._creep.pos;
     }
 
     _findEnergySource() {
@@ -323,15 +352,19 @@ module.exports = class CreepOp extends ChildOp {
      * @arg {MoveToOpts} [opts]
     */
     _moveTo(pos, opts) {
+        let creep = this._creep;
+        let range = 0;
+        if (opts && opts.range) range = opts.range;
+        if (creep.pos.inRangeTo(pos,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
         let dest = pos;
-        let myPos = this._creep.pos;
+        let myPos = creep.pos;
         if (myPos.roomName != dest.roomName) {
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
+                let route = Game.map.findRoute(creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
                     {   let roomInfo = this._mapOp.getRoomInfo(roomName);
                         if(roomInfo && roomInfo.hostileOwner) return Infinity; }
                 });
@@ -355,8 +388,71 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
-        this._creep.moveTo(dest, optsCopy);
+        let result = creep.moveTo(dest, optsCopy);
+        if (result == ERR_NO_PATH) {
+            this._instruct = c.COMMAND_NONE;
+        }
         this._lastMoveToDest = pos;
+        return result;
     }
+
+    _registerCreepStep() {
+
+
+        let creep = this._creep;
+        let roomInfo = this._mapOp.getRoomInfo(creep.pos.roomName);
+        if (!roomInfo) return;
+        let moveParts = 0;
+        let otherParts = 0;
+        for (let bodyPart of creep.body) {
+            switch (bodyPart.type) {
+                case MOVE:
+                    moveParts++;
+                    break;
+                case CARRY:
+                    break;
+                default:
+                    otherParts++;
+            }
+        }
+        let fatigue = 0;
+        fatigue = otherParts;
+        this._log({f1: fatigue})
+        fatigue += this._calcResourcesWeight();
+        this._log({f2: fatigue})
+        let moveRate = 2;
+        if (Game.map.getRoomTerrain(creep.pos.roomName).get(creep.pos.x,creep.pos.y) == TERRAIN_MASK_SWAMP) moveRate = 5;
+        let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
+        let stepTicksRoad = Math.ceil(fatigue / moveParts);
+        
+        let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME 
+        this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
+        if (opportunityCost > 0) {
+            this._mapOp.registerFatigue(creep.pos, opportunityCost);
+            //U.l({newstep: creep.pos, cost: opportunityCost, newCost: roomInfo.terrainArray[creep.pos.x][creep.pos.y]} )
+        }
+    }
+
+    _calcResourcesWeight() {
+        let creep = this._creep;
+        var totalCarry = creep.store.getUsedCapacity(), weight = 0;
+        for(var i = creep.body.length-1; i >= 0; i--) {
+            if(!totalCarry) {
+                break;
+            }
+            var part = creep.body[i];
+            if(part.type != CARRY || !part.hits) {
+                continue;
+            }
+            var boost = 1;
+            if(part.boost) {
+                boost = BOOSTS[CARRY][part.boost].capacity || 1;
+            }
+            totalCarry -= Math.min(totalCarry, CARRY_CAPACITY * boost);
+            weight++;
+        }
+        return weight;
+    }
+
 }
 

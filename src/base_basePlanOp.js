@@ -13,7 +13,6 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LAB, max:1}
 ]
 
-const MAX_ROOM_SIZE = 50;
 const TERRAIN_MASK_PLAIN = 0;
 
 module.exports = class BasePlanOp extends BaseChildOp{
@@ -76,7 +75,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let baseOp = this._baseOp;
         let structures = baseOp.myStructures;
 
-        if (room.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
+        if (room.find(FIND_MY_CONSTRUCTION_SITES).length >= c.MAX_CONSTRUCTION_SITES) return;
 
         for(let template of baseBuildTemplate) {
             let structureType = template.type;
@@ -99,9 +98,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         /**@type {number[][]} */
         let terrainArray = [];
-        for (let x = 0; x<MAX_ROOM_SIZE; x++) {
+        for (let x = 0; x<c.MAX_ROOM_SIZE; x++) {
             terrainArray[x] = [];
-            for (let y=0; y<MAX_ROOM_SIZE; y++) {
+            for (let y=0; y<c.MAX_ROOM_SIZE; y++) {
                 terrainArray[x][y] = terrain.get(x,y);
             }
         }
@@ -127,7 +126,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     terrainArray[x][y] = INVALID;
                     for (let x_ = x-1; x_ <= x+1; x_++ ) {
                         for (let y_ = y-1; y_<=y+1; y_++) {
-                            if (x==x_ || y==y_ || x_<2 || x_ > MAX_ROOM_SIZE-1 || y_ <2 || y_ > MAX_ROOM_SIZE-1) continue;
+                            if (x==x_ || y==y_ || x_<2 || x_ > c.MAX_ROOM_SIZE-1 || y_ <2 || y_ > c.MAX_ROOM_SIZE-1) continue;
                             let terrain = terrainArray[x_][y_];
                             if (terrain == TERRAIN_MASK_SWAMP || terrain == TERRAIN_MASK_PLAIN ) {
                                 terrainArray[x_][y_] = CHECK;
@@ -160,7 +159,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (var i=0;i<structures.length;i++) if (structures[i].structureType != STRUCTURE_ROAD) countStructures++;
         if (!ignoreStructures && countStructures > 0) return false;
         let buildingsites = pos.lookFor(LOOK_CONSTRUCTION_SITES);
-        if (buildingsites.length > 0 ) return false;
+        if (!ignoreStructures && buildingsites.length > 0 ) return false;
         let sources = pos.findInRange(FIND_SOURCES,2);
         if (sources.length > 0) return false;
         let minerals = pos.findInRange(FIND_MINERALS,2);

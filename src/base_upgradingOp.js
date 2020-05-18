@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
-const MAX_UPGRADER_COUNT = 15
+const MAX_UPGRADER_COUNT = 20
 const DOWNGRADE_RESERVE = 0.75
 
 module.exports = class UpgradingOp extends BaseChildOp {
@@ -39,7 +39,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
                 let pos = result.path[2];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
-                for(let structure of structures) structure.destroy();
+                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
                 pos.createConstructionSite(STRUCTURE_LINK);
             }
         }

@@ -12,7 +12,7 @@ module.exports = class TowerOp extends BaseChildOp {
         let base = this._baseOp.base;
         let towers = this._baseOp.towers;
         let creepsHit = base.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
-        let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level)}});
+        let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level && structure.structureType!= STRUCTURE_ROAD)}});
         for (let tower of towers) {
             if (hostile) {
                 tower.attack(hostile);

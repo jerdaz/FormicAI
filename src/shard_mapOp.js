@@ -2,8 +2,10 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
+/** @typedef {{[roomName:string]: {terrainArray:{fatigueCost:Number}[][], lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
+
+const MIN_ROAD_FATIGUE_COST =   c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
 
 module.exports = class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
@@ -97,9 +99,44 @@ module.exports = class MapOp extends ChildOp {
         return Game.map.describeExits(roomName);
     }    
 
+    /**@param {RoomPosition} pos
+     * @param {Number} cost
+     */
+    registerFatigue(pos, cost) {
+        let roomInfo = this.getRoomInfo(pos.roomName);
+        if (!roomInfo) return;
+        roomInfo.terrainArray[pos.x][pos.y].fatigueCost += cost;
+    }
+
+
+    _support() {
+        //subtract road cost from road opportunity cost matrixes
+        for (let roomName in this._roomInfo) {
+            let roomInfo = this._roomInfo[roomName];
+            let roomTerrain = Game.map.getRoomTerrain(roomName);
+            for (let x=0;x<50;x++) {
+                for (let y=0;y<50;y++) {
+                    let terrain = roomTerrain.get(x,y)
+                    let repairCost = c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
+                    if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
+                    if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
+                    roomInfo.terrainArray[x][y].fatigueCost = Math.min(2*MIN_ROAD_FATIGUE_COST, Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost));
+                }
+            }
+        }
+    }
+
     _tactics() {
         for(let roomName in Game.rooms) {
-            if (this._roomInfo[roomName] == undefined) this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+            if (this._roomInfo[roomName] == undefined) {
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+                for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
+                    this._roomInfo[roomName].terrainArray[x] = [];
+                    for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
+                        this._roomInfo[roomName].terrainArray[x][y] = {fatigueCost : -1*  MIN_ROAD_FATIGUE_COST};
+                    }
+                }
+            }
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) this._roomInfo[roomName].lastSeenHostile = Game.time;

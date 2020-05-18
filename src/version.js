@@ -1,9 +1,7 @@
 // @ts-nocheck
-let versionString = ''
+let versionString = '200514'
 
 module.exports = class Version {
     get version() { return versionString}
 }
 
-
-versionString = '2020-05-11'
