@@ -75,11 +75,13 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let baseOp = this._baseOp;
         let structures = baseOp.myStructures;
 
-        if (room.find(FIND_MY_CONSTRUCTION_SITES).length >= c.MAX_CONSTRUCTION_SITES) return;
+        let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        if (constructionSites.length >= c.MAX_CONSTRUCTION_SITES) return;
 
         for(let template of baseBuildTemplate) {
             let structureType = template.type;
             let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
+            curCount += _.filter(constructionSites, {structureType: structureType}).length;
             if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
                 let pos = this._findBuildingSpot();
                 if (pos) pos.createConstructionSite(structureType);

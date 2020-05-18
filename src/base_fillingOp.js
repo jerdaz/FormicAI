@@ -30,34 +30,16 @@ module.exports = class FillingOp extends BaseChildOp {
     //     }
     // }
 
-    _command() {
+    _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let curDest = creepOp.dest;
-            if (!curDest || creepOp.instruction == c.COMMAND_NONE) this._fillNewStructure(creepOp);
-            if (curDest && curDest.store) {
-                let store = curDest.store;
-                if (store[RESOURCE_ENERGY] == store.getCapacity(RESOURCE_ENERGY)) this._fillNewStructure(creepOp);
-            } 
-        }
-    }
-
-    /**@param {CreepOp} creepOp */
-    _fillNewStructure(creepOp) {
-        let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
-            let store = /**@type {any} */ (o).store;
-            if (store == undefined) return false
-            return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
-                    && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB || 
-                        (o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION) 
-                       // || (o.structureType == STRUCTURE_STORAGE && store[RESOURCE_ENERGY] < this._baseOp.base.energyCapacityAvailable)
-                        );
-            }})
-        if (dest) creepOp.instructFill(dest);
-        // if there is nothing to fill, make this creep an upgrader
-        else if (this.creepCount > 2 && creepOp.state != c.STATE_FINDENERGY) {
-            if (this._lastTickFull = Game.time - 1) creepOp.newParent(this._baseOp.buildingOp)
-            this._lastTickFull = Game.time;
+            if (creepOp.instruction == c.COMMAND_NONE) {
+                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > 2 && creepOp.state != c.STATE_FINDENERGY) {
+                    if (this._lastTickFull = Game.time - 1) creepOp.newParent(this._baseOp.buildingOp)
+                    this._lastTickFull = Game.time;
+                }
+                else creepOp.instructFill();
+            }
         }
     }
 }
