@@ -360,10 +360,13 @@ module.exports = class CreepOp extends ChildOp {
                 let destPos = destObj.pos;
                 if (destObj instanceof StructureLink) {
                     // go to spot between link and source
-                    let source = destObj.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType:STRUCTURE_LINK}})[0];
+                    let source = destObj.pos.findInRange(FIND_SOURCES,2)[0];
                     if (source) {
                         let path = destObj.pos.findPathTo(source.pos)
-                        if (path.length > 0) destPos = new RoomPosition (path[0].x, path[0].y, destObj.pos.roomName);
+                        if (path.length > 0) { 
+                            destPos = new RoomPosition (path[0].x, path[0].y, destObj.pos.roomName);
+                            range = 0;
+                        }
                     }
                 } 
                 this._moveTo(destPos, {range:range});
