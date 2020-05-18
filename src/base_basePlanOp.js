@@ -78,6 +78,12 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
         if (constructionSites.length >= c.MAX_CONSTRUCTION_SITES) return;
 
+        if (baseOp.spawns.length == 0) {
+            for (let site of constructionSites) {
+                if (site.structureType != STRUCTURE_SPAWN && site.structureType != STRUCTURE_ROAD) site.remove();
+            }
+        }
+
         for(let template of baseBuildTemplate) {
             let structureType = template.type;
             let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
