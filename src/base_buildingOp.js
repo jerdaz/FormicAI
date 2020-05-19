@@ -36,7 +36,7 @@ module.exports = class BuildingOp extends BaseChildOp {
         let transferedToUpgradingThisTick = false;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            if (creepOp.instruction == c.COMMAND_NONE) {
+            if (creepOp.instruction == c.COMMAND_NONE || creepOp.pos.roomName == this._baseOp.name && creepOp.instruction == c.COMMAND_MOVETO) {
                 if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > this._creepRequestCount && !transferedToUpgradingThisTick) {
                     creepOp.newParent(this._baseOp.upgradingOp);
                     transferedToUpgradingThisTick = true;
