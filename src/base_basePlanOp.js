@@ -46,7 +46,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
+                    //if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
                     break;
             }
         }
