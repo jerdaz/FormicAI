@@ -46,7 +46,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
+                    //if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
                     break;
             }
         }
@@ -61,13 +61,17 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     _strategy(){
         let base = this.baseOp.base;
-        if (base.find(FIND_MY_CONSTRUCTION_SITES).length > 0) return;
-        let firstSpawn = this._baseOp.spawns[0];
-        if (!firstSpawn) return;
-        let lookResult = firstSpawn.pos.lookFor(LOOK_STRUCTURES);
-        if (!(_.find(lookResult, { structureType: STRUCTURE_RAMPART}))) {
-            firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
-        }
+        if (base.find(FIND_MY_CONSTRUCTION_SITES).length < c.MAX_CONSTRUCTION_SITES) {
+            let firstSpawn = this._baseOp.spawns[0];
+            let result = 0;
+            if (firstSpawn) result = firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
+            if (result != OK) {
+                for (let tower of this._baseOp.towers) {
+                    result = tower.pos.createConstructionSite(STRUCTURE_RAMPART);
+                    if (result == OK) break;
+                }
+            }
+        };
     }
 
     _tactics() {
