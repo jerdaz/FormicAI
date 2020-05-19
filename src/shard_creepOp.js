@@ -329,6 +329,16 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('Claiming')
                 break;
             case c.STATE_NONE:
+                //flee from sources and spawns
+                /**@type {RoomObject[]} */
+                let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
+                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                if (targets.length>0) {
+                    let poss = []
+                    for (let target of targets) poss.push(target.pos)
+                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    creep.moveByPath(result.path)
+                }
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
