@@ -79,7 +79,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
-                if (site.structureType != STRUCTURE_SPAWN && site.structureType != STRUCTURE_ROAD) site.remove();
+                if (site.structureType != STRUCTURE_SPAWN) site.remove();
             }
         } else if (constructionSites.length < c.MAX_CONSTRUCTION_SITES ) {
 
