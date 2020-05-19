@@ -79,7 +79,12 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
-                if (site.structureType != STRUCTURE_SPAWN) site.remove();
+                if (site.structureType != STRUCTURE_SPAWN && site.structureType != STRUCTURE_ROAD) site.remove();
+            }
+            if (constructionSites.length == 0) {
+                let pos = this._findBuildingSpot();
+                if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
+                else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
         } else if (constructionSites.length < c.MAX_CONSTRUCTION_SITES ) {
 
