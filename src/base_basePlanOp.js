@@ -68,6 +68,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         if (!(_.find(lookResult, { structureType: STRUCTURE_RAMPART}))) {
             firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
         }
+        for (let tower of this._baseOp.towers) tower.pos.createConstructionSite(STRUCTURE_RAMPART);
     }
 
     _tactics() {
