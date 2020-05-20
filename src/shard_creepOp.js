@@ -329,6 +329,16 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('Claiming')
                 break;
             case c.STATE_NONE:
+                //flee from sources and spawns
+                /**@type {RoomObject[]} */
+                let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
+                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                if (targets.length>0) {
+                    let poss = []
+                    for (let target of targets) poss.push(target.pos)
+                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    creep.moveByPath(result.path)
+                }
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
@@ -356,7 +366,21 @@ module.exports = class CreepOp extends ChildOp {
             }
             else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
             else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-            if (result == ERR_NOT_IN_RANGE) this._moveTo(destObj.pos, {range:range});
+            if (result == ERR_NOT_IN_RANGE) {
+                let destPos = destObj.pos;
+                if (destObj instanceof StructureLink) {
+                    // go to spot between link and source
+                    let source = destObj.pos.findInRange(FIND_SOURCES,2)[0];
+                    if (source) {
+                        let path = destObj.pos.findPathTo(source.pos)
+                        if (path.length > 0) { 
+                            destPos = new RoomPosition (path[0].x, path[0].y, destObj.pos.roomName);
+                            range = 0;
+                        }
+                    }
+                } 
+                this._moveTo(destPos, {range:range});
+            }
             if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
         }
     }
