@@ -3,6 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
 const SCOUT_INTERVAL = 15000;
+const SCOUT_DISTANCE = 10;
 
 module.exports = class ScoutOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -38,7 +39,11 @@ module.exports = class ScoutOp extends BaseChildOp {
                 let destRoomName
                 let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                 let roomNames = [];
-                for (let exit in exits) if (exits[exit] != lastRoomName && Game.map.isRoomAvailable(exits[exit])) roomNames.push(exits[exit]);
+                for (let exit in exits) {
+                    let roomName = exits[exit];
+                    if (roomName == lastRoomName) continue;
+                    if (Game.map.isRoomAvailable(roomName)) roomNames.push(exits[exit]);
+                }
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
                         let scoutInfoB = this._map.getRoomInfo(b);
