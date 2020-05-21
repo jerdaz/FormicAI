@@ -19,6 +19,10 @@ module.exports = class MapOp extends ChildOp {
     }
 
     get type() {return c.OPERATION_MAP}
+    
+    get knownRooms() {
+        return this._roomInfo;
+    }
 
     /**@param {String} roomName */
     getRoomInfo(roomName) {

@@ -2,6 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
+const ROOM_CLAIM_TIMEOUT = 2000
+
 module.exports = class ColonizingOp extends BaseChildOp {
     /**
      * @param {BaseOp} baseOp */
@@ -9,13 +11,18 @@ module.exports = class ColonizingOp extends BaseChildOp {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
+        this._colRoom = '' // room to colonize
+        this._colStart = 0 // colonization start time
     }
     
     get type() {return c.OPERATION_COLONIZING}
 
     _strategy() {
         let nCreep = 0;
-        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE) nCreep = 1;
+        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE) {
+            nCreep = 1;
+            if (this._colRoom == '' || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) this._colRoom = this._findColRoom();
+        }
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
     }
 
@@ -91,4 +98,14 @@ module.exports = class ColonizingOp extends BaseChildOp {
             }
         }
     }
+
+    /**@returns {string} */
+    _findColRoom() {
+        let colRooms = [];
+        let knownRooms = this._map.knownRooms;
+        for (let roomName in this._map.knownRooms) {
+            
+        }
+    }
+
 }
