@@ -3,7 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
 const SCOUT_INTERVAL = 1500;
-const SCOUT_DISTANCE = 10;
+const SCOUT_DISTANCE = 20;
 
 module.exports = class ScoutOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */

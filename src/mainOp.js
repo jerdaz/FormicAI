@@ -16,6 +16,7 @@ module.exports = class Main extends Operation {
             switch (memObj) {
                 case 'maxCPU':
                 case 'bank':
+                case 'colonizations':
                     break;
                 default:
                     delete Memory[memObj];
