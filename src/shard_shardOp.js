@@ -62,6 +62,7 @@ module.exports = class ShardOp extends ChildOp {
     /**@param {number} max */
     setDirectiveMaxBases(max){
         this._maxShardBases = max;
+        U.l({maxBases: this._maxShardBases})
     }
 
     /**@param {String} roomName */
@@ -184,6 +185,7 @@ module.exports = class ShardOp extends ChildOp {
 
     _firstRun() {
         this._support();
+        this._strategy();
     }
     _support() {
         //garbage collection for dead creep memory

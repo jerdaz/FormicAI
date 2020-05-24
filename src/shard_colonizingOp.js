@@ -59,7 +59,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
                     // creep is a claimer
                     let lastRoomName = this._lastRoomName[creep.name];
                     if (room.controller && !room.controller.my && room.controller.owner == null && room.controller.reservation == null) {
-                        creepOp.instructClaimController(room.controller);
+                        creepOp.instructClaimController(room.name);
                     }
                     else if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                         /**@type {string | undefined} */

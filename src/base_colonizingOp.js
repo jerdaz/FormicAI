@@ -28,11 +28,19 @@ module.exports = class ColonizingOp extends BaseChildOp {
     
     get type() {return c.OPERATION_COLONIZING}
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _strategy() {
         let nCreep = 0;
+        U.l('strategy-colo')
+        U.l(this._baseOp.directive)
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE) {
+            U.l('pass1')
             nCreep = 1;
-            if (this._colRoomName == '' || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+            if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+                U.l('pass2')
                 this._colRoomName = this._findColRoom();
                 if (this._colRoomName) {
                     Memory.colonizations[this._colRoomName] = Game.time;
@@ -45,20 +53,18 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _tactics() {
         let colRoomName = this._colRoomName;
+        U.l(colRoomName);
         if (!colRoomName) return;
         for (let creepName in this._creepOps) {
-            let creep = U.getCreep(creepName);
-            if (!creep) throw Error();
             let creepOp = this._creepOps[creepName];
-            let room = creepOp.room;
-            if (room.name == colRoomName && room.controller) creepOp.instructClaimController(room.controller);
-            else creepOp.instructMoveTo(new RoomPosition(25,25, colRoomName))
+            creepOp.instructClaimController(colRoomName);
         }
     }
 
     /**@returns {string | null} */
     _findColRoom() {
         /**@type {{name: string, distance: number}[]} */
+        U.l('findcolrooms)')
         let colRooms = [];
         let knownRooms = this._map.knownRooms;
         for (let roomName in this._map.knownRooms) {
@@ -86,6 +92,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (lastColStartB) return -1;
             return 0;
         })
+        U.l(colRooms);
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
     }

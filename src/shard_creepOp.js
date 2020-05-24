@@ -144,9 +144,9 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_MOVETO
     }
 
-    /**@param {StructureController} controller */
-    instructClaimController(controller) {
-        this._destId = controller.id
+    /**@param {string} roomName */
+    instructClaimController(roomName) {
+        this._destId = roomName;
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
@@ -322,9 +322,14 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
             case c.STATE_CLAIMING:
-                if (destObj) {
-                    this._moveTo(destObj.pos, {range:1});
-                    if (destObj instanceof StructureController) creep.claimController(destObj);
+                let roomName = this._destId;
+                let room = Game.rooms[roomName]
+                if (room && room.controller) {
+                    let result = -1000;
+                    if (destObj instanceof StructureController) result = creep.claimController(destObj);
+                    if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                } else {
+                    this._moveTo(new RoomPosition(25,25, roomName));
                 }
                 if (c.CREEP_EMOTES) creep.say('Claiming')
                 break;

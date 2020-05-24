@@ -57,6 +57,10 @@ module.exports = class Main extends Operation {
     /**@param {number} shardRequest */
     requestCreep(shardRequest) { this._requestCreep(shardRequest); }
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _support() {
         if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
     }

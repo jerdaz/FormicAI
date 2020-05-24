@@ -11,7 +11,7 @@ module.exports = class ScoutOp extends BaseChildOp {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
-        this._lastSpawn = Game.time + Math.random() * SCOUT_INTERVAL;
+        this._lastSpawn = 0; //Game.time + Math.random() * SCOUT_INTERVAL;
     }
 
     get type() {return c.OPERATION_SCOUTING}
@@ -21,11 +21,7 @@ module.exports = class ScoutOp extends BaseChildOp {
     }
 
     _strategy() {
-        let creepCount = 0;
-        if (Game.time - this._lastSpawn > SCOUT_INTERVAL ) {
-                creepCount = 1;
-                this._lastSpawn = Game.time;
-        } else 
+        let creepCount = 1;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
