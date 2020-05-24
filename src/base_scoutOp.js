@@ -2,7 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
-const SCOUT_INTERVAL = 15000;
+const SCOUT_INTERVAL = 1500;
+const SCOUT_DISTANCE = 20;
 
 module.exports = class ScoutOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -10,7 +11,7 @@ module.exports = class ScoutOp extends BaseChildOp {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
-        this._lastSpawn = Game.time + Math.random() * SCOUT_INTERVAL;
+        this._lastSpawn = 0; //Game.time + Math.random() * SCOUT_INTERVAL;
     }
 
     get type() {return c.OPERATION_SCOUTING}
@@ -20,11 +21,7 @@ module.exports = class ScoutOp extends BaseChildOp {
     }
 
     _strategy() {
-        let creepCount = 0;
-        if (Game.time - this._lastSpawn > SCOUT_INTERVAL ) {
-                creepCount = 1;
-                this._lastSpawn = Game.time;
-        } else 
+        let creepCount = 1;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
@@ -38,7 +35,11 @@ module.exports = class ScoutOp extends BaseChildOp {
                 let destRoomName
                 let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                 let roomNames = [];
-                for (let exit in exits) if (exits[exit] != lastRoomName && Game.map.isRoomAvailable(exits[exit])) roomNames.push(exits[exit]);
+                for (let exit in exits) {
+                    let roomName = exits[exit];
+                    if (roomName == lastRoomName) continue;
+                    if (Game.map.isRoomAvailable(roomName)) roomNames.push(exits[exit]);
+                }
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
                         let scoutInfoB = this._map.getRoomInfo(b);

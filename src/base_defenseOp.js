@@ -46,7 +46,8 @@ module.exports = class TowerOp extends BaseChildOp {
                             default:
                                 activateSafeMode = true;
                         }
-                    }
+                    } 
+                    else if (object && object instanceof Creep && this._baseOp.spawns.length == 0) activateSafeMode = true;
                 }
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();

@@ -184,6 +184,7 @@ module.exports = class ShardOp extends ChildOp {
 
     _firstRun() {
         this._support();
+        this._strategy();
     }
     _support() {
         //garbage collection for dead creep memory

@@ -144,9 +144,9 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_MOVETO
     }
 
-    /**@param {StructureController} controller */
-    instructClaimController(controller) {
-        this._destId = controller.id
+    /**@param {string} roomName */
+    instructClaimController(roomName) {
+        this._destId = roomName;
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
@@ -322,13 +322,32 @@ module.exports = class CreepOp extends ChildOp {
                 if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
             case c.STATE_CLAIMING:
-                if (destObj) {
-                    this._moveTo(destObj.pos, {range:1});
-                    if (destObj instanceof StructureController) creep.claimController(destObj);
+                let roomName = this._destId;
+                let room = Game.rooms[roomName]
+                if (room && room.controller) {
+                    if (room.controller.my) creep.suicide();
+                    else {
+                        let result = -1000;
+                        destObj = room.controller;
+                        if (destObj instanceof StructureController) result = creep.claimController(destObj);
+                        if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                    }
+                } else {
+                    this._moveTo(new RoomPosition(25,25, roomName));
                 }
-                if (c.CREEP_EMOTES) creep.say('Claiming')
+                if (c.CREEP_EMOTES) creep.say('Claim:' + roomName)
                 break;
             case c.STATE_NONE:
+                //flee from sources and spawns
+                /**@type {RoomObject[]} */
+                let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
+                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                if (targets.length>0) {
+                    let poss = []
+                    for (let target of targets) poss.push(target.pos)
+                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    creep.moveByPath(result.path)
+                }
                 if (c.CREEP_EMOTES) creep.say('💤')
                 break;
         }    
@@ -480,10 +499,7 @@ module.exports = class CreepOp extends ChildOp {
             if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
-                    {   let roomInfo = this._mapOp.getRoomInfo(roomName);
-                        if(roomInfo && roomInfo.hostileOwner) return Infinity; }
-                });
+                let route = Game.map.findRoute(creep.pos.roomName, dest.roomName);
                 if (route instanceof Array && route.length > 2) {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
@@ -545,7 +561,6 @@ module.exports = class CreepOp extends ChildOp {
         this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
         if (opportunityCost > 0) {
             this._mapOp.registerFatigue(creep.pos, opportunityCost);
-            //U.l({newstep: creep.pos, cost: opportunityCost, newCost: roomInfo.terrainArray[creep.pos.x][creep.pos.y]} )
         }
     }
 
