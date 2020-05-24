@@ -126,8 +126,16 @@ module.exports = class BaseOp extends ShardChildOp{
     _strategy() {
         let level = this.base.controller.level;
 
+        this._setPhase()
+
+        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
+        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
+        else if (this.spawns.length>0) this._unclaimTimer = 0;
+    }
+
+    _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
-        if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+        if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
         else return;
         if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
@@ -137,10 +145,6 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;
-
-        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
-        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
-        else if (this.spawns.length>0) this._unclaimTimer = 0;
     }
 
 }

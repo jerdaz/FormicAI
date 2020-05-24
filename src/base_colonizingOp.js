@@ -34,13 +34,9 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _strategy() {
         let nCreep = 0;
-        U.l('strategy-colo')
-        U.l(this._baseOp.directive)
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE) {
-            U.l('pass1')
             nCreep = 1;
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
-                U.l('pass2')
                 this._colRoomName = this._findColRoom();
                 if (this._colRoomName) {
                     Memory.colonizations[this._colRoomName] = Game.time;
@@ -53,7 +49,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _tactics() {
         let colRoomName = this._colRoomName;
-        U.l(colRoomName);
         if (!colRoomName) return;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
@@ -64,14 +59,13 @@ module.exports = class ColonizingOp extends BaseChildOp {
     /**@returns {string | null} */
     _findColRoom() {
         /**@type {{name: string, distance: number}[]} */
-        U.l('findcolrooms)')
         let colRooms = [];
         let knownRooms = this._map.knownRooms;
         for (let roomName in this._map.knownRooms) {
             let roomInfo = knownRooms[roomName];
             if (   roomInfo.hostileOwner == false 
                 && roomInfo.lastSeenHostile < roomInfo.lastSeen
-                && roomInfo.lastSeen < COLONIZE_LASTSEEN_TIME
+                && roomInfo.lastSeen >= Game.time - COLONIZE_LASTSEEN_TIME
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
                 && roomInfo.level == 0
@@ -92,7 +86,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (lastColStartB) return -1;
             return 0;
         })
-        U.l(colRooms);
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
     }

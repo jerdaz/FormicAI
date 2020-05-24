@@ -325,13 +325,17 @@ module.exports = class CreepOp extends ChildOp {
                 let roomName = this._destId;
                 let room = Game.rooms[roomName]
                 if (room && room.controller) {
-                    let result = -1000;
-                    if (destObj instanceof StructureController) result = creep.claimController(destObj);
-                    if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                    if (room.controller.my) creep.suicide();
+                    else {
+                        let result = -1000;
+                        destObj = room.controller;
+                        if (destObj instanceof StructureController) result = creep.claimController(destObj);
+                        if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                    }
                 } else {
                     this._moveTo(new RoomPosition(25,25, roomName));
                 }
-                if (c.CREEP_EMOTES) creep.say('Claiming')
+                if (c.CREEP_EMOTES) creep.say('Claim:' + roomName)
                 break;
             case c.STATE_NONE:
                 //flee from sources and spawns
@@ -557,7 +561,6 @@ module.exports = class CreepOp extends ChildOp {
         this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
         if (opportunityCost > 0) {
             this._mapOp.registerFatigue(creep.pos, opportunityCost);
-            //U.l({newstep: creep.pos, cost: opportunityCost, newCost: roomInfo.terrainArray[creep.pos.x][creep.pos.y]} )
         }
     }
 

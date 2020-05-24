@@ -62,7 +62,6 @@ module.exports = class ShardOp extends ChildOp {
     /**@param {number} max */
     setDirectiveMaxBases(max){
         this._maxShardBases = max;
-        U.l({maxBases: this._maxShardBases})
     }
 
     /**@param {String} roomName */

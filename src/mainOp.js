@@ -79,7 +79,6 @@ module.exports = class Main extends Operation {
         //     shardLimits[shard] = dividedCPU;
         // }
         // //Game.cpu.setShardLimits(shardLimits);
-        // // U.l(shardLimits);
 
         // //set max bases
         // let nBases = Game.gcl.level
