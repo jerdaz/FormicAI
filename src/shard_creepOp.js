@@ -318,7 +318,10 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         
             case c.STATE_MOVING:
-                if (this._destPos) this._moveTo(this._destPos);
+                if (this._destPos) {
+                    if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
+                    else this._moveTo(this._destPos);
+                }
                 if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
             case c.STATE_CLAIMING:
