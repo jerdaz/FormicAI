@@ -508,7 +508,10 @@ module.exports = class CreepOp extends ChildOp {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
-                } else dest = endDest;
+                } else {
+                    dest = endDest;
+                    this._lastMoveToInterimDest = null;
+                }
             }
         }
 
