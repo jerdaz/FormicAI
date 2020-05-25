@@ -18,6 +18,7 @@ module.exports = class CreepOp extends ChildOp {
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
         this._parent = parent;
+        /**@type {number} */
         this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
@@ -195,22 +196,22 @@ module.exports = class CreepOp extends ChildOp {
                 if (creep.store.getUsedCapacity() == 0) {
                     this._state = c.STATE_RETRIEVING;
                 }
-                if (creep.store.getFreeCapacity() == 0) {
+                else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_DROPENERGY;
                 }
-                if (this._state == c.STATE_NONE) this._state = c.STATE_DROPENERGY;
+                else if (this._state != c.STATE_RETRIEVING && this.state != c.STATE_DROPENERGY) this._state = c.STATE_DROPENERGY;
                 break;
             case c.COMMAND_FILL:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
-                if (creep.store.getFreeCapacity() == 0) {
+                else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_FILLING;
                 }
-                if (this._state == c.STATE_NONE) this._state = c.STATE_FILLING;
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_FILLING) this._state = c.STATE_FILLING;
                 break;
             case c.COMMAND_TRANSFER:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
-                if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
-                if (this._state == c.STATE_NONE) this._state = c.STATE_DELIVERING;
+                else if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
+                else if (this._state != c.STATE_RETRIEVING && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_MOVETO:
                 this._state=c.STATE_MOVING;
@@ -220,10 +221,10 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case c.COMMAND_BUILD:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
-                if (creep.store.getFreeCapacity() == 0) {
+                else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_BUILDING;
                 }
-                if (this._state == c.STATE_NONE) this._state = c.STATE_BUILDING;
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
@@ -499,8 +500,8 @@ module.exports = class CreepOp extends ChildOp {
         let dest = pos;
         let myPos = creep.pos;
         if (myPos.roomName != dest.roomName) {
-            if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
-            if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
+            if (this._lastMoveToDest == null || !dest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
+            if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
                 let route = Game.map.findRoute(creep.pos.roomName, dest.roomName);
                 if (route instanceof Array && route.length > 2) {
