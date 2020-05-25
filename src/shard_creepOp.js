@@ -487,30 +487,31 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     /**
-     * @arg {RoomPosition} pos 
+     * @arg {RoomPosition} endDest 
      * @arg {MoveToOpts} [opts]
     */
-    _moveTo(pos, opts) {
+    _moveTo(endDest, opts) {
         let creep = this._creep;
         let range = 0;
         if (opts && opts.range) range = opts.range;
-        if (creep.pos.inRangeTo(pos,range)) return OK;
+        if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
-        let dest = pos;
+        let dest = endDest;
         let myPos = creep.pos;
-        if (myPos.roomName != dest.roomName) {
-            if (this._lastMoveToDest == null || !dest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
+        if (myPos.roomName != endDest.roomName) {
+            if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(creep.pos.roomName, dest.roomName);
+                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName);
                 if (route instanceof Array && route.length > 2) {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
-                }
+                } else dest = endDest;
             }
         }
+
 
         //mark hostile rooms unwalkable
         // optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
@@ -528,7 +529,7 @@ module.exports = class CreepOp extends ChildOp {
         if (result == ERR_NO_PATH) {
             this._instruct = c.COMMAND_NONE;
         }
-        this._lastMoveToDest = pos;
+        this._lastMoveToDest = endDest;
         return result;
     }
 
