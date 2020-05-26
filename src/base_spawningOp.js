@@ -78,6 +78,7 @@ module.exports = class SpawningOp extends BaseChildOp {
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
+                this._log(spawnList);
                 if (spawnList.length > 0 ) {
                     for (let spawn of spawns) {
                         if (spawn.spawning == null) {
@@ -135,8 +136,9 @@ module.exports = class SpawningOp extends BaseChildOp {
             let shardChildOp = spawnRequest.operation;
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type })
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type, template:spawnRequest.template, count:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
+
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;

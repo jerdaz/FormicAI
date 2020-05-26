@@ -16,6 +16,7 @@ module.exports = class Main extends Operation {
             switch (memObj) {
                 case 'maxCPU':
                 case 'bank':
+                case 'colonizations':
                     break;
                 default:
                     delete Memory[memObj];
@@ -56,6 +57,10 @@ module.exports = class Main extends Operation {
     /**@param {number} shardRequest */
     requestCreep(shardRequest) { this._requestCreep(shardRequest); }
 
+    _firstRun() {
+        this._strategy();
+    }
+
     _support() {
         if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
     }
@@ -74,7 +79,6 @@ module.exports = class Main extends Operation {
         //     shardLimits[shard] = dividedCPU;
         // }
         // //Game.cpu.setShardLimits(shardLimits);
-        // // U.l(shardLimits);
 
         // //set max bases
         // let nBases = Game.gcl.level

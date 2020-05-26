@@ -2,7 +2,14 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
-/** @typedef {{[roomName:string]: {terrainArray:{fatigueCost:Number}[][], lastSeenHostile:number, lastSeen:number, hostileOwner:boolean}}} RoomInfo*/
+/** @typedef {{[roomName:string]: {
+ *      terrainArray:{fatigueCost:Number}[][], 
+ *      lastSeenHostile:number, 
+ *      lastSeen:number, 
+ *      hostileOwner:boolean,
+ *      hasController: boolean,
+ *      level: number
+ *   }}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 const MIN_ROAD_FATIGUE_COST =   c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
@@ -19,6 +26,10 @@ module.exports = class MapOp extends ChildOp {
     }
 
     get type() {return c.OPERATION_MAP}
+    
+    get knownRooms() {
+        return this._roomInfo;
+    }
 
     /**@param {String} roomName */
     getRoomInfo(roomName) {
@@ -99,6 +110,18 @@ module.exports = class MapOp extends ChildOp {
         return Game.map.describeExits(roomName);
     }    
 
+    /**@param {string} from
+     * @param {string} to
+     */
+    findRoute(from, to) {
+        let result = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
+            {   let roomInfo = this.getRoomInfo(roomName);
+                if(roomInfo && roomInfo.hostileOwner) return Infinity; }
+            })
+        return result;
+    }
+
+
     /**@param {RoomPosition} pos
      * @param {Number} cost
      */
@@ -129,7 +152,7 @@ module.exports = class MapOp extends ChildOp {
     _tactics() {
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false}
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0}
                 for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
                     this._roomInfo[roomName].terrainArray[x] = [];
                     for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
@@ -141,7 +164,14 @@ module.exports = class MapOp extends ChildOp {
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) this._roomInfo[roomName].lastSeenHostile = Game.time;
             this._roomInfo[roomName].lastSeen = Game.time;
-            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && room.controller.owner != null;
+            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null || room.controller.reservation != undefined);
+            if (room.controller) {
+                this._roomInfo[roomName].hasController = true;
+                this._roomInfo[roomName].level = room.controller.level
+            } else {
+                this._roomInfo[roomName].hasController= false;
+                this._roomInfo[roomName].level = 0;
+            }
         }
     }
 }

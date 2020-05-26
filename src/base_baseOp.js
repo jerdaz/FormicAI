@@ -6,7 +6,7 @@ const BuildingOp = require('./base_buildingOp');
 const SpawningOp = require ('./base_spawningOp');
 const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
-const ColonizingOp = require('./shard_colonizingOp');
+const ColonizingOp = require('./base_colonizingOp');
 const HarvestingOp = require('./base_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_transportOp');
@@ -15,7 +15,7 @@ const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
 const RoomOp = require('./base_roomOp');
 
-const UNCLAIM_TIME = CONTROLLER_DOWNGRADE[1];
+const UNCLAIM_TIME = 3000;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
@@ -34,7 +34,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new FillingOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new UpgradingOp(this));
-        this.addChildOp(new ColonizingOp(this,shardOp, this));
+        this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
         //this.addChildOp(new MiningOp(this));
@@ -126,8 +126,16 @@ module.exports = class BaseOp extends ShardChildOp{
     _strategy() {
         let level = this.base.controller.level;
 
+        this._setPhase()
+
+        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
+        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
+        else if (this.spawns.length>0) this._unclaimTimer = 0;
+    }
+
+    _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
-        if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+        if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
         else return;
         if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
@@ -136,9 +144,7 @@ module.exports = class BaseOp extends ShardChildOp{
         if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
-
-        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
-        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
-        else if (this.spawns.length>0) this._unclaimTimer = 0;
+        return;
     }
+
 }
