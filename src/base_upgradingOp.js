@@ -20,7 +20,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER /*&& this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL*/) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
-            let body = [MOVE,CARRY,WORK];
+            let body = [MOVE,WORK,CARRY];
             let maxSize = MAX_CREEP_SIZE;
             if (link) body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
             let workerCount = Math.floor((energy - ENERGY_RESERVE / 8 *controller.level ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))

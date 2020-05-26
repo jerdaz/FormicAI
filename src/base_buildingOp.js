@@ -28,7 +28,7 @@ module.exports = class BuildingOp extends BaseChildOp {
                 ) {
             creepCount = 1;
         }
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,WORK,CARRY]}, creepCount)
         this._creepRequestCount = creepCount;
     }
 
