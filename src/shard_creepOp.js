@@ -339,7 +339,7 @@ module.exports = class CreepOp extends ChildOp {
                 } else {
                     this._moveTo(new RoomPosition(25,25, roomName));
                 }
-                if (c.CREEP_EMOTES) creep.say('Claim:' + roomName)
+                if (c.CREEP_EMOTES) creep.say('Cl:' + roomName)
                 break;
             case c.STATE_NONE:
                 //flee from sources and spawns
