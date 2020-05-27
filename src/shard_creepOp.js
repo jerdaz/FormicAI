@@ -40,6 +40,9 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {boolean | null} */
         this._hasWorkParts = null;
         this._idleTime = 0;
+        /**@type {boolean} */
+        this._notifyWhenAttackedIntent = true;
+        this._notifyWhenAttacked = true
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -55,6 +58,14 @@ module.exports = class CreepOp extends ChildOp {
             this._hasWorkParts = this._creep.body.filter(o => {return o.type == WORK}).length > 0;
         }
         return this._hasWorkParts;
+    }
+
+    get notifyWhenAttacked() {
+        return this._notifyWhenAttacked;
+    }
+    /**@param {boolean} value */
+    set notifyWhenAttacked(value) {
+        this._notifyWhenAttacked = value;
     }
 
     get idleTime() {return this._idleTime}
@@ -171,10 +182,6 @@ module.exports = class CreepOp extends ChildOp {
 
     //     this._creep.memory.operationType = opType;
     // }
-    
-    _firstRun() {
-        this._creep.notifyWhenAttacked(false);
-    }
 
 
     _tactics() {
@@ -187,6 +194,11 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 break;
         }      
+
+        if (this._notifyWhenAttacked != this._notifyWhenAttackedIntent && !this._creep.spawning) {
+            let result = this._creep.notifyWhenAttacked(this._notifyWhenAttacked)
+            if (result == OK) this._notifyWhenAttackedIntent = this._notifyWhenAttacked;
+        }
     }
     
     _command() {

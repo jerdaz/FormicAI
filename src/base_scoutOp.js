@@ -29,6 +29,7 @@ module.exports = class ScoutOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let lastRoomName = this._lastRoomName[creepName];
             let creepOp = this._creepOps[creepName]
+            creepOp.notifyWhenAttacked = false;
             let room = creepOp.room;
             if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                 /**@type {string | undefined} */
