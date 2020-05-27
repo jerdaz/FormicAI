@@ -577,7 +577,7 @@ module.exports = class CreepOp extends ChildOp {
         let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
         let stepTicksRoad = Math.ceil(fatigue / moveParts);
         
-        let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME 
+        let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME * c.ROAD_FACTOR
         this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
         if (opportunityCost > 0) {
             this._mapOp.registerFatigue(creep.pos, opportunityCost);

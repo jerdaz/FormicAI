@@ -80,5 +80,6 @@ module.exports = {
 
     MAX_WALL_HEIGHT : 0.01,
     ROAD_IDLE_REPAIR_TIME : 100,
+    ROAD_FACTOR: 0.9,
 
 }
