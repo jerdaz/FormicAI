@@ -50,6 +50,14 @@ module.exports = class ColonizingOp extends BaseChildOp {
     _tactics() {
         let colRoomName = this._colRoomName;
         if (!colRoomName) return;
+        let room = Game.rooms[colRoomName];
+        if (room.controller && room.controller.my) {
+            this._colRoomName = null;
+            this._strategy();
+            colRoomName = this._colRoomName;
+            if (!colRoomName) return;
+        }
+        
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             creepOp.instructClaimController(colRoomName);
