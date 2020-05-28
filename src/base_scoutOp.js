@@ -44,7 +44,7 @@ module.exports = class ScoutOp extends BaseChildOp {
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
                         let scoutInfoB = this._map.getRoomInfo(b);
-                        if (scoutInfoA && scoutInfoB) return scoutInfoB.lastSeen - scoutInfoA.lastSeen + Math.random() - 0.5;
+                        if (scoutInfoA && scoutInfoB) return scoutInfoA.lastSeen - scoutInfoB.lastSeen + Math.random() - 0.5;
                         return 0;
                     })
                 if (roomNames.length > 0) destRoomName = roomNames.pop();
