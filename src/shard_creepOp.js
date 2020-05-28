@@ -5,7 +5,7 @@ const Version = require('./version')
 
 
 let version = new Version;
-const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
+const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
 
 module.exports = class CreepOp extends ChildOp {
     /**
