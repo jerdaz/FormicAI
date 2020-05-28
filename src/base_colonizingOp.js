@@ -82,8 +82,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
             let lastColStartB = Memory.colonizations[b.name]
             if (lastColStartA && lastColStartB) return lastColStartA - lastColStartB
             if (!lastColStartA && !lastColStartA) return a.distance-b.distance;
-            if (lastColStartA) return 1;
-            if (lastColStartB) return -1;
+            if (lastColStartA) return -1;
+            if (lastColStartB) return 1;
             return 0;
         })
         if (colRooms.length > 0) return colRooms[0].name;

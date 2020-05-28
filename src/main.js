@@ -9,7 +9,7 @@ let mainOp = new MainOp;
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = mainOp;
-    /**@type {any}*/(Game).shard = mainOp.childOps[c.OPERATION_SHARD][0];
+    /**@type {any}*/(Game).shardOp = mainOp.childOps[c.OPERATION_SHARD][0];
     mainOp.initTick();
     mainOp.run();
     if (debug.verbose) {
