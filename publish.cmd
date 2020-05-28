@@ -1,7 +1,7 @@
 @echo off
 goto %1
 goto end
-:stable
+:master
 call grunt --server=screeps
 :delta
 call grunt --server=sp1
