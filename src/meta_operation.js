@@ -1,9 +1,6 @@
 const U = require('./util')
 const c = require('./constants');
 
-const SUPPORT_INTERVAL = 1000
-const STRATEGY_INTERVAL = 100
-const TACTICS_INTERVAL = 10
 const MAX_OPERATION_CPU = Game.cpu.tickLimit;
 
 //unique id of Operation
@@ -17,7 +14,7 @@ module.exports = class Operation {
         this._childOps = []
         /**@type {Debug} */
         this._debug = /** @type {any}*/(Game).debug;
-        this._tickOffset = _.random(0,SUPPORT_INTERVAL - 1)
+        this._tickOffset = _.random(0,c.SUPPORT_INTERVAL - 1)
         this._verbose = false;
         this._verboseAll = false // if true, log all running operations
         this._tickFirstLog = true;
@@ -49,6 +46,7 @@ module.exports = class Operation {
     run() {
         //last resort cpu overflow prevention.
         let cpuStart = Game.cpu.getUsed();
+        if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
         if (Game.cpu.bucket < cpuStart + Game.cpu.limit) throw Error('Out of CPU');
         if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
@@ -59,13 +57,13 @@ module.exports = class Operation {
             } catch(err) {this._debug.logError(err)};
         }
 
-        if (this._runStrategy || Game.time % STRATEGY_INTERVAL == this._tickOffset % STRATEGY_INTERVAL) {
+        if (this._runStrategy || Game.time % c.STRATEGY_INTERVAL == this._tickOffset % c.STRATEGY_INTERVAL) {
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
             } catch(err) {this._debug.logError(err)};
         }
-        if (this._runTactics || Game.time % TACTICS_INTERVAL == this._tickOffset % TACTICS_INTERVAL) {
+        if (this._runTactics || Game.time % c.TACTICS_INTERVAL == this._tickOffset % c.TACTICS_INTERVAL) {
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
@@ -79,7 +77,7 @@ module.exports = class Operation {
                 childOp.run();
             } catch(err) {this._debug.logError(err)}
         }
-        if (this._runSupport || Game.time % SUPPORT_INTERVAL == this._tickOffset) {
+        if (this._runSupport || Game.time % c.SUPPORT_INTERVAL == this._tickOffset) {
             try {
                 this._support();
                 if (this._runSupport) this._runSupport = false;

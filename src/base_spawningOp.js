@@ -4,6 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 /**@type {{[body:string]:number}} */
 const BODY_SORT = {'tough': 1, 'move': 2, 'carry': 3, 'work': 4 , 'claim': 5, 'attack': 6, 'ranged_attack': 7, 'heal': 8};
+const MAX_OPERATION_IDLE_TIME = 25;
 
 module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
@@ -17,6 +18,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
+        this._verbose = false;
     }
 
     get type() {return c.OPERATION_SPAWNING}
@@ -59,7 +61,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_LINK] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
-            this._spawnPrio[c.OPERATION_COLONIZING] = 10;
+            this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
         }
     }
@@ -72,10 +74,11 @@ module.exports = class SpawningOp extends BaseChildOp {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.creepCount >= this._spawnRequests[this._baseOp.fillingOp.id].count
+                && this._baseOp.fillingOp.creepCount >= 1
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
+                this._log(spawnList);
                 if (spawnList.length > 0 ) {
                     for (let spawn of spawns) {
                         if (spawn.spawning == null) {
@@ -85,6 +88,8 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 if (body.length>0) {
                                     let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                     if (result != OK) spawnList.push(spawnItem);
+                                    this._log(body);
+                                    this._log(result);
                                 }
                             }
                         }
@@ -128,12 +133,15 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let teamOp = spawnRequest.operation;
+            let shardChildOp = spawnRequest.operation;
             let nCreeps = 0;
-            if (teamOp) nCreeps = teamOp.creepCount;
+            if (shardChildOp) nCreeps = shardChildOp.creepCount;
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type, template:spawnRequest.template, count:spawnRequest.count })
+            if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
+            if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {
-                let opType = teamOp.type;
-                let opInstance = teamOp.instance;
+                let opType = shardChildOp.type;
+                let opInstance = shardChildOp.instance;
                 spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
             }
         }
@@ -162,6 +170,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         var i=0;
         var maxEnergy = base.energyCapacityAvailable;
         if (baseOp.fillingOp.creepCount == 0) maxEnergy = base.energyAvailable;
+        this._log({fillingCreepcount: baseOp.fillingOp.creepCount, maxEnergy: maxEnergy});
 
         while (U.getCreepCost(result) <= maxEnergy && result.length < Math.min(maxLength + 1, MAX_CREEP_SIZE + 1)) {
             result.push(body[i++]);

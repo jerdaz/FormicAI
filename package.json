@@ -6,11 +6,13 @@
   "dependencies": {
     "@types/lodash": "^4.14.149",
     "@types/screeps": "^3.1.0",
-    "grunt": "^1.1.0",
     "grunt-file-append": "0.0.7",
     "grunt-screeps": "^1.4.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt": "^1.1.0",
+    "grunt-get-branchname": "^0.2.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

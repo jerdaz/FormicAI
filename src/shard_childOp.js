@@ -17,6 +17,7 @@ module.exports = class ShardChildOp extends ChildOp {
         this._instance = instance || 0
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
+        this._lastIdle = 0;
         let baseName = '';
         if (baseOp) baseName = baseOp.name;
         else baseName = shardOp.name;
@@ -33,22 +34,61 @@ module.exports = class ShardChildOp extends ChildOp {
         return res;
     }
 
+    get idleCount() {
+        let res = 0;
+        let creepOps = /**@type {CreepOp[]}*/ (this.childOps[c.OPERATION_CREEP]);
+        if (!creepOps) return 0;
+        for (let creepOp of creepOps) {
+            if (creepOp.instruction == c.COMMAND_NONE) res++;
+        }
+        return res;
+    }
+
+    /**@param {Number} time */
+    set lastIdle(time) {
+        this._lastIdle = time;
+    }
+
+    get lastIdle() { return this._lastIdle};
+    
+
     initTick() {
         super.initTick();
         //remove dead creeps from runtime
         for (let creepName in this._creepOps) {
             if (Game.creeps[creepName] == undefined) {
                 this.removeChildOp(this._creepOps[creepName])
-                delete this._creepOps[creepName];
             }
         }
     }
 
+    /**@param {ChildOp} childOp */
+    addChildOp(childOp) {
+        super.addChildOp(childOp);
+        if (childOp.type == c.OPERATION_CREEP) {
+            let creepOp = /**@type {CreepOp} */ (childOp);
+            this._creepOps[creepOp.name] = creepOp; 
+            let creep = creepOp.creep;
+            if (this._baseOp) creep.memory.baseName = this._baseOp.name;
+            else delete creep.memory.baseName;
+            creep.memory.operationType = this.type;
+            creep.memory.operationInstance = this.instance;
+        }
+
+    }
+
+    /**@param {ChildOp} childOp */
+    removeChildOp(childOp) {
+        super.removeChildOp(childOp);
+        if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
+    }
+
+    
+
     /**@param {Creep} creep */
     initCreep(creep) {
         if (this._creepOps[creep.name] == undefined) {
-            this._creepOps[creep.name] = new CreepOp(this, this._shardOp, this._baseOp, this._map, creep)
-            this.addChildOp(this._creepOps[creep.name])
+            this.addChildOp(new CreepOp(this, this._shardOp, this._baseOp, this._map, creep))
             this._runTactics = true;
         }
         this._creepOps[creep.name].initTickCreep(creep);

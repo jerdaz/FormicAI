@@ -4,6 +4,11 @@ const BaseChildOp = require('./base_childOp');
 
 
 module.exports = class FillingOp extends BaseChildOp {
+    /**@param {BaseOp} baseOp */
+    constructor(baseOp) {
+        super(baseOp);
+        this._lastTickFull = 0;
+    }
     get type() {return c.OPERATION_FILLING}
 
     _firstRun() {
@@ -11,29 +16,30 @@ module.exports = class FillingOp extends BaseChildOp {
     }
     
     _strategy() {
-        let template = {body:[MOVE,CARRY,WORK]}
-        let creepCount = 2;
-        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) creepCount = 1;
+        let template = {body:[MOVE,WORK,CARRY]}
+        let creepCount = 10;
+        if (this.baseOp.storage) creepCount = 2;
+        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY ) creepCount = 1;
         if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
         this._baseOp.spawningOp.ltRequestSpawn(this, template, creepCount)
     }
 
+    // _tactics() {
+    //     for (let creepName in this._creepOps) {
+    //         let creepOp = this._creepOps[creepName];
+    //     }
+    // }
+
     _tactics() {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            // if (!(dest instanceof StructureSpawn || dest instanceof StructureExtension)
-            // || (creepOp.instruction != c.COMMAND_FILL)
-            // || (dest.energy && dest.energy == dest.energyCapacity) ) 
-            // {
-            let dest = creepOp.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
-                let store = /**@type {any} */ (o).store;
-                if (store == undefined) return false
-                return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
-                        && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB || 
-                            (o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION));
-                }})
-            if (dest) creepOp.instructFill(dest);
-            // }
+            if (creepOp.instruction == c.COMMAND_NONE) {
+                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > 2 && creepOp.state != c.STATE_FINDENERGY) {
+                    if (this._lastTickFull = Game.time - 1) creepOp.newParent(this._baseOp.buildingOp)
+                    this._lastTickFull = Game.time;
+                }
+                else creepOp.instructFill();
+            }
         }
     }
 }

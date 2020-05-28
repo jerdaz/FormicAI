@@ -73,7 +73,11 @@ module.exports = class MarketOp extends BaseChildOp {
         }        
 
         // sell minerals
-        let energyPrice = this._resourcePrice[RESOURCE_ENERGY] || market.getHistory(RESOURCE_ENERGY)[0].avgPrice || 0;
+        let energyPrice = this._resourcePrice[RESOURCE_ENERGY];
+        if (!energyPrice) {
+            let marketHistory = market.getHistory(RESOURCE_ENERGY)
+            energyPrice = (marketHistory[0] && marketHistory[0].avgPrice) || 0;
+        }
         for (let resourceName in terminal.store) {
             let resourceType = /**@type {ResourceConstant} */ (resourceName);
             if (resourceType == RESOURCE_ENERGY) continue;

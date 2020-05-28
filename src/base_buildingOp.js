@@ -2,9 +2,14 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
-const MAX_WALL_HEIGHT = 0.01;
 
 module.exports = class BuildingOp extends BaseChildOp {
+    /**@param {BaseOp} baseOp */
+    constructor(baseOp) {
+        super(baseOp);
+        this._creepRequestCount = 0;
+        this._verbose = false;
+    }
     get type() {return c.OPERATION_BUILDING}
 
     _firstRun() {
@@ -15,30 +20,29 @@ module.exports = class BuildingOp extends BaseChildOp {
         let creepCount = 0;
         let level = this._baseOp.base.controller.level
         let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
-        if (constructionCount > 0) creepCount = 8;
+        if (constructionCount > 0) creepCount = constructionCount;
         else if (level >= 2 
-             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                                                                               && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
                                       ).length>0
                 ) {
             creepCount = 1;
         }
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,WORK,CARRY]}, creepCount)
+        this._creepRequestCount = creepCount;
     }
 
     _tactics() {
+        let transferedToUpgradingThisTick = false;
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            if (creepOp.instruction != c.COMMAND_TRANSFER)  
-            {
-                /**@type {Structure|ConstructionSite|null}  */
-                let dest = creepOp.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-                if (!dest) {
-                    let structures = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3}});
-                    structures.sort((a,b) => {return a.hits - b.hits});
-                    dest = structures[0];
+            if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
+            else if (creepOp.instruction == c.COMMAND_NONE || (creepOp.pos.roomName == this._baseOp.name && creepOp.instruction == c.COMMAND_MOVETO)) {
+                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > this._creepRequestCount && !transferedToUpgradingThisTick) {
+                    creepOp.newParent(this._baseOp.upgradingOp);
+                    transferedToUpgradingThisTick = true;
                 }
-                if (dest) creepOp.instructFill(dest);
+                else creepOp.instructBuild();
             }
         }
     }

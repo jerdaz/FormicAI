@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 const ENERGY_RESERVE = 0.1 * STORAGE_CAPACITY
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
-const MAX_UPGRADER_COUNT = 15
+const MAX_UPGRADER_COUNT = 20
 const DOWNGRADE_RESERVE = 0.75
 
 module.exports = class UpgradingOp extends BaseChildOp {
@@ -17,13 +17,13 @@ module.exports = class UpgradingOp extends BaseChildOp {
     _strategy() {
         let controller = this.baseOp.base.controller;
         let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER /*&& this.baseOp.base.controller.level < REDUCE_UPGRADER_COUNT_LEVEL*/) this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 15)
         else if (this.baseOp.storage) {
             let energy = this.baseOp.storage.store.energy;
-            let body = [MOVE,CARRY,WORK];
+            let body = [MOVE,WORK,CARRY];
             let maxSize = MAX_CREEP_SIZE;
             if (link) body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
-            let workerCount = Math.floor((energy - ENERGY_RESERVE ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            let workerCount = Math.floor((energy - ENERGY_RESERVE / 8 *controller.level ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
                 if (workerCount > 1) workerCount = 1;
@@ -37,9 +37,9 @@ module.exports = class UpgradingOp extends BaseChildOp {
             let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
             if (!link) {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
-                let pos = result.path[2];
+                let pos = result.path[1];
                 let structures = pos.lookFor(LOOK_STRUCTURES)
-                for(let structure of structures) structure.destroy();
+                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
                 pos.createConstructionSite(STRUCTURE_LINK);
             }
         }
@@ -57,7 +57,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
                         creepOp.isBoosted = true;
                         return;
                     case ERR_NOT_IN_RANGE:
-                        creepOp.instructMoveTo(lab);
+                        creepOp.instructMoveTo(lab.pos);
                         return;
                 }
                 

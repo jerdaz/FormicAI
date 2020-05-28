@@ -82,6 +82,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink == null) return;
         let creepNumber = 0;
         let storage = this._baseOp.storage
+        if (!storage) return;
         let terminal = this._baseOp.terminal;
         let lab = this._baseOp.labs[0]
         for (let creepName in this._creepOps) {

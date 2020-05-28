@@ -6,13 +6,14 @@ const BuildingOp = require('./base_buildingOp');
 const SpawningOp = require ('./base_spawningOp');
 const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
-const ColonizingOp = require('./shard_colonizingOp');
+const ColonizingOp = require('./base_colonizingOp');
 const HarvestingOp = require('./base_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_transportOp');
 const MiningOp = require('./base_miningOp');
 const MarketOp = require('./base_marketOp');
-const ScoutOp = require('./base_scoutOp')
+const ScoutOp = require('./base_scoutOp');
+const RoomOp = require('./base_roomOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -33,12 +34,13 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new FillingOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new UpgradingOp(this));
-        this.addChildOp(new ColonizingOp(this,shardOp, this));
+        this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
+        this.addChildOp(new RoomOp(this, this._name));
 
         let i = 0;
         for (let source of base.find(FIND_SOURCES)) {
@@ -60,6 +62,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
+    get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
     get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
@@ -76,6 +79,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get base() {return this._base;}
     get credits() {return this._shardOp.bank.getCredits(this._name)}
     get events() {return this._base.getEventLog()};
+    get level() { return this._base.controller.level};
 
     initTick() {
         super.initTick();
@@ -122,10 +126,18 @@ module.exports = class BaseOp extends ShardChildOp{
     _strategy() {
         let level = this.base.controller.level;
 
+        this._setPhase()
+
+        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
+        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
+        else if (this.spawns.length>0) this._unclaimTimer = 0;
+    }
+
+    _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
-        if (this.storage) this._phase=c.BASE_PHASE_HARVESTER
+        if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
         else return;
-        if( this.storage.store.energy >= this._base.energyCapacityAvailable * 2) this._phase = c.BASE_PHASE_STORED_ENERGY;
+        if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
         else return;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
@@ -133,10 +145,6 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;
-
-        if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
-        else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
-        else if (this.spawns.length>0) this._unclaimTimer = 0;
     }
 
 }

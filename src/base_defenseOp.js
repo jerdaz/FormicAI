@@ -12,7 +12,7 @@ module.exports = class TowerOp extends BaseChildOp {
         let base = this._baseOp.base;
         let towers = this._baseOp.towers;
         let creepsHit = base.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
-        let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level)}});
+        let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level && structure.structureType!= STRUCTURE_ROAD)}});
         for (let tower of towers) {
             if (hostile) {
                 tower.attack(hostile);
@@ -46,7 +46,8 @@ module.exports = class TowerOp extends BaseChildOp {
                             default:
                                 activateSafeMode = true;
                         }
-                    }
+                    } 
+                    else if (object && object instanceof Creep && this._baseOp.spawns.length == 0) activateSafeMode = true;
                 }
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();
@@ -58,7 +59,13 @@ module.exports = class TowerOp extends BaseChildOp {
 
     /**@returns {Creep | undefined} */
     _getInvader() {
-        var invaders = this._baseOp.base.find(FIND_HOSTILE_CREEPS);
+        var invaders = _.filter(this._baseOp.base.find(FIND_HOSTILE_CREEPS),invader => {
+            //don't attack invaders on transition tiles to prevent simple drain tactics
+            if (invader.owner.username == c.INVADER_USERNAME) return true;
+            let pos = invader.pos;
+            if (pos.x == 0 || pos.y == 0 || pos.x == c.MAX_ROOM_SIZE - 1 || pos.y == c.MAX_ROOM_SIZE - 1) return false;
+            return true;
+        });
         var target = invaders[0];
         var targetHealParts = 0;
         for (var invader of invaders) {

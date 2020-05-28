@@ -3,28 +3,23 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const Version = require('./version')
 
-const STATE_NONE = 0;
-const STATE_RETRIEVING = 1;
-const STATE_DELIVERING = 2;
-const STATE_MOVING = 3;
-const STATE_CLAIMING = 4;
-const STATE_FINDENERGY = 5;
-const STATE_DROPENERGY = 6;
 
 let version = new Version;
-const SIGN = c.MY_SIGN.replace('[VERSION]', version.version)
+const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
 
 module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
-     * @param {Operation} parent
+     * @param {ShardChildOp} parent
      * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
      * */
     constructor(parent, shardOp, baseOp, mapOp, creep) {
         super(parent);
-        this._state = STATE_NONE;
+        this._parent = parent;
+        /**@type {number} */
+        this._state = c.STATE_NONE;
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
@@ -40,6 +35,14 @@ module.exports = class CreepOp extends ChildOp {
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
         this._isBoosted = false;
+        /**@type {number | null} */
+        this._cost = null;
+        /**@type {boolean | null} */
+        this._hasWorkParts = null;
+        this._idleTime = 0;
+        /**@type {boolean} */
+        this._notifyWhenAttackedIntent = true;
+        this._notifyWhenAttacked = true
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -50,8 +53,26 @@ module.exports = class CreepOp extends ChildOp {
     get isBoosted() {return this._isBoosted}
     /**@param {boolean} bool */
     set isBoosted(bool) {this._isBoosted = bool}
+    get hasWorkParts(){
+        if (this._hasWorkParts == null) {
+            this._hasWorkParts = this._creep.body.filter(o => {return o.type == WORK}).length > 0;
+        }
+        return this._hasWorkParts;
+    }
+
+    get notifyWhenAttacked() {
+        return this._notifyWhenAttacked;
+    }
+    /**@param {boolean} value */
+    set notifyWhenAttacked(value) {
+        this._notifyWhenAttacked = value;
+    }
+
+    get idleTime() {return this._idleTime}
 
     get creep() {return this._creep};
+
+    get name() {return this._creep.name};
 
     get pos() {
         if (this._creep == undefined ) throw Error('creep undefined');
@@ -61,6 +82,18 @@ module.exports = class CreepOp extends ChildOp {
 
     get age() {
         return CREEP_LIFE_TIME - (this._creep.ticksToLive||0);
+    }
+
+    get creepCost() {
+        if (this._cost) return this._cost;
+        else {
+            let cost = 0;
+            for (let bodypart of this._creep.body) {
+                cost += BODYPART_COST[bodypart.type]
+            }
+            this._cost = cost;
+            return cost;
+        }
     }
 
 
@@ -74,16 +107,35 @@ module.exports = class CreepOp extends ChildOp {
         return this._instruct;
     }
 
+    get state() {
+        return this._state;
+    }
+
     /**@param {Creep} creep */
     initTickCreep(creep) {
         this._creep = creep;
     }
 
-    /**@param {Structure | ConstructionSite} dest */
+    /**@param {ShardChildOp} newParent */
+    newParent(newParent) {
+        super.newParent(newParent);
+        this._creep.memory.operationType = newParent.type;
+        this._creep.memory.operationInstance = newParent.instance;
+    }
+
+    /**@param {Structure | ConstructionSite} [dest] */
     instructFill(dest) {
         this._sourceId = ''
-        this._destId = dest.id;
+        if (dest) this._destId = dest.id;
+        else this._destId = '';
         this._instruct = c.COMMAND_FILL
+        this._resourceType = RESOURCE_ENERGY;
+    }
+
+    instructBuild() {
+        this._sourceId = ''
+        this._destId = '';
+        this._instruct = c.COMMAND_BUILD;
         this._resourceType = RESOURCE_ENERGY;
     }
 
@@ -104,9 +156,9 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_MOVETO
     }
 
-    /**@param {StructureController} controller */
-    instructClaimController(controller) {
-        this._destId = controller.id
+    /**@param {string} roomName */
+    instructClaimController(roomName) {
+        this._destId = roomName;
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
@@ -130,10 +182,6 @@ module.exports = class CreepOp extends ChildOp {
 
     //     this._creep.memory.operationType = opType;
     // }
-    
-    _firstRun() {
-        this._creep.notifyWhenAttacked(false);
-    }
 
 
     _tactics() {
@@ -146,6 +194,11 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 break;
         }      
+
+        if (this._notifyWhenAttacked != this._notifyWhenAttackedIntent && !this._creep.spawning) {
+            let result = this._creep.notifyWhenAttacked(this._notifyWhenAttacked)
+            if (result == OK) this._notifyWhenAttackedIntent = this._notifyWhenAttacked;
+        }
     }
     
     _command() {
@@ -153,33 +206,40 @@ module.exports = class CreepOp extends ChildOp {
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
                 if (creep.store.getUsedCapacity() == 0) {
-                    this._state = STATE_RETRIEVING;
+                    this._state = c.STATE_RETRIEVING;
                 }
-                if (creep.store.getFreeCapacity() == 0) {
-                    this._state = STATE_DROPENERGY;
+                else if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_DROPENERGY;
                 }
-                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
+                else if (this._state != c.STATE_RETRIEVING && this.state != c.STATE_DROPENERGY) this._state = c.STATE_DROPENERGY;
                 break;
             case c.COMMAND_FILL:
-                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_FINDENERGY;
-                if (creep.store.getFreeCapacity() == 0) {
-                    this._state = STATE_DELIVERING;
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                else if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_FILLING;
                 }
-                if (this._state == STATE_NONE) this._state = STATE_FINDENERGY;
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_FILLING) this._state = c.STATE_FILLING;
                 break;
             case c.COMMAND_TRANSFER:
-                if (creep.store.getUsedCapacity()  == 0) this._state = STATE_RETRIEVING;
-                if (creep.store.getFreeCapacity() == 0) this._state = STATE_DELIVERING;
-                if (this._state == STATE_NONE) this._state = STATE_RETRIEVING;
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
+                else if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
+                else if (this._state != c.STATE_RETRIEVING && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_MOVETO:
-                this._state=STATE_MOVING;
+                this._state=c.STATE_MOVING;
                 break;
             case c.COMMAND_CLAIMCONTROLLER:
-                this._state=STATE_CLAIMING
+                this._state=c.STATE_CLAIMING
+                break;
+            case c.COMMAND_BUILD:
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                else if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_BUILDING;
+                }
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
                 break;
             case c.COMMAND_NONE:
-                this._state = STATE_NONE;
+                this._state = c.STATE_NONE;
                 break;
         }
 
@@ -189,7 +249,7 @@ module.exports = class CreepOp extends ChildOp {
         let destObj = U.getRoomObject(this._destId);
         let resourceType = this._resourceType;
         switch (this._state) {
-            case STATE_FINDENERGY:
+            case c.STATE_FINDENERGY:
                 if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
                 if(sourceObj == undefined) {
                     sourceObj = this._findEnergySource();
@@ -197,8 +257,11 @@ module.exports = class CreepOp extends ChildOp {
                     else this._sourceId = '';
                 }
                 //deliberate fallthrough to retrieving
-            case STATE_RETRIEVING:
-                if (sourceObj == null) break;
+            case c.STATE_RETRIEVING:
+                if (sourceObj == null){
+                        this._instruct = c.COMMAND_NONE; 
+                        break;
+                    }
                 this._moveTo(sourceObj.pos, {range:1});
 
                 // also pick up stuff on the way
@@ -217,50 +280,134 @@ module.exports = class CreepOp extends ChildOp {
                     }
                 }
 
-                if      (sourceObj instanceof Source)    creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) creep.withdraw(sourceObj,resourceType);
-                else if (sourceObj instanceof Ruin) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Tombstone) creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Resource) creep.pickup(sourceObj);
-                else if (sourceObj instanceof Mineral) creep.harvest(sourceObj);
+                let result = -1000
+                if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
+                else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
+                else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
+                else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
+                else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
                 else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
+                //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
                 break;
 
-            case STATE_DROPENERGY:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity[resourceType] <= 0) destObj = null;
+            case c.STATE_DROPENERGY:
+            case c.STATE_FILLING:
+                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= 0) destObj = null;
                 if (destObj == null) {
-                    destObj = this._findEnergySink();
+                    switch (this._state) {
+                        case c.STATE_DROPENERGY:
+                            destObj = this._findEnergySink();
+                            break;
+                        case c.STATE_FILLING:
+                            destObj = this._findFillTarget();
+                            break;
+                    }
                     if (destObj && destObj.id) this._destId = destObj.id;
                     else this._destId = ''
                 }
-                //deliberate fallthrough to delivering
-            case STATE_DELIVERING:
-                if(!destObj) this._instruct = c.COMMAND_NONE;
-                else {
-                    this._moveTo(destObj.pos, {range:1});
-                    if      (destObj instanceof Structure) {
-                        /**@type {number} */
-                        let result = -1000;
-                        if (destObj.hits < destObj.hitsMax) result = creep.repair(destObj);
-                        if (result != OK) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                        if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) creep.signController(destObj, SIGN);
-                    }
-                    else if (destObj instanceof ConstructionSite) creep.build(destObj);
-                    else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                this._deliver(destObj);
+                break;
+
+            case c.STATE_BUILDING:
+                if (destObj instanceof Structure) {
+                    let roomLevel = 1;
+                    if (this._baseOp) roomLevel = this._baseOp.level
+                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    if (!needRepair) destObj = null;
+                } ;
+                if (destObj == null) {
+                    destObj = this._findBuildTarget();
+                    if (destObj && destObj.id) this._destId = destObj.id;
+                    else this._destId = ''
                 }
+                this._deliver(destObj);
+                break;
+
+
+            case c.STATE_DELIVERING:
+                this._deliver(destObj);
                 break;
         
-            case STATE_MOVING:
-                if (this._destPos) this._moveTo(this._destPos);
-                break;
-            case STATE_CLAIMING:
-                if (destObj) {
-                    this._moveTo(destObj.pos, {range:1});
-                    if (destObj instanceof StructureController) creep.claimController(destObj);
+            case c.STATE_MOVING:
+                if (this._destPos) {
+                    if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
+                    else this._moveTo(this._destPos);
                 }
-
-            this._lastPos = this._creep.pos;
+                if (c.CREEP_EMOTES) creep.say('🦶')
+                break;
+            case c.STATE_CLAIMING:
+                let roomName = this._destId;
+                let room = Game.rooms[roomName]
+                if (room && room.controller) {
+                    if (room.controller.my) creep.suicide();
+                    else {
+                        let result = -1000;
+                        destObj = room.controller;
+                        if (destObj instanceof StructureController) result = creep.claimController(destObj);
+                        if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                    }
+                } else {
+                    this._moveTo(new RoomPosition(25,25, roomName));
+                }
+                if (c.CREEP_EMOTES) creep.say('Cl:' + roomName)
+                break;
+            case c.STATE_NONE:
+                //flee from sources and spawns
+                /**@type {RoomObject[]} */
+                let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
+                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                if (targets.length>0) {
+                    let poss = []
+                    for (let target of targets) poss.push({pos: target.pos, range: 3})
+                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    creep.moveByPath(result.path)
+                }
+                if (c.CREEP_EMOTES) creep.say('💤')
+                break;
         }    
+        if (this._instruct== c.COMMAND_NONE) {
+            this._parent.lastIdle = Game.time;
+            this._idleTime++;
+        } else this._idleTime = 0;
+        if (!creep.pos.isEqualTo(this._lastPos)) this._registerCreepStep();
+        this._lastPos = this._creep.pos;
+    }
+
+    /**@param {RoomObjectEx | null} [destObj] */
+    _deliver(destObj) {
+        let creep = this._creep;
+        if(!destObj) this._instruct = c.COMMAND_NONE;
+        else {
+            let range = 1;
+            let result = -1000;
+            if      (destObj instanceof Structure) {
+                /**@type {number} */
+                if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
+                if (destObj instanceof StructureController) range = 3;
+                if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
+                if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
+            }
+            else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
+            else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+            if (result == ERR_NOT_IN_RANGE) {
+                let destPos = destObj.pos;
+                if (destObj instanceof StructureLink) {
+                    // go to spot between link and source
+                    let source = destObj.pos.findInRange(FIND_SOURCES,2)[0];
+                    if (source) {
+                        let path = destObj.pos.findPathTo(source.pos)
+                        if (path.length > 0) { 
+                            destPos = new RoomPosition (path[0].x, path[0].y, destObj.pos.roomName);
+                            range = 0;
+                        }
+                    }
+                } 
+                this._moveTo(destPos, {range:range});
+            }
+            if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
+        }
     }
 
     _findEnergySource() {
@@ -298,34 +445,88 @@ module.exports = class CreepOp extends ChildOp {
             let storage = this._baseOp.storage
             if (storage && _.size(storage.store) < storage.storeCapacity) roomObjects.push (storage);
         }
-        result = this._creep.pos.findClosestByPath(roomObjects);
+        result = this._creep.pos.findClosestByPath(roomObjects, {ignoreCreeps:true});
         return result;        
     }
 
+    _findFillTarget() {
+        let creep = this._creep;
+        let dest = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
+            let store = /**@type {any} */ (o).store;
+            if (store == undefined) return false
+            return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
+                    && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB || 
+                        (o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION) 
+                       // || (o.structureType == STRUCTURE_STORAGE && store[RESOURCE_ENERGY] < this._baseOp.base.energyCapacityAvailable)
+                        );
+            }})
+        return dest;
+    }
+
+    _findBuildTarget() {
+        let creep = this._creep;
+        /**@type {Structure|ConstructionSite|null}  */
+        let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+        if (!dest) { //repair normal structures
+            let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
+                let roomLevel = 1;
+                if (this._baseOp) roomLevel = this._baseOp.level
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                if (!needRepair) return false;
+                else return true;
+            }});
+            structures.sort((a,b) => {return a.hits - b.hits});
+            dest = structures[0];
+        }
+        if (!dest) { // repair roads
+            let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
+                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3;
+                if (!needRepair) return false;
+                if (o.structureType == STRUCTURE_ROAD) {
+                    this._log({roadrepair: o.pos})
+                    let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
+                    if (!roomInfo) return false;
+                    this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
+                    if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                    this._log('canrepair');
+                    return true;
+                }
+                return false;
+            }});
+            dest = creep.pos.findClosestByPath(roads);
+        }
+        return dest;
+    }
+
     /**
-     * @arg {RoomPosition} pos 
+     * @arg {RoomPosition} endDest 
      * @arg {MoveToOpts} [opts]
     */
-    _moveTo(pos, opts) {
+    _moveTo(endDest, opts) {
+        let creep = this._creep;
+        let range = 0;
+        if (opts && opts.range) range = opts.range;
+        if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
-        let dest = pos;
-        let myPos = this._creep.pos;
-        if (myPos.roomName != dest.roomName) {
-            if (!_.isEqual(dest,this._lastMoveToDest)) this._lastMoveToInterimDest = null;
-            if (_.isEqual(dest,this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
+        let dest = endDest;
+        let myPos = creep.pos;
+        if (myPos.roomName != endDest.roomName) {
+            if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
+            if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(this._creep.pos.roomName, pos.roomName, {routeCallback: (roomName, fromRoomName) => 
-                    {   let roomInfo = this._mapOp.getRoomInfo(roomName);
-                        if(roomInfo && roomInfo.hostileOwner) return Infinity; }
-                });
+                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName);
                 if (route instanceof Array && route.length > 2) {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
+                } else {
+                    dest = endDest;
+                    this._lastMoveToInterimDest = null;
                 }
             }
         }
+
 
         //mark hostile rooms unwalkable
         // optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
@@ -339,8 +540,70 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
-        this._creep.moveTo(dest, optsCopy);
-        this._lastMoveToDest = pos;
+        let result = creep.moveTo(dest, optsCopy);
+        if (result == ERR_NO_PATH) {
+            this._instruct = c.COMMAND_NONE;
+        }
+        this._lastMoveToDest = endDest;
+        return result;
     }
+
+    _registerCreepStep() {
+
+
+        let creep = this._creep;
+        let roomInfo = this._mapOp.getRoomInfo(creep.pos.roomName);
+        if (!roomInfo) return;
+        let moveParts = 0;
+        let otherParts = 0;
+        for (let bodyPart of creep.body) {
+            switch (bodyPart.type) {
+                case MOVE:
+                    moveParts++;
+                    break;
+                case CARRY:
+                    break;
+                default:
+                    otherParts++;
+            }
+        }
+        let fatigue = 0;
+        fatigue = otherParts;
+        this._log({f1: fatigue})
+        fatigue += this._calcResourcesWeight();
+        this._log({f2: fatigue})
+        let moveRate = 2;
+        if (Game.map.getRoomTerrain(creep.pos.roomName).get(creep.pos.x,creep.pos.y) == TERRAIN_MASK_SWAMP) moveRate = 5;
+        let stepTicks = Math.ceil(fatigue / (moveParts / moveRate) );
+        let stepTicksRoad = Math.ceil(fatigue / moveParts);
+        
+        let opportunityCost = (stepTicks - stepTicksRoad) * this.creepCost / CREEP_LIFE_TIME * c.ROAD_FACTOR
+        this._log({stepTicks: stepTicks, stepTicksRoad: stepTicksRoad, cost: opportunityCost});
+        if (opportunityCost > 0) {
+            this._mapOp.registerFatigue(creep.pos, opportunityCost);
+        }
+    }
+
+    _calcResourcesWeight() {
+        let creep = this._creep;
+        var totalCarry = creep.store.getUsedCapacity(), weight = 0;
+        for(var i = creep.body.length-1; i >= 0; i--) {
+            if(!totalCarry) {
+                break;
+            }
+            var part = creep.body[i];
+            if(part.type != CARRY || !part.hits) {
+                continue;
+            }
+            var boost = 1;
+            if(part.boost) {
+                boost = BOOSTS[CARRY][part.boost].capacity || 1;
+            }
+            totalCarry -= Math.min(totalCarry, CARRY_CAPACITY * boost);
+            weight++;
+        }
+        return weight;
+    }
+
 }
 
