@@ -360,7 +360,7 @@ module.exports = class CreepOp extends ChildOp {
                 targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
                 if (targets.length>0) {
                     let poss = []
-                    for (let target of targets) poss.push(target.pos)
+                    for (let target of targets) poss.push({pos: target.pos, range: 3})
                     let result = PathFinder.search(creep.pos, poss,{flee:true})
                     creep.moveByPath(result.path)
                 }
