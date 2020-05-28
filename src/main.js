@@ -1,14 +1,15 @@
 const Debug = require('./debug');
 const MainOp = require('./mainOp');
 const version = require('./version');
+const c = require('./constants');
 
 let debug = new Debug;
-/**@type {any}*/(Game).debug = debug;
 let mainOp = new MainOp;
 
 module.exports.loop = function() {
     /**@type {any}*/(Game).debug = debug;
     /**@type {any}*/(Game).main = mainOp;
+    /**@type {any}*/(Game).shard = mainOp.childOps[c.OPERATION_SHARD][0];
     mainOp.initTick();
     mainOp.run();
     if (debug.verbose) {

@@ -39,7 +39,7 @@ module.exports = class ScoutOp extends BaseChildOp {
                 for (let exit in exits) {
                     let roomName = exits[exit];
                     if (roomName == lastRoomName) continue;
-                    if (Game.map.isRoomAvailable(roomName)) roomNames.push(exits[exit]);
+                    if (Game.map.getRoomStatus(roomName).status != 'closed') roomNames.push(exits[exit]);
                 }
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
