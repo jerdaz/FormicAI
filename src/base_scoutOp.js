@@ -22,6 +22,7 @@ module.exports = class ScoutOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 1;
+        if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
@@ -44,7 +45,9 @@ module.exports = class ScoutOp extends BaseChildOp {
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
                         let scoutInfoB = this._map.getRoomInfo(b);
-                        if (scoutInfoA && scoutInfoB) return scoutInfoA.lastSeen - scoutInfoB.lastSeen + Math.random() - 0.5;
+                        if (scoutInfoA && scoutInfoB) return scoutInfoB.lastSeen - scoutInfoA.lastSeen + Math.random() - 0.5;
+                        if (scoutInfoA) return -1
+                        if (scoutInfoB) return 1
                         return 0;
                     })
                 if (roomNames.length > 0) destRoomName = roomNames.pop();
