@@ -245,7 +245,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let roomTerrain = base.getTerrain();
         for(let x=0; x<c.MAX_ROOM_SIZE;x++){
             for(let y=0; y<c.MAX_ROOM_SIZE;y++){
-                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS+1})
+                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS})
             }
         }
         let roomCallBack = function(/**@type {string}*/roomName) {
