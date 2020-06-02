@@ -62,12 +62,9 @@ module.exports = class UpgradingOp extends BaseChildOp {
                 }
                 
             } else {
-                let dest = creepOp.dest;
-                if (!(dest instanceof StructureController)
-                || (creepOp.instruction != c.COMMAND_TRANSFER) )
+                if (creepOp.instruction != c.COMMAND_UPGRADE) 
                 {
-                    let dest = this._baseOp.base.controller;
-                    if (dest) creepOp.instructFill(dest);
+                    creepOp.instructUpgradeController(this._baseOp.name);
                 }
             }
         }

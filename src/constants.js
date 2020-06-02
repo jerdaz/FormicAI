@@ -8,6 +8,7 @@ module.exports = {
     COMMAND_FILL: 4,
     COMMAND_HARVEST: 5,
     COMMAND_BUILD: 6,
+    COMMAND_UPGRADE: 7,
 
     STATE_NONE: 0,
     STATE_RETRIEVING: 1,

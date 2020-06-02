@@ -175,6 +175,17 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = RESOURCE_ENERGY;
     }
 
+    /**@param {string} roomName */
+    instructUpgradeController(roomName) {
+        this._instruct = c.COMMAND_UPGRADE;
+        let room = Game.rooms[roomName]
+        if (!room) throw Error()
+        let controller = room.controller;
+        if (!controller) throw Error();
+        this._destId = controller.id;
+        this._resourceType = RESOURCE_ENERGY;
+    }
+
 
     // /**@param {Number} opType */
     // setOperation(opType) {
@@ -237,6 +248,13 @@ module.exports = class CreepOp extends ChildOp {
                     this._state = c.STATE_BUILDING;
                 }
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
+                break;
+            case c.COMMAND_UPGRADE:
+                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                else if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_DELIVERING;
+                }
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
