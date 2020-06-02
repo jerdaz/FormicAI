@@ -78,11 +78,12 @@ module.exports = class HarvestingOp extends BaseChildOp {
 
     _tactics() {
         if (!this.baseOp.storage) return;
-        let source = Game.getObjectById(this._sourceId);
+        /**@type {Source} */
+        let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
         if (this._harvesterCount) {
-            if (source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL) this._harvesterCount+=0.2;
+            if (source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
-            if (this._harvesterCount > 2) this._harvesterCount = 2;
+            if (this._harvesterCount > 3) this._harvesterCount = 3;
         } ;
 
         for (let creepName in this._creepOps) {
