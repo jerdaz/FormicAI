@@ -62,11 +62,13 @@ module.exports = class HarvestingOp extends BaseChildOp {
                     return matrix;
 
                 } 
-                let result = PathFinder.search(source.pos, this.baseOp.centerPos,{roomCallback: roomCallback} )
+                let result = PathFinder.search(source.pos, {pos:source.pos, range:2},{roomCallback: roomCallback, flee:true} )
                 let pos = result.path[1];
-                let structures = pos.lookFor(LOOK_STRUCTURES)
-                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
-                pos.createConstructionSite(STRUCTURE_LINK);
+                if (pos) {
+                    let structures = pos.lookFor(LOOK_STRUCTURES)
+                    for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
+                    pos.createConstructionSite(STRUCTURE_LINK);
+                }
             }
             else if (links.length > 1) {
                 for(let i = 1;i<links.length;i++ ) links[i];

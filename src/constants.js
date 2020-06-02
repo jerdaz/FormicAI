@@ -1,7 +1,6 @@
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI [VERSION] 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
-    CREEP_EMOTES: true,
-
+    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
+    CREEP_EMOTES: false,
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
@@ -80,5 +79,6 @@ module.exports = {
 
     MAX_WALL_HEIGHT : 0.01,
     ROAD_IDLE_REPAIR_TIME : 100,
+    ROAD_FACTOR: 0.9,
 
 }

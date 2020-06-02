@@ -14,6 +14,7 @@ const baseBuildTemplate = [
 ]
 
 const TERRAIN_MASK_PLAIN = 0;
+const CORE_RADIUS = 3;
 
 module.exports = class BasePlanOp extends BaseChildOp{
     /** 
@@ -212,50 +213,97 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let baseOp = this._baseOp
         let base = baseOp.base;
         let firstSpawn = baseOp.spawns[0];
-        let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES)[0];
+        let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES, {filter: {structureType: STRUCTURE_SPAWN}})[0];
         if (firstSpawn) return firstSpawn.pos;
         else if (firstConstructionSite) return firstConstructionSite.pos;
 
-        let x = 0;
-        let y = 0;
-        let n = 0;
 
-        x += base.controller.pos.x;
-        y += base.controller.pos.y;
-        n += 1;
 
-        for (let source of /**@type {Source[]} */(base.find(FIND_SOURCES))) {
-            x += source.pos.x;
-            y += source.pos.y;
-            n += 1;
-        }
+        let controllerPos = base.controller.pos;
+        let sources = base.find(FIND_SOURCES);
+        let sourcePos = sources[0].pos;
 
-        
-        x = Math.round(x / n);
-        y = Math.round(y / n);
-
-        let spawnX = x;
-        let spawnY = y;
-        let validSpot;
-        let roomTerrain = base.getTerrain();
-        do {
-            validSpot = true;
-            spawnX = spawnX + _.random(-1, 1) ;
-            spawnY = spawnY + _.random(-1, 1) ;
-            if (spawnX <4 || spawnX > 45) spawnX = 25;
-            if (spawnY <4 || spawnY > 45) spawnY = 25;
-
-            for (let nx=-2;nx<=2;nx++) {
-                for (let ny=-2;ny<=2;ny++) {
-                    var terrain = roomTerrain.get(spawnX + nx, spawnY + ny);
-                    if (terrain == TERRAIN_MASK_WALL) validSpot = false;
-                }
+        //find the center of the path between the sources, otherwise find the first source position
+        if (sources.length > 1) {
+            let source2Pos = sources[1].pos;
+            let path = sourcePos.findPathTo(source2Pos, {range:1, ignoreCreeps:true});
+            if (path.length > 1) {
+                let pathStep = path[Math.floor(path.length/2)];
+                sourcePos = new RoomPosition(pathStep.x, pathStep.y, base.name);
             }
         }
-        while (validSpot == false )
 
-        let result = new RoomPosition(spawnX, spawnY, base.name);
-        return result;
+        //now find the center of the path between the previously found position and the controller
+        let path = sourcePos.findPathTo(controllerPos, {range:1, ignoreCreeps:true});
+        if (path.length < 1) throw Error('no path between source and controller')
+        let pathStep = path[Math.floor(path.length/2)];
+        let centerPos = new RoomPosition(pathStep.x, pathStep.y, base.name);
+        
+        // now 'flee' from all walls a distance with minimal free space
+        /**@type {{pos:RoomPosition, range:number }[]} */
+        let walls = []
+        let roomTerrain = base.getTerrain();
+        for(let x=0; x<c.MAX_ROOM_SIZE;x++){
+            for(let y=0; y<c.MAX_ROOM_SIZE;y++){
+                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS})
+            }
+        }
+        let roomCallBack = function(/**@type {string}*/roomName) {
+            let costs = new PathFinder.CostMatrix;
+            let structures = Game.rooms[roomName].find(FIND_STRUCTURES,{filter:o => {return o.structureType!=STRUCTURE_ROAD}});
+            for (let structure of structures) {
+                let pos = structure.pos
+                costs.set(pos.x, pos.y, 255);
+            }
+            return costs;
+        }
+        let fleePath = PathFinder.search(centerPos,walls,{flee:true, roomCallback: roomCallBack, swampCost:1})
+        if (fleePath.path.length>0) {
+            let path = fleePath.path;
+            centerPos = path[path.length-1]
+        }
+
+        return centerPos
+
+        // let x = 0;
+        // let y = 0;
+        // let n = 0;
+
+        // x += base.controller.pos.x;
+        // y += base.controller.pos.y;
+        // n += 1;
+
+        // for (let source of /**@type {Source[]} */(base.find(FIND_SOURCES))) {
+        //     x += source.pos.x;
+        //     y += source.pos.y;
+        //     n += 1;
+        // }
+
+        
+        // x = Math.round(x / n);
+        // y = Math.round(y / n);
+
+        // let spawnX = x;
+        // let spawnY = y;
+        // let validSpot;
+        // do {
+        //     validSpot = true;
+        //     spawnX = spawnX + _.random(-1, 1) ;
+        //     spawnY = spawnY + _.random(-1, 1) ;
+        //     if (spawnX <4 || spawnX > 45) spawnX = 25;
+        //     if (spawnY <4 || spawnY > 45) spawnY = 25;
+
+        //     for (let nx=-2;nx<=2;nx++) {
+        //         for (let ny=-2;ny<=2;ny++) {
+        //             var terrain = roomTerrain.get(spawnX + nx, spawnY + ny);
+        //             if (terrain == TERRAIN_MASK_WALL) validSpot = false;
+        //         }
+        //     }
+        // }
+        // while (validSpot == false )
+
+        // let result = new RoomPosition(spawnX, spawnY, base.name);
+        // return result;
     } 
 
 }
