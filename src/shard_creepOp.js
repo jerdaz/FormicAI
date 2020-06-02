@@ -332,7 +332,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (destObj instanceof Structure) {
                     let roomLevel = 1;
                     if (this._baseOp) roomLevel = this._baseOp.level
-                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * creep.body.length / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
                     if (!needRepair) destObj = null;
                 } ;
                 if (destObj == null) {
