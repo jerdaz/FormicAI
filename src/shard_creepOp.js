@@ -446,7 +446,7 @@ module.exports = class CreepOp extends ChildOp {
                                                                                         || o.structureType == STRUCTURE_TERMINAL && o.store.energy > c.MAX_TRANSACTION * 2    
                                                                                         }}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
-        if (result == null) {
+        if (result == null && this._hasWorkParts) {
             result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
         }
         return result
