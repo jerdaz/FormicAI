@@ -51,7 +51,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         let colRoomName = this._colRoomName;
         if (!colRoomName) return;
         let room = Game.rooms[colRoomName];
-        if (room.controller && room.controller.my) {
+        if (room && room.controller && room.controller.my) {
             this._colRoomName = null;
             this._strategy();
             colRoomName = this._colRoomName;
