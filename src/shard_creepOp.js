@@ -315,7 +315,7 @@ module.exports = class CreepOp extends ChildOp {
 
             case c.STATE_DROPENERGY:
             case c.STATE_FILLING:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= 0) destObj = null;
+                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= TOWER_ENERGY_COST) destObj = null;
                 if (destObj == null) {
                     switch (this._state) {
                         case c.STATE_DROPENERGY:
