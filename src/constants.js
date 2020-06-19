@@ -76,7 +76,7 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
-    MAX_BUCKET : 10000 - PIXEL_CPU_COST - 10,
+    MAX_BUCKET : 10000 - PIXEL_CPU_COST - 300,
 
     INVADER_USERNAME : 'Invader',
 

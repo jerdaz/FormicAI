@@ -37,7 +37,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));
         this.addChildOp(new LinkOp(this));
-        //this.addChildOp(new MiningOp(this));
+        this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
         this.addChildOp(new RoomOp(this, this._name));

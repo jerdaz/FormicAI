@@ -123,7 +123,7 @@ module.exports = class Main extends Operation {
         }
     }
 
-    _tactics() {
+    _command() {
         if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
     }
 
