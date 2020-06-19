@@ -48,7 +48,7 @@ module.exports = class MiningOp extends BaseChildOp {
             let mineral = Game.getObjectById(this._mineralId);
             if (!mineral) throw Error();
             let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),{structureType: STRUCTURE_EXTRACTOR})[0];
-            if (extractor && this._baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) creepOp.instructTransfer(extractor, terminal);
+            if (extractor && this._baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) creepOp.instructTransfer(mineral, terminal);
         }
     }
 }
