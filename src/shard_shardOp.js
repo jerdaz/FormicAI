@@ -6,6 +6,7 @@ const MapOp = require('./shard_mapOp');
 const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 
+
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */
     constructor(main) {
@@ -17,8 +18,6 @@ module.exports = class ShardOp extends ChildOp {
         //this._baseOpsMap = {};
         /**@type {Map<String, BaseOp>}*/
         this._baseOpsMap = new Map;
-        /**@type {number} */
-        this._maxCPU = Memory.maxCPU;
         this._maxShardBases = undefined;
         /**@type {MapOp} */
         this._map = new MapOp(this);
@@ -106,9 +105,6 @@ module.exports = class ShardOp extends ChildOp {
 
     initTick(){
 
-        this._maxCPU = Math.max(this._maxCPU, Game.cpu.bucket);
-        Memory.maxCPU = this._maxCPU
-
         //construct, init and delete base suboperations
         let updateMap = false;
 
@@ -168,8 +164,9 @@ module.exports = class ShardOp extends ChildOp {
 
         // run the base operations in order of priority
         // if bucket is low, low priority bases are skipped 
-        const cpuReserve = this._maxCPU / 20;
-        const cpuRange = this._maxCPU - 2 * cpuReserve
+        let maxCPU = c.MAX_BUCKET
+        const cpuReserve = maxCPU / 20;
+        const cpuRange = maxCPU - 2 * cpuReserve
         const maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
@@ -202,7 +199,7 @@ module.exports = class ShardOp extends ChildOp {
     _strategy(){
         // check if we need to colonize
         let directive = c.DIRECTIVE_NONE;
-        if (Game.cpu.bucket >= this._maxCPU && this._maxShardBases && this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE
+        if (Game.cpu.bucket >= c.MAX_BUCKET && this._maxShardBases && this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE
         for (let baseOpKey of this._baseOpsMap) baseOpKey[1].setDirective(directive);
 
         // check if we need to request a colonizer
