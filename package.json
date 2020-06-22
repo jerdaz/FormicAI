@@ -5,7 +5,7 @@
   "main": "src/main.js",
   "dependencies": {
     "@types/lodash": "^4.14.156",
-    "@types/screeps": "^3.1.0",
+    "@types/screeps": ">=3.1.2",
     "grunt-file-append": "0.0.7",
     "grunt-screeps": "^1.4.0"
   },
