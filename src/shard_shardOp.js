@@ -6,6 +6,7 @@ const MapOp = require('./shard_mapOp');
 const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 
+const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */
@@ -193,6 +194,16 @@ module.exports = class ShardOp extends ChildOp {
         this._baseOpsMap = new Map(_.values(this._baseOpsMap).sort((a,b) => 
             {return a[1].base.controller.level - b[1].base.controller.level})
         );
+
+        //periodically remove all constructionsites
+        let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);
+        if (Game.time - lastConstructionSiteCleanTick > CONSTRUCTION_SITE_CLEAN_INTERVAL) {
+            for (let siteId in Game.constructionSites) {
+                let site =  /**@type {ConstructionSite} */ (Game.getObjectById(siteId));
+                site.remove();
+            }
+            Memory.lastConstructionSiteCleanTick = Game.time;
+        }
     }
 
 
