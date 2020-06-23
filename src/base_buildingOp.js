@@ -47,7 +47,9 @@ module.exports = class BuildingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
             else if (creepOp.instruction == c.COMMAND_NONE && constructionCount == 0) creepOp.instructUpgradeController(this._baseOp.name);
-            else if (creepOp.instruction != c.COMMAND_BUILD) creepOp.instructBuild()
+            else if (creepOp.instruction != c.COMMAND_BUILD && constructionCount > 0) {
+                creepOp.instructBuild()
+            }
         }
     }
 }
