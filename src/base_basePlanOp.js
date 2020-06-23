@@ -81,6 +81,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let structures = baseOp.myStructures;
 
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let structureSites = constructionSites.filter(o => {return o.structureType != STRUCTURE_ROAD})
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
@@ -91,7 +92,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
-        } else if (constructionSites.length < c.MAX_CONSTRUCTION_SITES ) {
+        } else if (structureSites.length < 1 ) {
 
             for(let template of baseBuildTemplate) {
                 let structureType = template.type;

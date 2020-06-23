@@ -12,7 +12,7 @@ const ChildOp = require('./meta_childOp');
  *   }}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
-const MIN_ROAD_FATIGUE_COST =   c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
+const MIN_ROAD_FATIGUE_COST =   1000 * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
 
 module.exports = class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
@@ -132,7 +132,7 @@ module.exports = class MapOp extends ChildOp {
     }
 
 
-    _support() {
+    _updateRoadMatrices() {
         //subtract road cost from road opportunity cost matrixes
         for (let roomName in this._roomInfo) {
             let roomInfo = this._roomInfo[roomName];
@@ -140,16 +140,18 @@ module.exports = class MapOp extends ChildOp {
             for (let x=0;x<50;x++) {
                 for (let y=0;y<50;y++) {
                     let terrain = roomTerrain.get(x,y)
-                    let repairCost = c.SUPPORT_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
+                    let repairCost = c.TACTICS_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
                     if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
                     if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
-                    roomInfo.terrainArray[x][y].fatigueCost = Math.min(2*MIN_ROAD_FATIGUE_COST, Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost));
+                    roomInfo.terrainArray[x][y].fatigueCost = 0.99 * Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost -repairCost);
                 }
             }
         }
     }
 
     _tactics() {
+        this._updateRoadMatrices();
+
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
                 this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0}

@@ -140,7 +140,7 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     /**
-     * @param {Source | Structure} source
+     * @param {Source | Structure | Mineral} source
      * @param {Structure | ConstructionSite} dest 
      * @param {ResourceConstant | undefined} [resourceType] */
     instructTransfer(source, dest, resourceType) {
@@ -250,7 +250,10 @@ module.exports = class CreepOp extends ChildOp {
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
                 break;
             case c.COMMAND_UPGRADE:
-                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                if (creep.store.getUsedCapacity()  == 0) {
+                    this._state = c.STATE_FINDENERGY;
+                    this._sourceId = '';
+                }
                 else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_DELIVERING;
                 }
@@ -312,7 +315,7 @@ module.exports = class CreepOp extends ChildOp {
 
             case c.STATE_DROPENERGY:
             case c.STATE_FILLING:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= 0) destObj = null;
+                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= TOWER_ENERGY_COST) destObj = null;
                 if (destObj == null) {
                     switch (this._state) {
                         case c.STATE_DROPENERGY:
@@ -405,7 +408,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (this.hasWorkParts && destObj.hits < destObj.hitsMax) {result = creep.repair(destObj); range = 3;}
                 if (destObj instanceof StructureController) range = 3;
                 if (result != OK && result != ERR_NOT_IN_RANGE) result = creep.transfer(destObj, U.getLargestStoreResource(creep.store));
-                if (result == OK && destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
+                if (destObj instanceof StructureController && (destObj.sign == null || destObj.sign.text != SIGN)) {result = creep.signController(destObj, SIGN);range =1};
             }
             else if (destObj instanceof ConstructionSite) {result = creep.build(destObj); range = 3;}
             else throw Error('Cannot deliver to object ' + destObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
@@ -446,7 +449,7 @@ module.exports = class CreepOp extends ChildOp {
                                                                                         || o.structureType == STRUCTURE_TERMINAL && o.store.energy > c.MAX_TRANSACTION * 2    
                                                                                         }}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
-        if (result == null) {
+        if (result == null && this.hasWorkParts) {
             result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
         }
         return result

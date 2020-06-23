@@ -17,6 +17,7 @@ module.exports = class Main extends Operation {
                 case 'maxCPU':
                 case 'bank':
                 case 'colonizations':
+                case 'lastConstructionSiteCleanTick':
                     break;
                 default:
                     delete Memory[memObj];
@@ -62,7 +63,7 @@ module.exports = class Main extends Operation {
     }
 
     _support() {
-        if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
+        //if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
     }
 
     _strategy() {
@@ -121,6 +122,10 @@ module.exports = class Main extends Operation {
             interShardMem.shards[this._shardNum].baseCount = myBasesCount;
             this._writeInterShardMem(interShardMem);
         }
+    }
+
+    _command() {
+        if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
     }
 
     /**@param {ShardMem} shardMem */

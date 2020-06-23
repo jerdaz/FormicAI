@@ -76,10 +76,12 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
+    MAX_BUCKET : 10000 - PIXEL_CPU_COST - 300,
+
     INVADER_USERNAME : 'Invader',
 
     MAX_WALL_HEIGHT : 0.01,
     ROAD_IDLE_REPAIR_TIME : 100,
-    ROAD_FACTOR: 0.9,
+    ROAD_FACTOR: 0.5,
 
 }
