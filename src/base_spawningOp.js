@@ -138,7 +138,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
             this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type, template:spawnRequest.template, count:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
-
+            if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;

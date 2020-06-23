@@ -62,11 +62,13 @@ module.exports = class HarvestingOp extends BaseChildOp {
                     return matrix;
 
                 } 
-                let result = PathFinder.search(source.pos, this.baseOp.centerPos,{roomCallback: roomCallback} )
+                let result = PathFinder.search(source.pos, {pos:source.pos, range:2},{roomCallback: roomCallback, flee:true} )
                 let pos = result.path[1];
-                let structures = pos.lookFor(LOOK_STRUCTURES)
-                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
-                pos.createConstructionSite(STRUCTURE_LINK);
+                if (pos) {
+                    let structures = pos.lookFor(LOOK_STRUCTURES)
+                    for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
+                    pos.createConstructionSite(STRUCTURE_LINK);
+                }
             }
             else if (links.length > 1) {
                 for(let i = 1;i<links.length;i++ ) links[i];
@@ -76,11 +78,12 @@ module.exports = class HarvestingOp extends BaseChildOp {
 
     _tactics() {
         if (!this.baseOp.storage) return;
-        let source = Game.getObjectById(this._sourceId);
+        /**@type {Source} */
+        let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
         if (this._harvesterCount) {
-            if (source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL) this._harvesterCount+=0.2;
+            if (source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
-            if (this._harvesterCount > 2) this._harvesterCount = 2;
+            if (this._harvesterCount > 3) this._harvesterCount = 3;
         } ;
 
         for (let creepName in this._creepOps) {
