@@ -3,6 +3,13 @@ let c = require('./constants');
 let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
+
+//compat fix:
+const PIXEL_CPU_COST = 5000;
+//if (!Game.cpu.generatePixel) Game.cpu.generatePixel = function() {};
+//end compat fix
+
+
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
@@ -125,7 +132,7 @@ module.exports = class Main extends Operation {
     }
 
     _command() {
-        if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
+        if (Game.cpu.generatePixel && Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
     }
 
     /**@param {ShardMem} shardMem */

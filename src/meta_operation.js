@@ -1,5 +1,6 @@
 const U = require('./util')
 const c = require('./constants');
+const Debug = require('./debug');
 
 const MAX_OPERATION_CPU = Game.cpu.tickLimit;
 
@@ -12,8 +13,8 @@ module.exports = class Operation {
         this._bFirstRun = true;
         /**@type {ChildOp[][]} */
         this._childOps = []
-        /**@type {Debug} */
-        this._debug = /** @type {any}*/(Game).debug;
+        // @ts-ignore
+        this._debug = Debug;
         this._tickOffset = _.random(0,c.SUPPORT_INTERVAL - 1)
         this._verbose = false;
         this._verboseAll = false // if true, log all running operations
@@ -54,34 +55,34 @@ module.exports = class Operation {
             try {
                 this._firstRun();
                 this._bFirstRun = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err)};
         }
 
         if (this._runStrategy || Game.time % c.STRATEGY_INTERVAL == this._tickOffset % c.STRATEGY_INTERVAL) {
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err)};
         }
         if (this._runTactics || Game.time % c.TACTICS_INTERVAL == this._tickOffset % c.TACTICS_INTERVAL) {
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err)};
         }
         try {
             this._command();
-        } catch(err) {this._debug.logError(err)};
+        } catch(err) {Debug.logError(err)};
         for (let childOps of this._childOps) if(childOps) for (let childOp of childOps) {
             try {
                 childOp.run();
-            } catch(err) {this._debug.logError(err)}
+            } catch(err) {Debug.logError(err)}
         }
         if (this._runSupport || Game.time % c.SUPPORT_INTERVAL == this._tickOffset) {
             try {
                 this._support();
                 if (this._runSupport) this._runSupport = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err)};
         }
         if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
             Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));

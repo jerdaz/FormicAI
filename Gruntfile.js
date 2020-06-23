@@ -41,6 +41,14 @@ module.exports = function(grunt) {
           };
           password = config.atanner_password;
           break;
+       case 'qbits': 
+          server = {
+            host: 'screeps.qbits.be',
+            port: 21025,
+            http: true
+          };
+          password = config.qbits_password;
+          break;
        case 'screeps':
           break;
        default:

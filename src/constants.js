@@ -1,3 +1,7 @@
+//compat fix:
+const PIXEL_CPU_COST = 5000;
+//end compat fix
+
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
     CREEP_EMOTES: false,
@@ -83,5 +87,7 @@ module.exports = {
     MAX_WALL_HEIGHT : 0.01,
     ROAD_IDLE_REPAIR_TIME : 100,
     ROAD_FACTOR: 0.5,
+    ENERGY_RESERVE : 0.1 * STORAGE_CAPACITY,
+
 
 }
