@@ -6,6 +6,7 @@ const Version = require('./version')
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
+const MAX_MOVE_OPS = 4000;
 
 module.exports = class CreepOp extends ChildOp {
     /**
@@ -269,6 +270,7 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomObjectEx | null} */
         let destObj = U.getRoomObject(this._destId);
         let resourceType = this._resourceType;
+       
         switch (this._state) {
             case c.STATE_FINDENERGY:
                 if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
@@ -563,6 +565,7 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
+        optsCopy.maxOps = MAX_MOVE_OPS
         let result = creep.moveTo(dest, optsCopy);
         if (result == ERR_NO_PATH) {
             this._instruct = c.COMMAND_NONE;
