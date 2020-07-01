@@ -252,7 +252,7 @@ module.exports = class CreepOp extends ChildOp {
             case c.COMMAND_UPGRADE:
                 if (creep.store.getUsedCapacity()  == 0) {
                     this._state = c.STATE_FINDENERGY;
-                    this._sourceId = '';
+                    //this._sourceId = '';
                 }
                 else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_DELIVERING;
