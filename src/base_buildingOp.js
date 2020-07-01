@@ -42,7 +42,7 @@ module.exports = class BuildingOp extends BaseChildOp {
     }
 
     _tactics() {
-        let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
+        let constructionCount = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES).length
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
