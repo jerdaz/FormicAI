@@ -335,7 +335,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (destObj instanceof Structure) {
                     let roomLevel = 1;
                     if (this._baseOp) roomLevel = this._baseOp.level
-                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * creep.body.length / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    let needRepair = destObj.hits < destObj.hitsMax && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
                     if (!needRepair) destObj = null;
                 } ;
                 if (destObj == null) {
@@ -495,7 +495,7 @@ module.exports = class CreepOp extends ChildOp {
         if (!dest) { // repair roads
             let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
                 if (o.structureType != STRUCTURE_ROAD) return false;
-                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3;
+                let needRepair = o.hits < o.hitsMax / 2;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
                 let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
@@ -504,7 +504,6 @@ module.exports = class CreepOp extends ChildOp {
                 if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
                 this._log('canrepair');
                 return true;
-                return false;
             }});
             dest = creep.pos.findClosestByPath(roads);
         }
