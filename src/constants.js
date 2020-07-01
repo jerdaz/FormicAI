@@ -1,6 +1,10 @@
+//compat fix:
+const PIXEL_CPU_COST = 5000;
+//end compat fix
+
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
-    CREEP_EMOTES: true,
+    CREEP_EMOTES: false,
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
@@ -8,6 +12,7 @@ module.exports = {
     COMMAND_FILL: 4,
     COMMAND_HARVEST: 5,
     COMMAND_BUILD: 6,
+    COMMAND_UPGRADE: 7,
 
     STATE_NONE: 0,
     STATE_RETRIEVING: 1,
@@ -75,10 +80,14 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
+    MAX_BUCKET : 10000 - PIXEL_CPU_COST - 300,
+
     INVADER_USERNAME : 'Invader',
 
     MAX_WALL_HEIGHT : 0.01,
     ROAD_IDLE_REPAIR_TIME : 100,
-    ROAD_FACTOR: 0.9,
+    ROAD_FACTOR: 0.5,
+    ENERGY_RESERVE : 0.1 * STORAGE_CAPACITY,
+
 
 }

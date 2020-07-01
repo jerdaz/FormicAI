@@ -1,6 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
+const { MAX_ROOM_SIZE } = require('./constants');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
@@ -81,6 +82,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let structures = baseOp.myStructures;
 
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let structureSites = constructionSites.filter(o => {return o.structureType != STRUCTURE_ROAD})
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
@@ -91,7 +93,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
-        } else if (constructionSites.length < c.MAX_CONSTRUCTION_SITES ) {
+        } else if (structureSites.length < 1 ) {
 
             for(let template of baseBuildTemplate) {
                 let structureType = template.type;
@@ -244,13 +246,19 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let walls = []
         let roomTerrain = base.getTerrain();
         for(let x=0; x<c.MAX_ROOM_SIZE;x++){
+            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_RADIUS})
             for(let y=0; y<c.MAX_ROOM_SIZE;y++){
-                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS+1})
+                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS})
             }
         }
         let roomCallBack = function(/**@type {string}*/roomName) {
+            if (roomName != base.name) return false;
             let costs = new PathFinder.CostMatrix;
-            let structures = Game.rooms[roomName].find(FIND_STRUCTURES,{filter:o => {return o.structureType!=STRUCTURE_ROAD}});
+            let room = Game.rooms[roomName]
+            let structures = room.find(FIND_STRUCTURES,{filter:o => {return o.structureType!=STRUCTURE_ROAD}});
             for (let structure of structures) {
                 let pos = structure.pos
                 costs.set(pos.x, pos.y, 255);

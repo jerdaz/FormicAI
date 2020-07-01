@@ -19,30 +19,36 @@ module.exports = class BuildingOp extends BaseChildOp {
     _strategy() {
         let creepCount = 0;
         let level = this._baseOp.base.controller.level
-        let constructionCount = this._baseOp.base.find(FIND_CONSTRUCTION_SITES).length
-        if (constructionCount > 0) creepCount = constructionCount;
-        else if (level >= 2 
-             && this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
-                                                                              && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
-                                      ).length>0
-                ) {
-            creepCount = 1;
+        let constructionSites = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES)
+        if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { //upgrading Op takes over. max 1 builder
+            if (constructionSites.length > 0 ||
+                this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+                    && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
+                                      ).length > 0) {
+                creepCount = 1;
+            }
         }
+        else if (this.baseOp.storage) { //spawn for upgrader & building together
+            let energy = this.baseOp.storage.store.energy;
+            let controller = this.baseOp.base.controller;
+            let controllerLink = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
+            creepCount = Math.floor((energy - c.ENERGY_RESERVE / 5 * (controller.level - 3)) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+        } else {
+            creepCount = 20;
+        }
+        
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,WORK,CARRY]}, creepCount)
         this._creepRequestCount = creepCount;
     }
 
     _tactics() {
-        let transferedToUpgradingThisTick = false;
+        let constructionCount = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES).length
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
-            else if (creepOp.instruction == c.COMMAND_NONE || (creepOp.pos.roomName == this._baseOp.name && creepOp.instruction == c.COMMAND_MOVETO)) {
-                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > this._creepRequestCount && !transferedToUpgradingThisTick) {
-                    creepOp.newParent(this._baseOp.upgradingOp);
-                    transferedToUpgradingThisTick = true;
-                }
-                else creepOp.instructBuild();
+            else if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && constructionCount == 0) creepOp.instructUpgradeController(this._baseOp.name);
+            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._baseOp.name && constructionCount > 0) {
+                creepOp.instructBuild()
             }
         }
     }

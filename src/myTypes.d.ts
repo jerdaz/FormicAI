@@ -1,5 +1,5 @@
 
-declare type Debug = import ('./debug');
+declare type DebugType = import ('./debug');
 declare type MainOp = import ('./mainOp').MainOp;
 declare type Operation = import('./meta_operation')
 declare type ChildOp = import('./meta_childOp')
@@ -16,7 +16,7 @@ declare type BuildingOp = import('./base_buildingOp');
 declare type TowerOp = import('./base_defenseOp');
 declare type ColonizingOp = import('./shard_colonizingOp');
 
-declare interface Base extends Room {controller: StructureController};
+declare interface Base extends Room {controller: StructureController, op?: BaseOp};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};
 declare interface OrderEx extends Order {transactionCost?: number, netPrice?: number}
 declare var _ = import('lodash');
@@ -25,6 +25,9 @@ declare interface Instruction {command: number};
 declare interface CreepOpInstruction extends Instruction {source: RoomObject, dest: RoomObject};
 declare type CreepTemplate = {body: BodyPartConstant[], minLength?: number, maxLength?: number}
 interface Memory {[name: string]: any}
+interface Debug {DebugType}
+interface MainOp {MainOp}
+interface ShardOp {ShardOp}
 
 interface CreepMemory {operationType: number, baseName: string, operationInstance:number}
 ;

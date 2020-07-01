@@ -45,7 +45,8 @@ module.exports = class MiningOp extends BaseChildOp {
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            let mineral = /**@type {Mineral} */( Game.getObjectById(this._mineralId));
+            let mineral = Game.getObjectById(this._mineralId);
+            if (!mineral) throw Error();
             let extractor = _.filter(mineral.pos.lookFor(LOOK_STRUCTURES),{structureType: STRUCTURE_EXTRACTOR})[0];
             if (extractor && this._baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) creepOp.instructTransfer(mineral, terminal);
         }
