@@ -22,9 +22,11 @@ module.exports = class BuildingOp extends BaseChildOp {
         let constructionSites = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES)
         if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { //upgrading Op takes over. max 1 builder
             if (constructionSites.length > 0 ||
-                this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {return o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
-                    && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)}}
-                                      ).length > 0) {
+                this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {
+                    return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+                         && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
+                    }}
+                ).length > 0) {
                 creepCount = 1;
             }
         }
@@ -45,8 +47,10 @@ module.exports = class BuildingOp extends BaseChildOp {
         let constructionCount = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES).length
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
+            let creep = Game.creeps[creepName];
+            if (!creep) throw Error();
             if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
-            else if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && constructionCount == 0) creepOp.instructUpgradeController(this._baseOp.name);
+            else if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && constructionCount == 0 && creep.ticksToLive?1500:0 < 1450) creepOp.instructUpgradeController(this._baseOp.name);
             else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._baseOp.name && constructionCount > 0) {
                 creepOp.instructBuild()
             }
