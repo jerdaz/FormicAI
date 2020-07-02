@@ -142,7 +142,6 @@ module.exports = class ShardOp extends ChildOp {
 
 
         //assign new creep objects to childshardops.
-        //do not yet do this based on memory. Shardchildops remember their creeps. Reassigning a creep needs to update the creep, creepOp and shardchildop
         for (let creepName in Game.creeps) {
             let creep = U.getCreep(creepName);
             let split = creepName.split('_');
