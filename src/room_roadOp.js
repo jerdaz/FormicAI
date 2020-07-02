@@ -1,19 +1,17 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_childOp');
+const RoomChildOp = require('./room_childOp');
 
-module.exports = class roomOp extends BaseChildOp {
-    /**@param {BaseOp} baseOp
-     * @param {String} roomName
+module.exports = class roomOp extends RoomChildOp {
+    /**@param {RoomOp} roomOp
      */
-    constructor(baseOp, roomName) {
-        super(baseOp);
+    constructor(roomOp) {
+        super(roomOp);
         /**@type {{x:number, y:number, cost:number}[]} */
         this._roadSites = [];
-        this._roomName = roomName;
         this._verbose = false;
     }
-    get type() {return c.OPERATION_ROOM}
+    get type() {return c.OPERATION_ROAD}
 
     _firstRun() {
         this._strategy();
@@ -46,7 +44,8 @@ module.exports = class roomOp extends BaseChildOp {
 
     _tactics() {
         //place road building sites
-        let room = Game.rooms[this._roomName];
+        let room = this._parent.room;
+        if (!room) return;
         let siteCount =  c.MAX_CONSTRUCTION_SITES - room.find(FIND_CONSTRUCTION_SITES).length ;
         while(siteCount > 0 && this._roadSites.length>0) {
             let site = this._roadSites[0]

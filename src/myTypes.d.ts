@@ -15,6 +15,7 @@ declare type UpgradingOp = import('./base_upgradingOp');
 declare type BuildingOp = import('./base_buildingOp');
 declare type TowerOp = import('./base_defenseOp');
 declare type ColonizingOp = import('./shard_colonizingOp');
+declare type RoomOp = import('./room_roomOp')
 
 declare interface Base extends Room {controller: StructureController};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};

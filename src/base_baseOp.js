@@ -7,13 +7,12 @@ const SpawningOp = require ('./base_spawningOp');
 const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
 const ColonizingOp = require('./base_colonizingOp');
-const HarvestingOp = require('./base_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_transportOp');
 const MiningOp = require('./base_miningOp');
 const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
-const RoomOp = require('./base_roomOp');
+const RoomOp = require('./room_roomOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -41,12 +40,6 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
         this.addChildOp(new RoomOp(this, this._name));
-
-        let i = 0;
-        for (let source of base.find(FIND_SOURCES)) {
-            let harvestingOp = new HarvestingOp(this, source.id, i++)
-            this.addChildOp(harvestingOp);
-        }
 
         this._phase = c.BASE_PHASE_BIRTH;
         this._fillerEmergency = false;
@@ -112,6 +105,23 @@ module.exports = class BaseOp extends ShardChildOp{
     activateSafemode() {
         this._base.controller.activateSafeMode();
     }
+
+    /**
+     * add a subroom to the base
+     * @param {string} roomName 
+     */
+    addRoom(roomName) {
+        this.addChildOp(new RoomOp(this,roomName));
+    }
+
+    /** remove a subroom from the base
+     * @param {string} roomName
+    */
+   removeRoom(roomName) {
+       for (let roomOp of /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])) {
+           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp);
+       }
+   }
 
     _firstRun() {
         this._strategy();

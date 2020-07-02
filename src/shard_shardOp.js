@@ -15,10 +15,17 @@ module.exports = class ShardOp extends ChildOp {
         this._parent = main;
         /**@type {{[baseName:string] : ShardChildOp[][]}} */
         this._OperationIdByRoomByOpType = {};
-        ///** @type {{[key:string]: BaseOp }} */
+        /** @type {{[key:string]: BaseOp }} */
         //this._baseOpsMap = {};
+
+        // a map with all the baseops
         /**@type {Map<String, BaseOp>}*/
         this._baseOpsMap = new Map;
+
+        // an object with all the subrooms, containing the owning basename.
+        /**@type {{[roomName:string]: string}} */
+        this._subRooms = {};
+
         this._maxShardBases = undefined;
         /**@type {MapOp} */
         this._map = new MapOp(this);
@@ -105,7 +112,6 @@ module.exports = class ShardOp extends ChildOp {
     }
 
     initTick(){
-
         //construct, init and delete base suboperations
         let updateMap = false;
 
@@ -133,6 +139,7 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
         if (updateMap) this._map.updateBaseDistances(this._baseOpsMap);
+
 
         //assign new creep objects to childshardops.
         //do not yet do this based on memory. Shardchildops remember their creeps. Reassigning a creep needs to update the creep, creepOp and shardchildop
@@ -184,6 +191,7 @@ module.exports = class ShardOp extends ChildOp {
         this._support();
         this._strategy();
     }
+
     _support() {
         //garbage collection for dead creep memory
         for (let creepName in Memory.creeps) {
@@ -191,7 +199,7 @@ module.exports = class ShardOp extends ChildOp {
         }
 
         //sort bases in order of importance
-        this._baseOpsMap = new Map(_.values(this._baseOpsMap).sort((a,b) => 
+        this._baseOpsMap = new Map([...this._baseOpsMap].sort((a,b) => 
             {return a[1].base.controller.level - b[1].base.controller.level})
         );
 
@@ -204,6 +212,9 @@ module.exports = class ShardOp extends ChildOp {
             }
             Memory.lastConstructionSiteCleanTick = Game.time;
         }
+
+        //allocate rooms for remote mining
+        this._allocateSubRooms();
     }
 
 
@@ -221,10 +232,31 @@ module.exports = class ShardOp extends ChildOp {
         //check if we need to unclaim bases
         if (this._maxShardBases && this._baseOpsMap.size > this._maxShardBases) {
             let bases = [];
-            for (let baseOpName in this._baseOpsMap) bases.push(this.getBase(baseOpName))
+            for (let baseOpKey of this._baseOpsMap) bases.push(this.getBase(baseOpKey[0]))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
             
             for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
+        }
+    }
+
+    _allocateSubRooms() {
+        for (let baseOpKey of this._baseOpsMap) { 
+            let baseOpName = baseOpKey[0];
+            // add all neighbours of a base as subrooms if available
+            let neighbours = /**@type {{[index:string]:string}} */ (Game.map.describeExits(baseOpName));
+            for ( let exit in neighbours) {
+                let neighbourRoomName = neighbours[exit];
+                if (!this._subRooms[neighbourRoomName] && !this._baseOpsMap.get(neighbourRoomName)) {
+                    this._subRooms[neighbourRoomName] = baseOpName;
+                    this.getBaseOp(baseOpName).addRoom(neighbourRoomName)
+                }
+            }
+
+            //remove subroom if it is the main room of a baseOp
+            if (this._subRooms[baseOpName]) {
+                this.getBaseOp(this._subRooms[baseOpName]).removeRoom(baseOpName);
+                delete this._subRooms[baseOpName]
+            }
         }
     }
 }

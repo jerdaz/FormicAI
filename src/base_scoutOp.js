@@ -22,7 +22,7 @@ module.exports = class ScoutOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 1;
-        if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
+        //if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
