@@ -6,6 +6,7 @@ const Version = require('./version')
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
+const MAX_MOVE_OPS = 4000;
 
 module.exports = class CreepOp extends ChildOp {
     /**
@@ -251,8 +252,10 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case c.COMMAND_UPGRADE:
                 if (creep.store.getUsedCapacity()  == 0) {
-                    this._state = c.STATE_FINDENERGY;
-                    this._sourceId = '';
+                    if (this._state != c.STATE_FINDENERGY) {
+                        this._sourceId = '';
+                        this._state = c.STATE_FINDENERGY;
+                    }
                 }
                 else if (creep.store.getFreeCapacity() == 0) {
                     this._state = c.STATE_DELIVERING;
@@ -269,6 +272,7 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomObjectEx | null} */
         let destObj = U.getRoomObject(this._destId);
         let resourceType = this._resourceType;
+       
         switch (this._state) {
             case c.STATE_FINDENERGY:
                 if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
@@ -335,7 +339,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (destObj instanceof Structure) {
                     let roomLevel = 1;
                     if (this._baseOp) roomLevel = this._baseOp.level
-                    let needRepair = destObj.hits < destObj.hitsMax - REPAIR_POWER * creep.body.length / 3 && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    let needRepair = destObj.hits < destObj.hitsMax && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
                     if (!needRepair) destObj = null;
                 } ;
                 if (destObj == null) {
@@ -495,7 +499,7 @@ module.exports = class CreepOp extends ChildOp {
         if (!dest) { // repair roads
             let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
                 if (o.structureType != STRUCTURE_ROAD) return false;
-                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3;
+                let needRepair = o.hits < o.hitsMax / 2;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
                 let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
@@ -504,7 +508,6 @@ module.exports = class CreepOp extends ChildOp {
                 if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
                 this._log('canrepair');
                 return true;
-                return false;
             }});
             dest = creep.pos.findClosestByPath(roads);
         }
@@ -564,6 +567,7 @@ module.exports = class CreepOp extends ChildOp {
         //     }
         // }
 
+        optsCopy.maxOps = MAX_MOVE_OPS
         let result = creep.moveTo(dest, optsCopy);
         if (result == ERR_NO_PATH) {
             this._instruct = c.COMMAND_NONE;
