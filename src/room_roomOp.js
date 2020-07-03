@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 const RoadOp = require('./room_roadOp')
-const HarvestingOp = require('./base_harvestingOp');
+const HarvestingOp = require('./room_harvestingOp');
 
 module.exports = class roomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp

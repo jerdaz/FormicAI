@@ -82,15 +82,17 @@ module.exports = class HarvestingOp extends RoomChildOp {
         /**@type {Source} */
         let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
         if (this._harvesterCount) {
-            if (source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
+            if (source && source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
             if (this._harvesterCount > 3) this._harvesterCount = 3;
         } ;
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            if (source) creepOp.instructHarvest(source)
-            else creepOp.instructMoveTo(this.roomName)
+            if (creepOp.instruction == c.COMMAND_NONE) {
+                if (source) creepOp.instructHarvest(source)
+                else creepOp.instructMoveTo(this.roomName)
+            }
         }
     }
 }
