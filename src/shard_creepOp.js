@@ -207,7 +207,7 @@ module.exports = class CreepOp extends ChildOp {
     _tactics() {
         switch (this._instruct) {
             case c.COMMAND_NONE:
-                    if (this._creep.pos.roomName != this._parent.ownerRoomName {
+                    if (this._creep.pos.roomName != this._parent.ownerRoomName) {
                             this.instructMoveTo(this._parent.ownerRoomName);
                     }
 
