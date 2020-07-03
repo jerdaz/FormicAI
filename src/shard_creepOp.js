@@ -368,7 +368,7 @@ module.exports = class CreepOp extends ChildOp {
                     if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
                     else this._moveTo(this._destPos);
                 } else if (this._destRoomName) {
-                    if (creep.pos.roomName != this._destRoomName) {
+                    if (creep.pos.roomName != this._destRoomName || creep.pos.getRangeTo(new RoomPosition(25,25,this._destRoomName) ) > 20) {
                         this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
                     } else {
                         this._instruct = c.COMMAND_NONE;
