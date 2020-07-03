@@ -30,7 +30,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
     _strategy() {
         /**@type {Source | null} */
         let source = Game.getObjectById(this._sourceId);
-        if (!source) throw Error('Source not found')
+        if (!source) return //room is not visible
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || !this._isMainRoom) {

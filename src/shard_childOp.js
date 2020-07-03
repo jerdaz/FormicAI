@@ -23,12 +23,15 @@ module.exports = class ShardChildOp extends ChildOp {
         if (roomOp) roomName = roomOp.roomName
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
+        this._ownerRoomName = roomName;
         shardOp.addOperation(this, roomName)
     }
 
     get instance() {return this._instance}
 
     get shardOp() {return this._shardOp};
+
+    get ownerRoomName() {return this._ownerRoomName}
 
     get creepCount(){
         let res = _.size(this._creepOps)
