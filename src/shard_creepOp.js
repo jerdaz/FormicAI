@@ -477,13 +477,13 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomObject[]} */
         let roomObjects = [];
         /**@type RoomObject|null */
-        let result;
-        if (this._baseOp) {
+        let result = null;
+        if (this._baseOp && room.name == this._baseOp.name) {
             roomObjects = roomObjects.concat(_.filter(this._baseOp.links, o => {return o.energy < o.energyCapacity} ));
             let storage = this._baseOp.storage
             if (storage && _.size(storage.store) < storage.storeCapacity) roomObjects.push (storage);
-        }
-        result = this._creep.pos.findClosestByPath(roomObjects, {ignoreCreeps:true});
+            result = this._creep.pos.findClosestByPath(roomObjects, {ignoreCreeps:true});
+        } else if (this._baseOp && this._baseOp.storage) result = this._baseOp.storage;
         return result;        
     }
 
