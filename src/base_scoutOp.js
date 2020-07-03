@@ -53,8 +53,6 @@ module.exports = class ScoutOp extends BaseChildOp {
                 if (roomNames.length > 0) destRoomName = roomNames.pop();
                 else destRoomName = lastRoomName
 
-                destRoomName = 'W8S8'
-
                 if (destRoomName) {
                     let dest = new RoomPosition(25, 25, destRoomName);
                     if (dest) creepOp.instructMoveTo(dest)

@@ -209,7 +209,7 @@ module.exports = class CreepOp extends ChildOp {
             case c.COMMAND_NONE:
                 if (this._baseOp) {
                     if (this._creep.pos.roomName != this._baseOp.name) {
-                        this.instructMoveTo(this._baseOp.centerPos);
+                        this.instructMoveTo(this._baseOp.name);
                     }
                 }
                 break;
