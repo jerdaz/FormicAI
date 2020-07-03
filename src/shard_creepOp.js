@@ -25,6 +25,7 @@ module.exports = class CreepOp extends ChildOp {
         this._sourceId = '';
         this._destId = '';
         this._destPos = null;
+        this._destRoomName = '';
         /**@type {ResourceConstant} */
         this._resourceType = RESOURCE_ENERGY;
         this._baseOp = baseOp;
@@ -151,9 +152,16 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
-    /**@param {RoomPosition} dest */
+    /**@param {RoomPosition | string} dest */
     instructMoveTo(dest) {
-        this._destPos = dest;
+        if (dest instanceof RoomPosition) {
+            this._destPos = dest;
+            this._destRoomName = ''
+        }
+        else {
+            this._destPos = null
+            this._destRoomName = dest;
+        }
         this._instruct = c.COMMAND_MOVETO
     }
 
@@ -359,7 +367,13 @@ module.exports = class CreepOp extends ChildOp {
                 if (this._destPos) {
                     if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
                     else this._moveTo(this._destPos);
-                }
+                } else if (this._destRoomName) {
+                    if (creep.pos.roomName != this._destRoomName) {
+                        this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
+                    } else {
+                        this._instruct = c.COMMAND_NONE;
+                    }
+                } else this._instruct = c.COMMAND_NONE;
                 if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
             case c.STATE_CLAIMING:

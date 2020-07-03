@@ -33,7 +33,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         if (!source) return //room is not visible
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
         
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || !this._isMainRoom) {
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
@@ -89,7 +89,8 @@ module.exports = class HarvestingOp extends RoomChildOp {
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            creepOp.instructHarvest(source)
+            if (source) creepOp.instructHarvest(source)
+            else creepOp.instructMoveTo(this.roomName)
         }
     }
 }
