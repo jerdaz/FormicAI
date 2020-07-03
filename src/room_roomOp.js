@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 const RoadOp = require('./room_roadOp')
 const HarvestingOp = require('./room_harvestingOp');
 
-module.exports = class roomOp extends BaseChildOp {
+module.exports = class RoomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
      * @param {String} roomName
      */

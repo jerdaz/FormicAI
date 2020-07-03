@@ -19,6 +19,8 @@ module.exports = class roomOp extends RoomChildOp {
 
     _strategy() {
         //determine road locations
+        if (!this._roomOp.room) return;
+        
         let roomInfo = this._map.getRoomInfo(this._roomName);
         if (!roomInfo) return;
         if (this._baseOp.level < 2 ) return;
