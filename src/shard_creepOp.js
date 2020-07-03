@@ -585,6 +585,7 @@ module.exports = class CreepOp extends ChildOp {
         let result = creep.moveTo(dest, optsCopy);
         if (result == ERR_NO_PATH) {
             this._instruct = c.COMMAND_NONE;
+            console.log('warning no path found for creep ' + creep.name + ' at pos ' + creep.pos + ' to dest ' + dest)
         }
         this._lastMoveToDest = endDest;
         return result;
