@@ -62,6 +62,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
+            this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
         }
     }
@@ -86,10 +87,10 @@ module.exports = class SpawningOp extends BaseChildOp {
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
-                                    let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
-                                    this._log(result);
+                                    this._log(result); 
                                 }
                             }
                         }
@@ -127,7 +128,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _getSpawnList() {
-        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
@@ -142,7 +143,12 @@ module.exports = class SpawningOp extends BaseChildOp {
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;
-                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
+                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], 
+                                opType: opType, 
+                                opInstance:opInstance, 
+                                template:spawnRequest.template,
+                                ownerRoomName: shardChildOp.ownerRoomName
+                            })
             }
         }
 

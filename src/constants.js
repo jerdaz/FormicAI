@@ -4,7 +4,7 @@ const PIXEL_CPU_COST = 5000;
 
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
-    CREEP_EMOTES: false,
+    CREEP_EMOTES: true,
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
@@ -45,7 +45,8 @@ module.exports = {
     OPERATION_BANK: 18,
     OPERATION_SCOUTING: 19,
     OPERATION_ROOM: 20,
-    OPERATION_MAX: 20,
+    OPERATION_ROAD: 21,
+    OPERATION_MAX: 21,
 
     BASE_PHASE_BIRTH: 0,
     BASE_PHASE_HARVESTER: 1,

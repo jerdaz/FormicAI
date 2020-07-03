@@ -1,23 +1,24 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_childOp');
+const RoomChildOp = require('./room_childOp');
 
 const HARVESTER_SIZE_BIG = 48
 const HARVESTER_SIZE_SMALL = 6*3
 
-module.exports = class HarvestingOp extends BaseChildOp {
+module.exports = class HarvestingOp extends RoomChildOp {
     /** 
-     * @param {BaseOp} baseOp
+     * @param {RoomOp} roomOp
      * @param {String} sourceId 
      * @param {number} instance*/
-    constructor (baseOp, sourceId, instance) {
-        super(baseOp, instance);
+    constructor (roomOp, sourceId, instance) {
+        super(roomOp, instance);
         this._sourceId = sourceId;
         /**@type {Number|null} 
          * null for fixed harverster count
          * numbered for dynamic harvester count
         */
         this._harvesterCount = null;
+        this._isMainRoom = (this._roomName == this._baseName)
     }
 
     get type() {return c.OPERATION_HARVESTING}
@@ -29,10 +30,10 @@ module.exports = class HarvestingOp extends BaseChildOp {
     _strategy() {
         /**@type {Source | null} */
         let source = Game.getObjectById(this._sourceId);
-        if (!source) throw Error('Source not found')
+        if (!source) return //room is not visible
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
         
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || !this._isMainRoom) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
@@ -43,7 +44,7 @@ module.exports = class HarvestingOp extends BaseChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, Math.round(this._harvesterCount))
         }
 
-        if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
+        if (this._isMainRoom && this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
             let base = this.baseOp.base;
             if(links.length == 0) {
                 //create roomcallback to prevent building on room edges;

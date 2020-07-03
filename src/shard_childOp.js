@@ -8,8 +8,9 @@ module.exports = class ShardChildOp extends ChildOp {
      * @param {ShardOp}  shardOp
      * @param {Operation}  parent
      * @param {BaseOp} [baseOp] 
+     * @param {RoomOp} [roomOp]
      * @param {Number} [instance]*/
-    constructor(parent, shardOp, baseOp, instance) {
+    constructor(parent, shardOp, baseOp, roomOp, instance) {
         super(parent);
         this._shardOp = shardOp;
         this._map = shardOp._map;
@@ -18,15 +19,19 @@ module.exports = class ShardChildOp extends ChildOp {
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
         this._lastIdle = 0;
-        let baseName = '';
-        if (baseOp) baseName = baseOp.name;
-        else baseName = shardOp.name;
-        shardOp.addOperation(this, baseName)
+        let roomName = '';
+        if (roomOp) roomName = roomOp.roomName
+        else if (baseOp) roomName = baseOp.name;
+        else roomName = shardOp.name;
+        this._ownerRoomName = roomName;
+        shardOp.addOperation(this, roomName)
     }
 
     get instance() {return this._instance}
 
     get shardOp() {return this._shardOp};
+
+    get ownerRoomName() {return this._ownerRoomName}
 
     get creepCount(){
         let res = _.size(this._creepOps)
