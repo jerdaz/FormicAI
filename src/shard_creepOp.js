@@ -586,14 +586,14 @@ module.exports = class CreepOp extends ChildOp {
         let mapOp = this._mapOp
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            // let roomInfo = mapOp.getRoomInfo(roomName);
-            // if (roomInfo && roomInfo.hostileOwner) {
-            //     for (let x =0; x<50;x++) {
-            //         for (let y = 0; y<50; y++){
-            //             costMatrix.set(x,y,255);
-            //         }
-            //     }
-            // }
+            let roomInfo = mapOp.getRoomInfo(roomName);
+            if (roomInfo && roomInfo.hostileOwner) {
+                for (let x =0; x<50;x++) {
+                    for (let y = 0; y<50; y++){
+                        costMatrix.set(x,y,255);
+                    }
+                }
+            }
             let room = Game.rooms[roomName];
             if (room) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
