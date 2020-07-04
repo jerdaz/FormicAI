@@ -601,7 +601,7 @@ module.exports = class CreepOp extends ChildOp {
                 for (let creep of hostileCreeps) {
                     let pos = creep.pos;
                     for (let x = Math.max(pos.x - FLEE_RANGE, 0); x <= Math.min(pos.x + FLEE_RANGE, c.MAX_ROOM_SIZE-1); x++ ){
-                        for (let y = Math.max(pos.y - FLEE_RANGE, 0); x <= Math.min(pos.y + FLEE_RANGE, c.MAX_ROOM_SIZE-1); y++) {
+                        for (let y = Math.max(pos.y - FLEE_RANGE, 0); y <= Math.min(pos.y + FLEE_RANGE, c.MAX_ROOM_SIZE-1); y++) {
                             costMatrix.set(x,y,255);
                         }
                     }
