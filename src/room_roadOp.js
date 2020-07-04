@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const RoomChildOp = require('./room_childOp');
 
-module.exports = class roomOp extends RoomChildOp {
+module.exports = class RoadOp extends RoomChildOp {
     /**@param {RoomOp} roomOp
      */
     constructor(roomOp) {

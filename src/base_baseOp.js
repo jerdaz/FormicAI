@@ -2,7 +2,6 @@ const U = require('./util');
 const c = require('./constants');
 const FillingOp = require('./base_fillingOp');
 const UpgradingOp = require('./base_upgradingOp');
-const BuildingOp = require('./base_buildingOp');
 const SpawningOp = require ('./base_spawningOp');
 const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
@@ -32,7 +31,6 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new SpawningOp(this));
         this.addChildOp(new TowerOp(this));
         this.addChildOp(new FillingOp(this));
-        this.addChildOp(new BuildingOp(this));
         this.addChildOp(new UpgradingOp(this));
         this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));

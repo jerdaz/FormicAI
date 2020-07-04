@@ -171,6 +171,12 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_CLAIMCONTROLLER
     }
 
+    /**@param {string} roomName */
+    instructReserve(roomName) {
+        this._destId = roomName;
+        this._instruct = c.COMMAND_RESERVE
+    }
+
     instructStop() {
         this._instruct = c.COMMAND_NONE;
     }
@@ -194,6 +200,8 @@ module.exports = class CreepOp extends ChildOp {
         this._destId = controller.id;
         this._resourceType = RESOURCE_ENERGY;
     }
+
+
 
 
     // /**@param {Number} opType */
@@ -249,6 +257,9 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case c.COMMAND_CLAIMCONTROLLER:
                 this._state=c.STATE_CLAIMING
+                break;
+            case c.COMMAND_RESERVE:
+                this._state=c.STATE_RESERVING
                 break;
             case c.COMMAND_BUILD:
                 if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
@@ -375,6 +386,8 @@ module.exports = class CreepOp extends ChildOp {
                 } else this._instruct = c.COMMAND_NONE;
                 if (c.CREEP_EMOTES) creep.say('🦶')
                 break;
+
+            case c.STATE_RESERVING:
             case c.STATE_CLAIMING:
                 let roomName = this._destId;
                 let room = Game.rooms[roomName]
@@ -383,7 +396,10 @@ module.exports = class CreepOp extends ChildOp {
                     else {
                         let result = -1000;
                         destObj = room.controller;
-                        if (destObj instanceof StructureController) result = creep.claimController(destObj);
+                        if (destObj instanceof StructureController) {
+                            if (this.state == c.STATE_CLAIMING) result = creep.claimController(destObj);
+                            if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
+                        }
                         if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
                     }
                 } else {

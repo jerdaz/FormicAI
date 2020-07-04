@@ -12,8 +12,11 @@ module.exports = class RoomChildOp extends BaseChildOp {
         this._roomName = roomOp.roomName
         this._parent = roomOp;
         this._roomOp = roomOp;
+        this._isMainRoom = (this._roomName == this._baseName)
     }
 
     get roomName() {return this._roomName}
+
+    get isMainRoom() {return this._isMainRoom}
 
 }

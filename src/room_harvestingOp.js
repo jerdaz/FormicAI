@@ -18,7 +18,6 @@ module.exports = class HarvestingOp extends RoomChildOp {
          * numbered for dynamic harvester count
         */
         this._harvesterCount = null;
-        this._isMainRoom = (this._roomName == this._baseName)
     }
 
     get type() {return c.OPERATION_HARVESTING}
