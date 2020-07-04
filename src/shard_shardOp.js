@@ -5,6 +5,7 @@ const BaseOp = require('./base_baseOp');
 const MapOp = require('./shard_mapOp');
 const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
+const ShardSpawningOp = require('./shard_spawningOp');
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -32,6 +33,7 @@ module.exports = class ShardOp extends ChildOp {
         this.addChildOp(this._map);
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
+        this.addChildOp(new ShardSpawningOp(this));
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     }
@@ -47,6 +49,10 @@ module.exports = class ShardOp extends ChildOp {
     /**@returns {Number} */
     get baseCount() {
         return this._baseOpsMap.size;
+    }
+
+    get baseOps() {
+        return this._baseOpsMap;
     }
     
     /**
@@ -100,6 +106,7 @@ module.exports = class ShardOp extends ChildOp {
         return result;
     }
 
+    
 
     //add's an operation to the basename/optype to operation map.
     /**
