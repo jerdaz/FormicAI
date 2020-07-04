@@ -17,14 +17,14 @@ module.exports = class ReservationOp extends RoomChildOp {
     _strategy() {
         if (!this.isMainRoom && this._roomOp.room) {
             let controller = this._roomOp.room.controller;
-            if (controller) {
+            if (controller && controller.level == 0) {
                 let creepCount = 0;
                 if (!controller.reservation) creepCount = 1;
                 else if (controller.reservation.username == this._shardOp.userName 
                     && controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX - CREEP_CLAIM_LIFE_TIME) {
                         creepCount = 1;
                 }
-                this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,CLAIM], maxLength:2, minLength:2}, creepCount)
+                this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,MOVE,CLAIM,CLAIM], maxLength:4, minLength:4}, creepCount)
             }
         }
     }
