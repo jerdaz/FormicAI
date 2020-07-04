@@ -16,5 +16,5 @@ module.exports = class BaseChildOp extends ShardChildOp {
 
     get baseOp() {return this._baseOp}
 
-    get roomName() {return this._baseName};
+    get baseName() {return this._baseName};
 }

@@ -1,12 +1,12 @@
 const U = require('./util');
 const c = require('./constants');
-const BaseChildOp = require('./base_childOp');
+const RoomChildOp = require('./room_childOp');
 
 
-module.exports = class BuildingOp extends BaseChildOp {
-    /**@param {BaseOp} baseOp */
-    constructor(baseOp) {
-        super(baseOp);
+module.exports = class BuildingOp extends RoomChildOp {
+    /**@param {RoomOp} roomOp */
+    constructor(roomOp) {
+        super(roomOp);
         this._creepRequestCount = 0;
         this._buildWork = false;
         this._verbose = false;
@@ -20,8 +20,10 @@ module.exports = class BuildingOp extends BaseChildOp {
     _strategy() {
         let creepCount = 0;
         let level = this._baseOp.base.controller.level
-        let constructionSites = this._baseOp.base.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = this._baseOp.base.find(FIND_MY_STRUCTURES, {filter: o => {
+        let room = this._roomOp.room;
+        if (!room) return;
+        let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
             return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                  && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
             }}
@@ -30,7 +32,7 @@ module.exports = class BuildingOp extends BaseChildOp {
         // update variable for repair work
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
 
-        if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { //upgrading Op takes over. max 1 builder
+        if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder
             if (constructionSites.length > 0 ||
                 repairSites.length > 0) {
                 creepCount = 1;
@@ -54,9 +56,8 @@ module.exports = class BuildingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
-            if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName != this._baseOp.name) creepOp.instructMoveTo(this._baseOp.centerPos);
-            else if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
-            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._baseOp.name && this._buildWork) {
+            if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && this._buildWork) {
                 creepOp.instructBuild()
             }
         }

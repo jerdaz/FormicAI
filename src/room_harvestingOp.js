@@ -18,7 +18,6 @@ module.exports = class HarvestingOp extends RoomChildOp {
          * numbered for dynamic harvester count
         */
         this._harvesterCount = null;
-        this._isMainRoom = (this._roomName == this._baseName)
     }
 
     get type() {return c.OPERATION_HARVESTING}
@@ -33,7 +32,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         if (!source) return //room is not visible
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
         
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER || !this._isMainRoom) {
+        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
@@ -82,14 +81,17 @@ module.exports = class HarvestingOp extends RoomChildOp {
         /**@type {Source} */
         let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
         if (this._harvesterCount) {
-            if (source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
+            if (source && source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
             if (this._harvesterCount > 3) this._harvesterCount = 3;
         } ;
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            creepOp.instructHarvest(source)
+            if (creepOp.instruction == c.COMMAND_NONE) {
+                if (source) creepOp.instructHarvest(source)
+                else creepOp.instructMoveTo(this.roomName)
+            }
         }
     }
 }
