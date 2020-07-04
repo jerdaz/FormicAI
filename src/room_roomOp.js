@@ -26,15 +26,34 @@ module.exports = class RoomOp extends BaseChildOp {
     _firstRun() {
         this._tactics();
     }
+
+    _strategy() {
+        if (   this._harvestingOpCreated 
+            && this.room 
+            && this.room.controller 
+            && ( this.room.controller.level > 0 
+                || (this.room.controller.reservation && (this.room.controller.reservation.username != this._shardOp.userName) ))
+           ) {
+            for (let harvestingOp of this._childOps[c.OPERATION_HARVESTING]) {
+                this.removeChildOp(harvestingOp)
+            }
+            this._harvestingOpCreated = false;
+        }
+    }
     
     _tactics() {
-        if (!this._harvestingOpCreated && this.room) {
+        if (  !this._harvestingOpCreated 
+                && this.room 
+                && this.room.controller 
+                && this.room.controller.level == 0 
+                && (!this.room.controller.reservation || (this.room.controller.reservation.username != this._shardOp.userName) )
+               ) {
             let i = 0;
             for (let source of this.room.find(FIND_SOURCES)) {
                 let harvestingOp = new HarvestingOp(this, source.id, i++)
                 this.addChildOp(harvestingOp);
-                this._harvestingOpCreated = true;
             }    
+            this._harvestingOpCreated = true;
         }
     }
 }

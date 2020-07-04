@@ -33,11 +33,14 @@ module.exports = class ShardOp extends ChildOp {
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
         this._teamShardColonizing = new ColonizingOp(this, this);
+        this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     }
 
     get type() {return c.OPERATION_SHARD}
 
     get name() {return Game.shard.name};
+
+    get userName() {return this._userName}
 
     get bank() {return this._bank}
 
