@@ -181,6 +181,7 @@ module.exports = class CreepOp extends ChildOp {
     instructAttack(roomName) {
         this._destRoomName = roomName;
         this._instruct = c.COMMAND_ATTACK
+        U.l({instructattack: roomName})
     }
 
     instructStop() {
@@ -287,9 +288,9 @@ module.exports = class CreepOp extends ChildOp {
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_ATTACK:
-                if (creep.pos.roomName == this._destRoomName) this._state = c.STATE_MOVING;
+                if (creep.pos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
                 else this._state = c.STATE_ATTACKING;
-                creep.heal(creep);
+                if (creep.hits< creep.hitsMax) creep.heal(creep);
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
@@ -390,7 +391,10 @@ module.exports = class CreepOp extends ChildOp {
                     else this._moveTo(this._destPos);
                 } else if (this._destRoomName) {
                     if (creep.pos.roomName != this._destRoomName || creep.pos.getRangeTo(new RoomPosition(25,25,this._destRoomName) ) > 20) {
+                        try {
                         this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
+                        } catch (err) {U.l(this._destRoomName); throw err}
+
                     } else {
                         this._instruct = c.COMMAND_NONE;
                     }

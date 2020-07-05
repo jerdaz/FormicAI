@@ -38,6 +38,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 creepCount = 1;
             }
         }
+
         else if (this.baseOp.storage) { //spawn for upgrader & building together
             let energy = this.baseOp.storage.store.energy;
             let controller = this.baseOp.base.controller;
@@ -52,6 +53,20 @@ module.exports = class BuildingOp extends RoomChildOp {
     }
 
     _tactics() {
+
+        let level = this._baseOp.base.controller.level
+        let room = this._roomOp.room;
+        if (!room) return;
+        let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
+            return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+                 && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
+            }}
+            )
+
+        // update variable for repair work
+        if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
+
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let creep = Game.creeps[creepName];

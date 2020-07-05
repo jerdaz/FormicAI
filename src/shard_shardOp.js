@@ -6,6 +6,7 @@ const MapOp = require('./shard_mapOp');
 const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 const ShardSpawningOp = require('./shard_spawningOp');
+const ShardDefenseOp = require('./shard_defenseOp')
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -34,6 +35,7 @@ module.exports = class ShardOp extends ChildOp {
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
         this.addChildOp(new ShardSpawningOp(this));
+        this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     }
@@ -215,8 +217,17 @@ module.exports = class ShardOp extends ChildOp {
 
         //sort bases in order of importance
         this._baseOpsMap = new Map([...this._baseOpsMap].sort((a,b) => 
-            {return a[1].base.controller.level - b[1].base.controller.level})
+            {return b[1].base.controller.level - a[1].base.controller.level})
         );
+        
+        let iterator = this._baseOpsMap.keys();
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
 
         //periodically remove all constructionsites
         let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);

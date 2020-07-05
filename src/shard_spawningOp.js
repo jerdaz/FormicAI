@@ -27,8 +27,10 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
+
         let spawningOp = this._shardOp.getBaseOp(this._spawnBase).spawningOp;
         spawningOp.ltRequestSpawn(operation, template, count);
+        U.l({spawnbase:this._spawnBase})
     }
     
 }
