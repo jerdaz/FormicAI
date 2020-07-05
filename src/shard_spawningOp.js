@@ -15,12 +15,11 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
     get type() {return c.OPERATION_SHARDSPAWNING}
 
     _firstRun() {
-        this._support();
+        let baseOps = this._shardOp.baseOps;
+        this._spawnBase = baseOps.keys().next().value;
     }
 
     _support() {
-        let baseOps = this._shardOp.baseOps;
-        this._spawnBase = baseOps.keys().next().value;
     }
 
     /**

@@ -56,7 +56,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
-            if (creepOp.instruction == c.COMMAND_NONE && creepOp.pos.roomName == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            if (creepOp.pos.roomName == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
             else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && this._buildWork) {
                 creepOp.instructBuild()
             }

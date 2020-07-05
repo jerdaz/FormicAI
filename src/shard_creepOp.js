@@ -177,6 +177,12 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_RESERVE
     }
 
+    /**@param {string} roomName */
+    instructAttack(roomName) {
+        this._destRoomName = roomName;
+        this._instruct = c.COMMAND_ATTACK
+    }
+
     instructStop() {
         this._instruct = c.COMMAND_NONE;
     }
@@ -279,6 +285,11 @@ module.exports = class CreepOp extends ChildOp {
                     this._state = c.STATE_DELIVERING;
                 }
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
+                break;
+            case c.COMMAND_ATTACK:
+                if (creep.pos.roomName == this._destRoomName) this._state = c.STATE_MOVING;
+                else this._state = c.STATE_ATTACKING;
+                creep.heal(creep);
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
@@ -406,6 +417,26 @@ module.exports = class CreepOp extends ChildOp {
                     this._moveTo(new RoomPosition(25,25, roomName));
                 }
                 if (c.CREEP_EMOTES) creep.say('Cl:' + roomName)
+                break;
+            case c.STATE_ATTACKING:
+                let hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
+                /**@type {Creep[]} */
+                let healHostiles = [];
+                for (let hostile of hostiles) {
+                    for (let bodyPart of hostile.body) {
+                        if (bodyPart.type == HEAL) {
+                            healHostiles.push(hostile)
+                            break;
+                        }
+                    }
+                }
+                if (healHostiles.length>0) hostiles = healHostiles;
+                let hostile = creep.pos.findClosestByPath(hostiles)
+                if (hostile) {
+                    this._moveTo (hostile.pos, {}, {noEvade: true})
+                    creep.attack(hostile)
+                    creep.rangedAttack(hostile);
+                }
                 break;
             case c.STATE_NONE:
                 //flee from sources and spawns
@@ -557,8 +588,9 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @arg {RoomPosition} endDest 
      * @arg {MoveToOpts} [opts]
+     * @arg {{noEvade:boolean}} [myOpts]
     */
-    _moveTo(endDest, opts) {
+    _moveTo(endDest, opts, myOpts) {
         let creep = this._creep;
         let range = 0;
         if (opts && opts.range) range = opts.range;
@@ -567,6 +599,7 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomPosition | null} */
         let dest = endDest;
         let myPos = creep.pos;
+        let evade = (myOpts && myOpts.noEvade)?false:true;
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
@@ -595,7 +628,7 @@ module.exports = class CreepOp extends ChildOp {
                 }
             }
             let room = Game.rooms[roomName];
-            if (room) {
+            if (evade && room) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
                 const FLEE_RANGE = 4;
                 for (let creep of hostileCreeps) {

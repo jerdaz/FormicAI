@@ -51,7 +51,6 @@ module.exports = class BaseOp extends ShardChildOp{
 
     get type() {return c.OPERATION_BASE}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
-    get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
@@ -129,7 +128,7 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _tactics() {
-        if ((this.spawns.length == 0) && this.buildingOp.creepCount == 0) {
+        if (this.spawns.length == 0) {
             this._shardOp.requestBuilder(this.name);
         }
     }
