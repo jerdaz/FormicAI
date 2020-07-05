@@ -19,7 +19,7 @@ module.exports = class FillingOp extends BaseChildOp {
         let template = {body:[MOVE,WORK,CARRY]}
         let creepCount = 10;
         if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER ) creepCount = 1;
-        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
+        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY,CARRY]}
         this._baseOp.spawningOp.ltRequestSpawn(this, template, creepCount)
     }
 

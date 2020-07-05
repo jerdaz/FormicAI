@@ -38,7 +38,8 @@ module.exports = class BaseOp extends ShardChildOp{
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
-        this.addChildOp(new RoomOp(this, this._name));
+        this._myRoomOp = new RoomOp(this, this._name);
+        this.addChildOp(this._myRoomOp);
 
         this._phase = c.BASE_PHASE_BIRTH;
         this._fillerEmergency = false;
@@ -53,6 +54,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
+    get buildingOp() {return this._myRoomOp.buildingOp}
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
     get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
     get myStructures() {return this._structures};  

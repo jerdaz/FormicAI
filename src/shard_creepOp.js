@@ -225,7 +225,6 @@ module.exports = class CreepOp extends ChildOp {
                     if (this._parent.ownerRoomName && this._creep.pos.roomName != this._parent.ownerRoomName) {
                             this.instructMoveTo(this._parent.ownerRoomName);
                     }
-
                 break;
         }      
 
@@ -288,7 +287,7 @@ module.exports = class CreepOp extends ChildOp {
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
                 break;
             case c.COMMAND_ATTACK:
-                if (creep.pos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
+                if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
                 else this._state = c.STATE_ATTACKING;
                 if (creep.hits< creep.hitsMax) creep.heal(creep);
                 break;

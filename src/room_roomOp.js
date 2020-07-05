@@ -26,6 +26,8 @@ module.exports = class RoomOp extends BaseChildOp {
     get room() {return Game.rooms[this.roomName]}
     get type() {return c.OPERATION_ROOM}
 
+    get buildingOp() {return /**@type {BuildingOp} */ (this._childOps[c.OPERATION_BUILDING][0])}
+
     _firstRun() {
         this._tactics();
     }

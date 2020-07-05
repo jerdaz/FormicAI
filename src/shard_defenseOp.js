@@ -58,7 +58,7 @@ module.exports = class ShardDefenseOp extends ShardChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let pos = creepOp.pos;
-            U.l({defenseroomtactics: defendRooms})
+            U.l({defenseroomtactics: defendRooms, nextRoom:this._nextRoom})
             if (defendRooms.length == 0 && this._nextRoom ) creepOp.instructAttack(this._nextRoom)
             else if (defendRooms.length > 0) {
                 let roomName = this._map.findClosestRoomByPath(defendRooms, pos.roomName)
