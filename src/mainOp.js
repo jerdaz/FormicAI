@@ -15,10 +15,15 @@ if (!global.InterShardMemory) global.InterShardMemory = null;
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
 
-module.exports = class Main extends Operation {
+module.exports = class MainOp extends Operation {
     constructor() {
         super();
         U.l('INIT MAIN');
+
+        // an object containing all operations by ID
+        /**@type {{[opId:number]:Operation}} */
+        this._operationIds = {};
+
         for (let memObj in Memory) {
             switch (memObj) {
                 case 'maxCPU':
@@ -60,6 +65,25 @@ module.exports = class Main extends Operation {
     }
 
     get type() { return c.OPERATION_MAIN; }
+
+    /**@param {number} id */
+    getOp(id) {
+        return this._operationIds[id];
+    }
+
+    /**@param {Operation} op */
+    removeOpId(op) {
+        let id = op.id;
+        if (this._operationIds[id]) {
+            delete this._operationIds[id]
+        } else throw Error();
+    }
+
+    /**@param {Operation} op */
+    addOpId(op) {
+        let id = op.id;
+        this._operationIds[id] = op;
+    }
 
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
     /**@param {number} shardRequest */

@@ -7,6 +7,8 @@ const c = require('./constants');
 let debug = new DebugType;
 let mainOp = new MainOp;
 
+global.mainOp = mainOp;
+
 module.exports.loop = function() {
     mainOp.initTick();
     mainOp.run();
