@@ -44,6 +44,8 @@ module.exports = class ShardOp extends ChildOp {
 
     get name() {return Game.shard.name};
 
+    get mainOp() {return this._parent}
+
     get spawningOp () {return /**@type {ShardSpawningOp}*/( this.childOps[c.OPERATION_SHARDSPAWNING][0])}
 
     get userName() {return this._userName}

@@ -10,7 +10,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
-        /**@type {{[index:string] : {operation:ShardChildOp, count:number, template:CreepTemplate}}} */
+        /**@type {{[index:string] : {operationId:number, count:number, template:CreepTemplate}}} */
         this._spawnRequests = {};
         this._builderRequest = '';
         this._shardColonizer = '';
@@ -28,7 +28,7 @@ module.exports = class SpawningOp extends BaseChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
-        this._spawnRequests[operation.id] = {operation:operation, count:count, template: template};
+        this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
     }
 
     /**@param {string} roomName */
@@ -135,10 +135,14 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let shardChildOp = spawnRequest.operation;
+            let shardChildOp = /**@type {ShardChildOp |undefined} */ (global.mainOp.getOp(spawnRequest.operationId));
+            if (!shardChildOp) {
+                delete this._spawnRequests[spawnRequestId];
+                continue;
+            }
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type, template:spawnRequest.template, count:spawnRequest.count })
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {

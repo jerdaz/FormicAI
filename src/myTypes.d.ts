@@ -1,6 +1,6 @@
 
 declare type DebugType = import ('./debug');
-declare type MainOp = import ('./mainOp').MainOp;
+declare type MainOp = import ('./mainOp');
 declare type Operation = import('./meta_operation')
 declare type ChildOp = import('./meta_childOp')
 declare type ShardOp = import('./shard_shardOp')
