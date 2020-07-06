@@ -20,9 +20,6 @@ module.exports = class MainOp extends Operation {
         super();
         U.l('INIT MAIN');
 
-        // an object containing all operations by ID
-        /**@type {{[opId:number]:Operation}} */
-        this._operationIds = {};
 
         for (let memObj in Memory) {
             switch (memObj) {
@@ -66,24 +63,6 @@ module.exports = class MainOp extends Operation {
 
     get type() { return c.OPERATION_MAIN; }
 
-    /**@param {number} id */
-    getOp(id) {
-        return this._operationIds[id];
-    }
-
-    /**@param {Operation} op */
-    removeOpId(op) {
-        let id = op.id;
-        if (this._operationIds[id]) {
-            delete this._operationIds[id]
-        } else throw Error();
-    }
-
-    /**@param {Operation} op */
-    addOpId(op) {
-        let id = op.id;
-        this._operationIds[id] = op;
-    }
 
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
     /**@param {number} shardRequest */

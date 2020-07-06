@@ -135,7 +135,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let shardChildOp = /**@type {ShardChildOp |undefined} */ (global.mainOp.getOp(spawnRequest.operationId));
+            let shardChildOp = this._shardOp.getOp(spawnRequest.operationId);
             if (!shardChildOp) {
                 delete this._spawnRequests[spawnRequestId];
                 continue;

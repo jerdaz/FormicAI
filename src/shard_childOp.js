@@ -80,6 +80,9 @@ module.exports = class ShardChildOp extends ChildOp {
             creep.memory.operationType = this.type;
             creep.memory.operationInstance = this.instance;
         }
+        if (childOp instanceof ShardChildOp) {
+            this._shardOp.addOpId(childOp)
+        }
 
     }
 
@@ -87,6 +90,9 @@ module.exports = class ShardChildOp extends ChildOp {
     removeChildOp(childOp) {
         super.removeChildOp(childOp);
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
+        if (childOp instanceof ShardChildOp) {
+            this._shardOp.removeOpId(childOp)
+        }
     }
 
     

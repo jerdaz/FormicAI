@@ -20,6 +20,10 @@ module.exports = class ShardOp extends ChildOp {
         /** @type {{[key:string]: BaseOp }} */
         //this._baseOpsMap = {};
 
+        // an object containing all operations by ID
+        /**@type {{[opId:number]:ShardChildOp}} */
+        this._operationIds = {};
+
         // a map with all the baseops
         /**@type {Map<String, BaseOp>}*/
         this._baseOpsMap = new Map;
@@ -39,6 +43,8 @@ module.exports = class ShardOp extends ChildOp {
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     }
+
+
 
     get type() {return c.OPERATION_SHARD}
 
@@ -64,7 +70,27 @@ module.exports = class ShardOp extends ChildOp {
     get subRooms() {
         return this._subRooms;
     }
+
     
+    /**@param {number} id */
+    getOp(id) {
+        return this._operationIds[id];
+    }
+
+    /**@param {ShardChildOp} op */
+    removeOpId(op) {
+        let id = op.id;
+        if (this._operationIds[id]) {
+            delete this._operationIds[id]
+        } else throw Error();
+    }
+
+    /**@param {ShardChildOp} op */
+    addOpId(op) {
+        let id = op.id;
+        this._operationIds[id] = op;
+    }
+
     /**
      * @param {string} roomName
      * @returns {Room} returns room with RoomName */

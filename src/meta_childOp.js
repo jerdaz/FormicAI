@@ -7,7 +7,6 @@ module.exports = class ChildOp extends Operation{
     constructor(parent) {
         super()
         this._parent = parent;
-        global.mainOp.addOpid(this._id);
     }
 
     /**@param {Operation} newParent */
