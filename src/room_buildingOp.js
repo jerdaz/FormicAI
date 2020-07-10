@@ -65,6 +65,7 @@ module.exports = class BuildingOp extends RoomChildOp {
 
         // update variable for repair work
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
+        U.l({buildtacticsroom: this.roomName, repairSite:repairSites.length, constructionSites: constructionSites.length, buildwork: this._buildWork})
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
