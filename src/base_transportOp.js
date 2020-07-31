@@ -104,8 +104,9 @@ module.exports = class TransportOp extends BaseChildOp {
         let targetLink = controllerLink;
         if (targetLink == undefined || targetLink.energy > targetLink.energyCapacity / 8 * 7) targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
+            //if source and controller share link, keep a larger reserve in the link for the upgrader
             if (sourceLink == targetLink && targetLink == controllerLink && sourceLink.energy > sourceLink.energyCapacity / 8 * 5 ) {
-                sourceLink.transferEnergy(baseLink, 100);
+                sourceLink.transferEnergy(baseLink, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME * 10);
             }
             else if (sourceLink.energyCapacity / 8 <= sourceLink.energy) {
                 sourceLink.transferEnergy(targetLink);
