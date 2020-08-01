@@ -76,7 +76,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.creepCount >= 1
+                && this._baseOp.fillingOp.getCreepCountForSpawning() >= 1
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -141,7 +141,7 @@ module.exports = class SpawningOp extends BaseChildOp {
                 continue;
             }
             let nCreeps = 0;
-            if (shardChildOp) nCreeps = shardChildOp.creepCount;
+            if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
             this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
@@ -180,8 +180,8 @@ module.exports = class SpawningOp extends BaseChildOp {
         var result = [];
         var i=0;
         var maxEnergy = base.energyCapacityAvailable;
-        if (baseOp.fillingOp.creepCount == 0) maxEnergy = base.energyAvailable;
-        this._log({fillingCreepcount: baseOp.fillingOp.creepCount, maxEnergy: maxEnergy});
+        if (baseOp.fillingOp.getCreepCountForSpawning() == 0) maxEnergy = base.energyAvailable;
+        this._log({fillingCreepcount: baseOp.fillingOp.getCreepCountForSpawning(), maxEnergy: maxEnergy});
 
         while (U.getCreepCost(result) <= maxEnergy && result.length < Math.min(maxLength + 1, MAX_CREEP_SIZE + 1)) {
             result.push(body[i++]);
