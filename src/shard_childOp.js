@@ -2,6 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const CreepOp = require('./shard_creepOp');
+const { TACTICS_INTERVAL } = require('./constants');
 
 module.exports = class ShardChildOp extends ChildOp {
     /**
@@ -28,9 +29,17 @@ module.exports = class ShardChildOp extends ChildOp {
 
     get shardOp() {return this._shardOp};
 
-    get creepCount(){
-        let res = _.size(this._creepOps)
-        if (!res) res = 0;
+    /** Returns the number of creeps in the operation
+     * Corrects for creeps that have TTL smaller than their spawn time
+     */
+    getCreepCountForSpawning(){
+        let res = 0;
+        for (let name in this._creepOps) {
+            let creepOp = this._creepOps[name];
+            let creep = creepOp.creep;
+            //only count a creep if ticks to live is larger then spawn time 
+            if (creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
+        }
         return res;
     }
 
