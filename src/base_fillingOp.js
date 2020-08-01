@@ -41,5 +41,12 @@ module.exports = class FillingOp extends BaseChildOp {
             }
         }
     }
+
+    _command() {
+        // check to see if we nee
+        let base = this._baseOp.base;
+        if (base.energyAvailable < base.energyCapacityAvailable && this.lastIdle >= Game.time -1) this._tactics();
+
+    }
 }
 

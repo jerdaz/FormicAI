@@ -49,6 +49,10 @@ module.exports = class ShardChildOp extends ChildOp {
         return res;
     }
 
+    get creepCount(){
+        return _.size(this._creepOps)||0;
+    }
+
     get idleCount() {
         let res = 0;
         let creepOps = /**@type {CreepOp[]}*/ (this.childOps[c.OPERATION_CREEP]);
