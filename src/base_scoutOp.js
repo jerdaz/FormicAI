@@ -22,6 +22,7 @@ module.exports = class ScoutOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 1;
+        //if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
@@ -29,6 +30,7 @@ module.exports = class ScoutOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let lastRoomName = this._lastRoomName[creepName];
             let creepOp = this._creepOps[creepName]
+            creepOp.notifyWhenAttacked = false;
             let room = creepOp.room;
             if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                 /**@type {string | undefined} */
@@ -38,16 +40,19 @@ module.exports = class ScoutOp extends BaseChildOp {
                 for (let exit in exits) {
                     let roomName = exits[exit];
                     if (roomName == lastRoomName) continue;
-                    if (Game.map.isRoomAvailable(roomName)) roomNames.push(exits[exit]);
+                    if (Game.map.getRoomStatus(roomName).status != 'closed') roomNames.push(exits[exit]);
                 }
                 roomNames.sort((a,b) => {
                         let scoutInfoA = this._map.getRoomInfo(a);
                         let scoutInfoB = this._map.getRoomInfo(b);
                         if (scoutInfoA && scoutInfoB) return scoutInfoB.lastSeen - scoutInfoA.lastSeen + Math.random() - 0.5;
+                        if (scoutInfoA) return -1
+                        if (scoutInfoB) return 1
                         return 0;
                     })
                 if (roomNames.length > 0) destRoomName = roomNames.pop();
                 else destRoomName = lastRoomName
+
                 if (destRoomName) {
                     let dest = new RoomPosition(25, 25, destRoomName);
                     if (dest) creepOp.instructMoveTo(dest)

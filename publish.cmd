@@ -1,12 +1,18 @@
 @echo off
 goto %1
 goto end
-:stable
+:master
 call grunt --server=screeps
-:delta
+:omega
 call grunt --server=sp1
-:beta
+:delta
 call grunt --server=sp2
-:alpha
+:beta
 call grunt --server=cogd
+:alpha
+call grunt --server=atanner
+:pre-alpha
+call grunt --server=atanner-thunderdome
+:dev
+call grunt --server=qbits
 :end

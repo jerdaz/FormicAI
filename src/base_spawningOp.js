@@ -10,7 +10,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
-        /**@type {{[index:string] : {operation:ShardChildOp, count:number, template:CreepTemplate}}} */
+        /**@type {{[index:string] : {operationId:number, count:number, template:CreepTemplate}}} */
         this._spawnRequests = {};
         this._builderRequest = '';
         this._shardColonizer = '';
@@ -28,7 +28,7 @@ module.exports = class SpawningOp extends BaseChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
-        this._spawnRequests[operation.id] = {operation:operation, count:count, template: template};
+        this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
     }
 
     /**@param {string} roomName */
@@ -62,7 +62,9 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
+            this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
+            this._spawnPrio[c.OPERATION_RESERVATION] = 30;
         }
     }
 
@@ -86,10 +88,10 @@ module.exports = class SpawningOp extends BaseChildOp {
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
-                                    let result = spawn.spawnCreep(body, spawn.room.name + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
-                                    this._log(result);
+                                    this._log(result); 
                                 }
                             }
                         }
@@ -127,22 +129,31 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _getSpawnList() {
-        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
         for (let spawnRequestId in this._spawnRequests) {
             let spawnRequest = spawnRequests[spawnRequestId];
-            let shardChildOp = spawnRequest.operation;
+            let shardChildOp = this._shardOp.getOp(spawnRequest.operationId);
+            if (!shardChildOp) {
+                delete this._spawnRequests[spawnRequestId];
+                continue;
+            }
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.creepCount;
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: spawnRequest.operation.type, template:spawnRequest.template, count:spawnRequest.count })
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
-
+            if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;
-                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], opType: opType, opInstance:opInstance, template:spawnRequest.template})
+                spawnList.push ({prio: (spawnRequest.count - nCreeps) / spawnRequest.count * this._spawnPrio[opType], 
+                                opType: opType, 
+                                opInstance:opInstance, 
+                                template:spawnRequest.template,
+                                ownerRoomName: shardChildOp.ownerRoomName
+                            })
             }
         }
 
