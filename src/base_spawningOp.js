@@ -143,7 +143,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
             //determine distance factor
             let roomOp = shardChildOp.roomOp
-            let distance = 100;
+            let distance = 0;
             if (roomOp) distance = roomOp.distance
 
             let nCreeps = 0;
