@@ -164,8 +164,8 @@ module.exports = class SpawningOp extends BaseChildOp {
             }
         }
 
-        spawnList.sort((a, b) => {  if (a.roomDistance < b.roomDistance) return -1;
-                                    if (a. roomDistance > b.roomDistance) return 1;
+        spawnList.sort((a, b) => {  if (a.roomDistance > b.roomDistance) return -1;
+                                    if (a.roomDistance < b.roomDistance) return 1;
                                     if (a.prio < b.prio) return -1;
                                     if (a.prio > b.prio) return 1;
                                     return 0;

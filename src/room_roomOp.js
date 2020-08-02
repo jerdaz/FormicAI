@@ -17,8 +17,11 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
-        this._distanceOffset = this.room.memory.distanceOffset || Math.random();
-        this.room.memory.distanceOffset = this._distanceOffset;
+
+
+        if (Memory.rooms[roomName] == undefined) Memory.rooms[roomName] = {distanceOffset: Math.random()}
+        this._distanceOffset = Memory.rooms[roomName].distanceOffset || Math.random();
+        Memory.rooms[roomName].distanceOffset = this._distanceOffset;
 
 
         this._harvestingOpCreated = false;
@@ -31,7 +34,6 @@ module.exports = class RoomOp extends BaseChildOp {
     /**@returns {Room} */
     get room() {
         let result = Game.rooms[this.roomName]
-        if (!result) throw Error();
         return result;
     }
     get type() {return c.OPERATION_ROOM}
