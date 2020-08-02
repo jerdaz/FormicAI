@@ -1,3 +1,4 @@
+const U = require('./util');
 const DebugType = require('./debug');
 const MainOp = require('./mainOp');
 const version = require('./version');
