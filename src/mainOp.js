@@ -34,7 +34,6 @@ module.exports = class MainOp extends Operation {
             }
         }
         Memory.creeps = {};
-        Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};

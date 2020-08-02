@@ -36,4 +36,5 @@ interface MainOp {MainOp}
 interface ShardOp {ShardOp}
 
 interface CreepMemory {operationType: number, baseName: string, operationInstance:number}
+interface RoomMemory {distanceOffset: number}
 ;

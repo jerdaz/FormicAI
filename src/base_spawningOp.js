@@ -129,7 +129,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _getSpawnList() {
-        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string, roomDistance: number}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
@@ -140,6 +140,12 @@ module.exports = class SpawningOp extends BaseChildOp {
                 delete this._spawnRequests[spawnRequestId];
                 continue;
             }
+
+            //determine distance factor
+            let roomOp = shardChildOp.roomOp
+            let distance = 100;
+            if (roomOp) distance = roomOp.distance
+
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
             this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
@@ -152,12 +158,15 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 opType: opType, 
                                 opInstance:opInstance, 
                                 template:spawnRequest.template,
-                                ownerRoomName: shardChildOp.ownerRoomName
+                                ownerRoomName: shardChildOp.ownerRoomName,
+                                roomDistance: distance
                             })
             }
         }
 
-        spawnList.sort((a, b) => {  if (a.prio < b.prio) return -1;
+        spawnList.sort((a, b) => {  if (a.roomDistance < b.roomDistance) return -1;
+                                    if (a. roomDistance > b.roomDistance) return 1;
+                                    if (a.prio < b.prio) return -1;
                                     if (a.prio > b.prio) return 1;
                                     return 0;
                                  });

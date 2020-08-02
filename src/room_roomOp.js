@@ -9,22 +9,36 @@ const ReservationOp = require('./room_reservationOp');
 module.exports = class RoomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
      * @param {String} roomName
+     * @param {number} distance the distance (in rooms) from the base room
      */
-    constructor(baseOp, roomName) {
+    constructor(baseOp, roomName, distance) {
         super(baseOp);
         this._roomName = roomName;
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
+        this._distanceOffset = this.room.memory.distanceOffset || Math.random();
+        this.room.memory.distanceOffset = this._distanceOffset;
+
 
         this._harvestingOpCreated = false;
         this._verbose = false;
+        this._distance = distance + this._distanceOffset
     }
 
     get roomName() {return this._roomName}
-    /**@returns {Room | undefined} */
-    get room() {return Game.rooms[this.roomName]}
+
+    /**@returns {Room} */
+    get room() {
+        let result = Game.rooms[this.roomName]
+        if (!result) throw Error();
+        return result;
+    }
     get type() {return c.OPERATION_ROOM}
+
+    /* return the distance in room from the base. This includes a constant random modifier between 0 and 1. Use Math.floor to 
+        get the real distance */
+    get distance() {return this._distance}
 
     get buildingOp() {return /**@type {BuildingOp} */ (this._childOps[c.OPERATION_BUILDING][0])}
 

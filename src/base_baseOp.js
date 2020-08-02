@@ -38,7 +38,7 @@ module.exports = class BaseOp extends ShardChildOp{
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
-        this._myRoomOp = new RoomOp(this, this._name);
+        this._myRoomOp = new RoomOp(this, this._name, 0);
         this.addChildOp(this._myRoomOp);
 
         this._phase = c.BASE_PHASE_BIRTH;
@@ -113,7 +113,7 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {string} roomName 
      */
     addRoom(roomName) {
-        this.addChildOp(new RoomOp(this,roomName));
+        this.addChildOp(new RoomOp(this,roomName, 1));
     }
 
     /** remove a subroom from the base

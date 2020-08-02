@@ -16,6 +16,7 @@ module.exports = class ShardChildOp extends ChildOp {
         this._shardOp = shardOp;
         this._map = shardOp._map;
         this._baseOp = baseOp;
+        this._roomOp = roomOp;
         this._instance = instance || 0
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
@@ -30,6 +31,9 @@ module.exports = class ShardChildOp extends ChildOp {
     }
 
     get instance() {return this._instance}
+
+    get baseOp() {return this._baseOp}
+    get roomOp() {return this._roomOp}
 
     get shardOp() {return this._shardOp};
 
