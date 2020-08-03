@@ -98,7 +98,9 @@ module.exports = class ShardChildOp extends ChildOp {
             creep.memory.operationType = this.type;
             creep.memory.operationInstance = this.instance;
         }
-
+        if (childOp instanceof ShardChildOp) {
+            this._shardOp.addOpId(childOp)
+        }
     }
 
     /**@param {ChildOp} childOp */
