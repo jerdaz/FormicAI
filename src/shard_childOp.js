@@ -48,7 +48,7 @@ module.exports = class ShardChildOp extends ChildOp {
             let creepOp = this._creepOps[name];
             let creep = creepOp.creep;
             //only count a creep if ticks to live is larger then spawn time 
-            if (creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
+            if (creep.spawning || creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
         }
         return res;
     }
