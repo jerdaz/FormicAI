@@ -26,6 +26,7 @@ module.exports = class ShardChildOp extends ChildOp {
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
         if (roomOp || baseOp) this._ownerRoomName = roomName;
+        else if (parent == shardOp) this._ownerRoomName = shardOp.name;
         else this._ownerRoomName = '';
         shardOp.addOperation(this, roomName)
     }
