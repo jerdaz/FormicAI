@@ -1,7 +1,9 @@
 module.exports = class Util {
     constructor() {
         this.trace = false;
+        /**@type {MainOp | null} */
     }
+
 
     /**@param {any} message Logs message to console*/
     static l(message){
