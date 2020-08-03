@@ -7,6 +7,7 @@ const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 const ShardSpawningOp = require('./shard_spawningOp');
 const ShardDefenseOp = require('./shard_defenseOp')
+const ShardChildOp = require('./shard_childOp')
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -90,6 +91,15 @@ module.exports = class ShardOp extends ChildOp {
         let id = op.id;
         this._operationIds[id] = op;
     }
+
+    /**@param {ChildOp} childOp */
+    addChildOp(childOp) {
+        super.addChildOp(childOp);
+        if (childOp instanceof ShardChildOp) {
+            this.addOpId(childOp)
+        }
+    }
+
 
     /**
      * @param {string} roomName
