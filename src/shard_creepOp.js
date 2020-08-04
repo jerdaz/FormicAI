@@ -41,6 +41,7 @@ module.exports = class CreepOp extends ChildOp {
         this._cost = null;
         /**@type {boolean | null} */
         this._hasWorkParts = null;
+        this._shardOp = shardOp;
         this._idleTime = 0;
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
@@ -222,7 +223,7 @@ module.exports = class CreepOp extends ChildOp {
     _tactics() {
         switch (this._instruct) {
             case c.COMMAND_NONE:
-                    if (this._parent.ownerRoomName && this._creep.pos.roomName != this._parent.ownerRoomName) {
+                    if (this._parent.ownerRoomName && this._parent.ownerRoomName != this._shardOp.name && this._creep.pos.roomName != this._parent.ownerRoomName) {
                             this.instructMoveTo(this._parent.ownerRoomName);
                     }
                 break;
