@@ -10,5 +10,9 @@ call grunt --server=sp2
 :beta
 call grunt --server=cogd
 :alpha
+call grunt --server=atanner
+:pre-alpha
+call grunt --server=atanner-thunderdome
+:dev
 call grunt --server=qbits
 :end

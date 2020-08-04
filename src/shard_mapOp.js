@@ -7,10 +7,17 @@ const ChildOp = require('./meta_childOp');
  *      lastSeenHostile:number, 
  *      lastSeen:number, 
  *      hostileOwner:boolean,
+ *      invasion:boolean,
+ *      invasionEnd:number,
  *      hasController: boolean,
  *      level: number
  *   }}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
+
+/** @typedef {Array<{
+                 exit: ExitConstant;
+                room: string;
+            }>} RoomPath */
 
 const MIN_ROAD_FATIGUE_COST =   1000 * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
 
@@ -23,6 +30,10 @@ module.exports = class MapOp extends ChildOp {
         this._baseDist;
         /**@type {RoomInfo} */
         this._roomInfo = {};
+
+        /**@type {{[roomA:string]: {[roomB:string]: {path: RoomPath,
+                                                     time: number }}}} */
+        this._routeCache = {}
     }
 
     get type() {return c.OPERATION_MAP}
@@ -66,6 +77,26 @@ module.exports = class MapOp extends ChildOp {
         return undefined;
     }
 
+    /**@param {string[]} roomNames
+     * @param {string} roomName
+     */
+    findClosestRoomByPath(roomNames, roomName) {
+        /**@type {string|null} */
+        let closestRoom = null
+        let closestDistance = 99999;
+        for(let roomNameA of roomNames) {
+            let route = this.findRoute(roomNameA, roomName);
+            if (route instanceof Array) {
+                let distance = route.length
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closestRoom = roomNameA;
+                }
+            }
+        }
+        return closestRoom
+    }
+
     /** @param {Map<string,BaseOp>} baseOpsMap*/
     updateBaseDistances(baseOpsMap) {
         this._baseDist = {};
@@ -79,10 +110,10 @@ module.exports = class MapOp extends ChildOp {
             let baseAName = baseNames[i];
             for(let j=i+1; j < baseNames.length;j++){
                 let baseBName = baseNames[j]
-                let dist = Game.map.findRoute(baseAName, baseBName)
-                if (dist != ERR_NO_PATH) { 
-                    this._baseDist[baseAName].push( {roomName:baseBName, dist: dist.length })
-                    this._baseDist[baseBName].push( {roomName:baseAName, dist: dist.length })
+                let path = this.findRoute(baseAName, baseBName)
+                if (path.length > 0) { 
+                    this._baseDist[baseAName].push( {roomName:baseBName, dist: path.length })
+                    this._baseDist[baseBName].push( {roomName:baseAName, dist: path.length })
                 }
             }
             this._baseDist[baseAName].sort((a,b) => {
@@ -114,10 +145,22 @@ module.exports = class MapOp extends ChildOp {
      * @param {string} to
      */
     findRoute(from, to) {
-        let result = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
-            {   let roomInfo = this.getRoomInfo(roomName);
-                if(roomInfo && roomInfo.hostileOwner) return Infinity; }
-            })
+        //retrieve path from cache
+        /**@type {RoomPath} */
+        let result = [];
+        if (this._routeCache[from] && this._routeCache[from][to] && this._routeCache[from][to].time > Game.time - c.SUPPORT_INTERVAL * 100) {
+            result = this._routeCache[from][to].path;
+        } else {
+            let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
+                {   let roomInfo = this.getRoomInfo(roomName);
+                    if(roomInfo && roomInfo.hostileOwner) return Infinity; }
+                })
+            if (result2 == -2) result = [];
+            else result = result2;
+            if (!this._routeCache[from]) this._routeCache[from] = {};
+            if (!this._routeCache[from][to]) this._routeCache[to] = {};
+            this._routeCache[from][to] = {path:result, time:Game.time}
+        }
         return result;
     }
 
@@ -154,7 +197,7 @@ module.exports = class MapOp extends ChildOp {
 
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0}
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0}
                 for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
                     this._roomInfo[roomName].terrainArray[x] = [];
                     for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
@@ -164,9 +207,18 @@ module.exports = class MapOp extends ChildOp {
             }
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
-            if (hostiles.length>0) this._roomInfo[roomName].lastSeenHostile = Game.time;
+            if (hostiles.length>0) {
+                this._roomInfo[roomName].lastSeenHostile = Game.time;
+                for (let hostile of hostiles) {
+                    if (hostile.owner.username == c.INVADER_USERNAME) {
+                        this._roomInfo[roomName].invasion = true;
+                        this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
+                        break;
+                    }
+                }
+            } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;
-            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null || room.controller.reservation != undefined);
+            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null );
             if (room.controller) {
                 this._roomInfo[roomName].hasController = true;
                 this._roomInfo[roomName].level = room.controller.level

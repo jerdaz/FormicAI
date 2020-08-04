@@ -44,7 +44,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             workerCount = 1;
             if (this.baseOp.phase<c.BASE_PHASE_CONTROLLER_LINK) body = [MOVE,WORK,CARRY]
         }
-        this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: MAX_CREEP_SIZE}, workerCount)
+        this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
 
     }
 
