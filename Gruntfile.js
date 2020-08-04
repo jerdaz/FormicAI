@@ -25,7 +25,6 @@ module.exports = function(grunt) {
         };
         password = config.sp2_password;
         break;
-      default: 
       case 'cogd':
           server = {
             host: 'screeps.cogd.io',
@@ -34,16 +33,34 @@ module.exports = function(grunt) {
           };
           password = config.cogd_password;
           break;
-       case 'atanner': 
-       server = {
-        host: 'atannergaming.com',
-        port: 21025,
-        http: true
-      };
-      password = config.atanner_password;
-      break;
-   case 'screeps':
+      case 'atanner': 
+          server = {
+            host: 'atannergaming.com',
+            port: 21025,
+            http: true
+          };
+          password = config.atanner_password;
           break;
+      case 'atanner-thunderdome': 
+          server = {
+            host: 'thunderdomescreeps.atannergaming.com',
+            port: 21025,
+            http: true
+          };
+          password = config.atanner_password;
+          break;
+       case 'qbits': 
+          server = {
+            host: 'screeps.qbits.be',
+            port: 21025,
+            http: true
+          };
+          password = config.qbits_password;
+          break;
+       case 'screeps':
+          break;
+       default:
+         throw Error('No server defined')
       }
 
   grunt.loadNpmTasks('grunt-screeps');

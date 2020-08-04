@@ -3,6 +3,7 @@ const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
 const MIN_MARKET_CREDITS = 10;
+const DISABLE_BUY = true;
 const MIN_STOCK_PILE_SIZE = Math.floor(MAX_CREEP_SIZE / 3) * CARRY_CAPACITY * 2 //this is equal to 1 full transporter creep;
 /**@type {{[index:string]:number}} */
 let TERMINAL_MAX_STORAGE = {
@@ -110,7 +111,7 @@ module.exports = class MarketOp extends BaseChildOp {
 
         // buy resources
         let credits = this._baseOp.credits;
-        if (credits > MIN_MARKET_CREDITS) {
+        if (!DISABLE_BUY && credits > MIN_MARKET_CREDITS) {
             for (let buyType in TERMINAL_MAX_STORAGE) {
                 let resourceType = /**@type {ResourceConstant} */ (buyType)
                 if (terminal.store[resourceType]> TERMINAL_MAX_STORAGE[resourceType]/2) continue;
