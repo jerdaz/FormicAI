@@ -607,12 +607,21 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomPosition | null} */
         let dest = endDest;
         let myPos = creep.pos;
+        let mapOp = this._mapOp
+        let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName);
+                let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
+                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                        let roomInfo = mapOp.getRoomInfo(toRoomName)
+                        if (roomInfo && roomInfo.hostileOwner) return Infinity
+                    }
+                    return 0;
+                }
+                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName, {routeCallback: callBack});
                 if (route instanceof Array && route.length > 2) {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
@@ -624,10 +633,9 @@ module.exports = class CreepOp extends ChildOp {
             }
         }
 
-        let mapOp = this._mapOp
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            if (!(this._moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
                 if (roomInfo && roomInfo.hostileOwner) {
                     for (let x =0; x<50;x++) {

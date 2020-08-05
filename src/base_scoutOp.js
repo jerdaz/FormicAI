@@ -54,7 +54,7 @@ module.exports = class ScoutOp extends BaseChildOp {
                 else destRoomName = lastRoomName
 
                 if (destRoomName) {
-                    creepOp.instructMoveTo(destRoomName, c.MOVE_ALLOW_HOSTILE_ROOM)
+                    creepOp.instructMoveTo(destRoomName)
                     this._lastRoomName[creepName] = room.name;
                 }
             }
