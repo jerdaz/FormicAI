@@ -46,6 +46,7 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
         this._notifyWhenAttacked = true
+        this._moveFlags = 0;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -153,8 +154,10 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
-    /**@param {RoomPosition | string} dest */
-    instructMoveTo(dest) {
+    /**@param {RoomPosition | string} dest 
+     * @param {number} [moveFlags]
+    */
+    instructMoveTo(dest, moveFlags) {
         if (dest instanceof RoomPosition) {
             this._destPos = dest;
             this._destRoomName = ''
@@ -164,6 +167,7 @@ module.exports = class CreepOp extends ChildOp {
             this._destRoomName = dest;
         }
         this._instruct = c.COMMAND_MOVETO
+        this._moveFlags = moveFlags || 0;
     }
 
     /**@param {string} roomName */
@@ -623,11 +627,13 @@ module.exports = class CreepOp extends ChildOp {
         let mapOp = this._mapOp
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            let roomInfo = mapOp.getRoomInfo(roomName);
-            if (roomInfo && roomInfo.hostileOwner) {
-                for (let x =0; x<50;x++) {
-                    for (let y = 0; y<50; y++){
-                        costMatrix.set(x,y,255);
+            if (!(this._moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                let roomInfo = mapOp.getRoomInfo(roomName);
+                if (roomInfo && roomInfo.hostileOwner) {
+                    for (let x =0; x<50;x++) {
+                        for (let y = 0; y<50; y++){
+                            costMatrix.set(x,y,255);
+                        }
                     }
                 }
             }
