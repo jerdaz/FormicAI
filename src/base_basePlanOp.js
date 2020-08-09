@@ -155,7 +155,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     for (let x_ = x-1; x_ <= x+1; x_++ ) {
                         for (let y_ = y-1; y_<=y+1; y_++) {
                             // only add a spot if it is diagonal from the origin spot and is in the room borders
-                            if (x==x_ || y==y_ || x_<1 || x_ > c.MAX_ROOM_SIZE-1 || y_ <1 || y_ > c.MAX_ROOM_SIZE-1) continue;
+                            if (x==x_ || y==y_ || x_<0 || x_ > c.MAX_ROOM_SIZE-1 || y_ <0 || y_ > c.MAX_ROOM_SIZE-1) continue;
                             let terrain = terrainArray[x_][y_];
                             if (terrain == TERRAIN_MASK_SWAMP || terrain == TERRAIN_MASK_PLAIN ) {
                                 terrainArray[x_][y_] = CHECK;
