@@ -108,7 +108,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
     }
 
-    
+    /* Find a building spot for a new structure in the base*/
     _findBuildingSpot() {
         const CHECK = 20;
         const INVALID = 40;
@@ -116,6 +116,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let terrain = Game.map.getRoomTerrain(this.baseOp.name);
         let roomName = this.baseOp.name;
 
+        //first create an array with the terrain.
         /**@type {number[][]} */
         let terrainArray = [];
         for (let x = 0; x<c.MAX_ROOM_SIZE; x++) {
@@ -128,25 +129,33 @@ module.exports = class BasePlanOp extends BaseChildOp{
         /**@type {RoomPosition|undefined} */
         let validSpot = undefined;
 
+        //start with the base center position and search from there.
         /**@type {RoomPosition[]} */
         let checkSpots = [];
         checkSpots.push(centerPos);
 
+        // search as long as there are possible spots to be checked, until a valid spot has been found
         while(checkSpots.length > 0 && validSpot == undefined) {
+
+            // Create a new list of spots to check from the current list of spots
             /**@type {RoomPosition[]} */
             let newCheckSpots = [];
             for (let checkSpot of checkSpots) {
                 let x = checkSpot.x;
                 let y = checkSpot.y;
                 if (BasePlanOp._isValidBuildingSpot(x,y, this.baseOp)) {
+                    // we found a valid spot. return it
                     validSpot = new RoomPosition(x,y, roomName);
                     break;
                 }
                 else {
+                    // current spot is invalid, mark it to prevent checking it again
                     terrainArray[x][y] = INVALID;
+                    // add all the spots around this spot to the new check list
                     for (let x_ = x-1; x_ <= x+1; x_++ ) {
                         for (let y_ = y-1; y_<=y+1; y_++) {
-                            if (x==x_ || y==y_ || x_<2 || x_ > c.MAX_ROOM_SIZE-1 || y_ <2 || y_ > c.MAX_ROOM_SIZE-1) continue;
+                            // only add a spot if it is diagonal from the origin spot and is in the room borders
+                            if (x==x_ || y==y_ || x_<1 || x_ > c.MAX_ROOM_SIZE-1 || y_ <1 || y_ > c.MAX_ROOM_SIZE-1) continue;
                             let terrain = terrainArray[x_][y_];
                             if (terrain == TERRAIN_MASK_SWAMP || terrain == TERRAIN_MASK_PLAIN ) {
                                 terrainArray[x_][y_] = CHECK;

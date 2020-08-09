@@ -28,6 +28,7 @@ module.exports = class SpawningOp extends BaseChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
+        if (count < 0) throw Error();
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
     }
 
