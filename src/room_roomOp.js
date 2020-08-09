@@ -18,9 +18,6 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
 
-        //add roomOp to room for debugging
-        // @ts-ignore
-        Game.rooms[roomName].roomOp = this;
 
 
         // calculate room distance from base.
@@ -69,6 +66,11 @@ module.exports = class RoomOp extends BaseChildOp {
     }
     
     _tactics() {
+        //add roomOp to room for debugging
+        // @ts-ignore
+        if (this.room) this.room.roomOp = this;
+
+
         if (  !this._harvestingOpCreated 
                 && this.room 
                 && this.room.controller 

@@ -132,7 +132,7 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _tactics() {
-        if (this.spawns.length == 0) {
+        if (this.spawns.length == 0 && this.buildingOp.creepCount == 0) {
             this._shardOp.requestBuilder(this.name);
         }
     }
