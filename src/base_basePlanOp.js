@@ -11,7 +11,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_STORAGE},
     {type: STRUCTURE_LINK, max:1},
     {type: STRUCTURE_TERMINAL},
-    {type: STRUCTURE_LAB, max:1}
+//  {type: STRUCTURE_LAB, max:1}
 ]
 
 const TERRAIN_MASK_PLAIN = 0;
