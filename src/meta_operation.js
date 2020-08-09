@@ -95,9 +95,19 @@ module.exports = class Operation {
         this._childOps[childOp.type].push(childOp);
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
         this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
+        if (recursive) {
+            let parent = childOp
+            for (let childOps of parent.childOps) {
+                for (let childOp of childOps) {
+                    parent.removeChildOp(childOp)
+                }
+            }
+        }
     }
 
     _firstRun() {}

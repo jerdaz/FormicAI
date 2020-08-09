@@ -103,9 +103,11 @@ module.exports = class ShardChildOp extends ChildOp {
         }
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
-        super.removeChildOp(childOp);
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
+        super.removeChildOp(childOp, recursive);
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
         if (childOp instanceof ShardChildOp) {
             this._shardOp.removeOpId(childOp)

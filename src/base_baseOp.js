@@ -77,10 +77,8 @@ module.exports = class BaseOp extends ShardChildOp{
     initTick() {
         super.initTick();
         this._base = /**@type {Base} */ (Game.rooms[this._name])
-        
         // add op to room for easy access in debug console
         this._base.baseOp = this;
-        
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
@@ -123,7 +121,7 @@ module.exports = class BaseOp extends ShardChildOp{
     */
    removeRoom(roomName) {
        for (let roomOp of /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])) {
-           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp);
+           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
        }
    }
 
@@ -132,7 +130,7 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     _tactics() {
-        if (this.spawns.length == 0 && this.buildingOp.creepCount == 0) {
+        if (this.spawns.length == 0) {
             this._shardOp.requestBuilder(this.name);
         }
     }
