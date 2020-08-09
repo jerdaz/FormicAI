@@ -77,8 +77,10 @@ module.exports = class BaseOp extends ShardChildOp{
     initTick() {
         super.initTick();
         this._base = /**@type {Base} */ (Game.rooms[this._name])
+        
         // add op to room for easy access in debug console
-        this._base.op = this;
+        this._base.baseOp = this;
+        
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {

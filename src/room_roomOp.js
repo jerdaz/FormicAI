@@ -18,6 +18,10 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
 
+        //add roomOp to room for debugging
+        // @ts-ignore
+        Game.rooms[roomName].roomOp = this;
+
 
         // calculate room distance from base.
         if (Memory.rooms[roomName] == undefined) Memory.rooms[roomName] = {distanceOffset: Math.random()}
