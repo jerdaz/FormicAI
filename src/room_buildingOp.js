@@ -43,7 +43,8 @@ module.exports = class BuildingOp extends RoomChildOp {
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
             let energy = this.baseOp.storage.store.energy;
             let controller = this.baseOp.base.controller;
-            creepCount = Math.floor((energy - c.ENERGY_RESERVE / 5 * (controller.level - 3)) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            creepCount = Math.floor((energy - c.ENERGY_RESERVE / (Math.max(  controller.level - 3, 1)/5 )) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            if (creepCount <0) creepCount = 0;
         } else {
             creepCount = 20;
         }
