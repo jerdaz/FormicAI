@@ -28,6 +28,7 @@ module.exports = class SpawningOp extends BaseChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
+        if (count < 0) throw Error();
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
     }
 
@@ -65,6 +66,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
             this._spawnPrio[c.OPERATION_RESERVATION] = 30;
+            this._spawnPrio[c.OPERATION_SHARDDEFENSE] = 60;
         }
     }
 

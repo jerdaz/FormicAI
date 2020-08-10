@@ -26,6 +26,7 @@ module.exports = class ShardChildOp extends ChildOp {
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
         if (roomOp || baseOp) this._ownerRoomName = roomName;
+        else if (parent == shardOp) this._ownerRoomName = shardOp.name;
         else this._ownerRoomName = '';
         shardOp.addOperation(this, roomName)
     }
@@ -48,7 +49,7 @@ module.exports = class ShardChildOp extends ChildOp {
             let creepOp = this._creepOps[name];
             let creep = creepOp.creep;
             //only count a creep if ticks to live is larger then spawn time 
-            if (creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
+            if (creep.spawning || creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
         }
         return res;
     }
@@ -100,12 +101,13 @@ module.exports = class ShardChildOp extends ChildOp {
         if (childOp instanceof ShardChildOp) {
             this._shardOp.addOpId(childOp)
         }
-
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
-        super.removeChildOp(childOp);
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
+        super.removeChildOp(childOp, recursive);
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
         if (childOp instanceof ShardChildOp) {
             this._shardOp.removeOpId(childOp)

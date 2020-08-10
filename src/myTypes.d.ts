@@ -22,7 +22,7 @@ declare module NodeJS  {
         mainOp: MainOp
     }
 }
-declare interface Base extends Room {controller: StructureController, op?: BaseOp};
+declare interface Base extends Room {controller: StructureController, baseOp?: BaseOp};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};
 declare interface OrderEx extends Order {transactionCost?: number, netPrice?: number}
 declare var _ = import('lodash');
