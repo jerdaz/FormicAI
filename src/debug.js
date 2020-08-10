@@ -27,8 +27,15 @@ module.exports = class Debug {
 
     //log an error
     /**@param {Error} err */
-    logError(err) {
-        this._errors.push(err);
+    static logError(err) {
+        let message = err.message;
+        let stack = err.stack;
+        if (stack) {
+            message += '\n'
+            message += stack;
+        }
+        for (let line of message.split('\n')) U.l(line)
+        Game.notify(JSON.stringify(message));
     }
 
     //log state of an object in verbose log

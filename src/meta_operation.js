@@ -1,5 +1,6 @@
 const U = require('./util')
 const c = require('./constants');
+const Debug = require('./debug');
 
 const MAX_OPERATION_CPU = Game.cpu.tickLimit;
 
@@ -12,8 +13,8 @@ module.exports = class Operation {
         this._bFirstRun = true;
         /**@type {ChildOp[][]} */
         this._childOps = []
-        /**@type {Debug} */
-        this._debug = /** @type {any}*/(Game).debug;
+        // @ts-ignore
+        this._debug = Debug;
         this._tickOffset = _.random(0,c.SUPPORT_INTERVAL - 1)
         this._verbose = false;
         this._verboseAll = false // if true, log all running operations
