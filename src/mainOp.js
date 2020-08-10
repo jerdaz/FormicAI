@@ -125,7 +125,7 @@ module.exports = class Main extends Operation {
     }
 
     _command() {
-        if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
+        if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel(); //generate pixels
     }
 
     /**@param {ShardMem} shardMem */
