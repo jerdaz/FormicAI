@@ -1,3 +1,5 @@
+const PIXEL_CPU_COST = 5000;
+
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
     CREEP_EMOTES: false,
