@@ -108,7 +108,11 @@ module.exports = class ShardChildOp extends ChildOp {
     */
     removeChildOp(childOp, recursive) {
         super.removeChildOp(childOp, recursive);
+
+        //Because we keep track of creepOps, we have to delete it here as well
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
+
+        //if it is a shardchildop, remove the id from the shardOp id's
         if (childOp instanceof ShardChildOp) {
             this._shardOp.removeOpId(childOp)
         }
