@@ -51,7 +51,7 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
         if (!baseOp) {
             this._support();
             baseOp = this._shardOp.getBaseOp(this._spawnBase)
-            if (!baseOp) throw Error();
+            if (!baseOp) return;
         }
         let spawningOp = baseOp.spawningOp;
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
