@@ -47,16 +47,13 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
         let baseOp = this._shardOp.getBaseOp(this._spawnBase);
-        if (!baseOp) throw Error();
-        let spawningOp = baseOp.spawningOp;
         //if spawningOp is not valid, try running support to find a new spawning base, otherwise cancel
-        if (!spawningOp) {
+        if (!baseOp) {
             this._support();
             baseOp = this._shardOp.getBaseOp(this._spawnBase)
             if (!baseOp) throw Error();
-            spawningOp = baseOp.spawningOp;
-            if (!spawningOp) return;
         }
+        let spawningOp = baseOp.spawningOp;
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
         spawningOp.ltRequestSpawn(operation, template, count);
         U.l({spawnbase:this._spawnBase})
