@@ -145,10 +145,10 @@ module.exports = class ShardOp extends ChildOp {
 
     /**
      * @param {string} roomName
-     * @returns {BaseOp} */
+     * @returns {BaseOp|null} */
     getBaseOp(roomName) {
         let result = this._baseOpsMap.get(roomName);
-        if (!result) throw Error('baseop does not exist')
+        if (!result) return null;
         return result;
     }
 
@@ -312,13 +312,17 @@ module.exports = class ShardOp extends ChildOp {
                 let neighbourRoomName = neighbours[exit];
                 if (!this._subRooms[neighbourRoomName] && !this._baseOpsMap.get(neighbourRoomName)) {
                     this._subRooms[neighbourRoomName] = baseOpName;
-                    this.getBaseOp(baseOpName).addRoom(neighbourRoomName)
+                    let baseOp = this.getBaseOp(baseOpName);
+                    if (!baseOp) throw Error();
+                    baseOp.addRoom(neighbourRoomName)
                 }
             }
 
             //remove subroom if it is the main room of a baseOp
             if (this._subRooms[baseOpName]) {
-                this.getBaseOp(this._subRooms[baseOpName]).removeRoom(baseOpName);
+                let baseOp = this.getBaseOp(this._subRooms[baseOpName]);
+                if (!baseOp) throw Error();
+                baseOp.removeRoom(baseOpName);
                 delete this._subRooms[baseOpName]
             }
         }

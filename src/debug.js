@@ -31,7 +31,7 @@ module.exports = class Debug {
      * @param {string} opName
     */
     static logError(err, opName) {
-        let message = 'Error in operation ' + opName; + '\n'
+        let message = 'Error in operation ' + opName + '\n'
         message += err.message;
         let stack = err.stack;
         if (stack) {

@@ -23,9 +23,13 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
     _support() {
         //determin new base for shard spawning
         let baseOps = this._shardOp.baseOps;
-        let oldSpawningOp = this._shardOp.getBaseOp(this._spawnBase).spawningOp;
+        let baseOp = this._shardOp.getBaseOp(this._spawnBase);
+        if (!baseOp) throw Error();
+        let oldSpawningOp = baseOp.spawningOp;
         this._spawnBase = baseOps.keys().next().value;
-        let newSpawningOp = this._shardOp.getBaseOp(this._spawnBase).spawningOp;
+        baseOp = this._shardOp.getBaseOp(this._spawnBase);
+        if (!baseOp) throw Error();
+        let newSpawningOp = baseOp.spawningOp;
 
         // if new spawning op is not equal, move the requests to the new spawning base
         if (oldSpawningOp != newSpawningOp) {
@@ -42,11 +46,15 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
-        let spawningOp = this._shardOp.getBaseOp(this._spawnBase).spawningOp;
+        let baseOp = this._shardOp.getBaseOp(this._spawnBase);
+        if (!baseOp) throw Error();
+        let spawningOp = baseOp.spawningOp;
         //if spawningOp is not valid, try running support to find a new spawning base, otherwise cancel
         if (!spawningOp) {
             this._support();
-            spawningOp = this._shardOp.getBaseOp(this._spawnBase).spawningOp;
+            baseOp = this._shardOp.getBaseOp(this._spawnBase)
+            if (!baseOp) throw Error();
+            spawningOp = baseOp.spawningOp;
             if (!spawningOp) return;
         }
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
