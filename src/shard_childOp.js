@@ -26,6 +26,7 @@ module.exports = class ShardChildOp extends ChildOp {
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
         if (roomOp || baseOp) this._ownerRoomName = roomName;
+        else if (parent == shardOp) this._ownerRoomName = shardOp.name;
         else this._ownerRoomName = '';
         shardOp.addOperation(this, roomName)
     }
@@ -100,13 +101,18 @@ module.exports = class ShardChildOp extends ChildOp {
         if (childOp instanceof ShardChildOp) {
             this._shardOp.addOpId(childOp)
         }
-
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
-        super.removeChildOp(childOp);
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
+        super.removeChildOp(childOp, recursive);
+
+        //Because we keep track of creepOps, we have to delete it here as well
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
+
+        //if it is a shardchildop, remove the id from the shardOp id's
         if (childOp instanceof ShardChildOp) {
             this._shardOp.removeOpId(childOp)
         }

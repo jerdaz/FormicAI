@@ -34,8 +34,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         else this._buildWork = false;
 
         if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder
-            if (constructionSites.length > 0 ||
-                repairSites.length > 0) {
+            if (this._buildWork) {
                 creepCount = 1;
             }
         }
@@ -43,7 +42,10 @@ module.exports = class BuildingOp extends RoomChildOp {
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
             let energy = this.baseOp.storage.store.energy;
             let controller = this.baseOp.base.controller;
-            creepCount = Math.floor((energy - c.ENERGY_RESERVE / 5 * (controller.level - 3)) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
+            creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            if (creepCount <0) creepCount = 0;
+            if (creepCount <1 && this._buildWork) creepCount = 1;
         } else {
             creepCount = 20;
         }
@@ -67,7 +69,6 @@ module.exports = class BuildingOp extends RoomChildOp {
         // update variable for repair work
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
         else this._buildWork = false;
-        U.l({buildtacticsroom: this.roomName, repairSite:repairSites.length, constructionSites: constructionSites.length, buildwork: this._buildWork})
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
