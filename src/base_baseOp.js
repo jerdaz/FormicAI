@@ -51,6 +51,7 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     get type() {return c.OPERATION_BASE}
+    get roomOps() {return /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
@@ -120,7 +121,7 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {string} roomName
     */
    removeRoom(roomName) {
-       for (let roomOp of /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])) {
+       for (let roomOp of this.roomOps) {
            if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
        }
    }
