@@ -145,13 +145,21 @@ module.exports = class ShardOp extends ChildOp {
 
     /**
      * @param {string} roomName
-     * @returns {BaseOp|null} */
+     * @returns {BaseOp} */
     getBaseOp(roomName) {
+        let result = this._baseOpsMap.get(roomName);
+        if (!result) throw Error();
+        return result;
+    }
+
+    /**
+     * @param {string} roomName
+     * @returns {BaseOp|null} */
+    getBaseOpNoNullCheck(roomName) {
         let result = this._baseOpsMap.get(roomName);
         if (!result) return null;
         return result;
     }
-
     
 
     //add's an operation to the basename/optype to operation map.

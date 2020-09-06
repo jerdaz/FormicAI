@@ -23,14 +23,14 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
     _support() {
         //determin new base for shard spawning
         let baseOps = this._shardOp.baseOps;
-        let baseOp = this._shardOp.getBaseOp(this._spawnBase);
+        let baseOp = this._shardOp.getBaseOpNoNullCheck(this._spawnBase);
         /**@type {SpawningOp|null} */
         let oldSpawningOp = null;
         /**@type {SpawningOp|null} */
         let newSpawningOp = null;
         if (baseOp) oldSpawningOp = baseOp.spawningOp;
         this._spawnBase = baseOps.keys().next().value;
-        baseOp = this._shardOp.getBaseOp(this._spawnBase);
+        baseOp = this._shardOp.getBaseOpNoNullCheck(this._spawnBase);
         if (baseOp) newSpawningOp = baseOp.spawningOp;
 
         // if new spawning op is not equal, move the requests to the new spawning base

@@ -17,6 +17,7 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
+        this._visualiseRoomInfo = true;
 
 
 
@@ -83,6 +84,24 @@ module.exports = class RoomOp extends BaseChildOp {
                 this.addChildOp(harvestingOp);
             }    
             this._harvestingOpCreated = true;
+        }
+    }
+
+    _command() {
+        if(this._visualiseRoomInfo) {
+            let roomVisual = new RoomVisual(this.roomName);
+            let roomInfo = this._map.getRoomInfo(this.roomName);
+            if (roomInfo) {
+                let terrainArray = roomInfo.terrainArray;
+                if (terrainArray) {
+                    for (let x =0; x < c.MAX_ROOM_SIZE; x++) {
+                        for (let y = 0; y< c.MAX_ROOM_SIZE; y++) {
+                            let cost = Math.round(terrainArray[x][y].fatigueCost*10)/10
+                            roomVisual.text(cost.toString(),x,y, {color:'yellow', font: 0.5})
+                        }
+                    }
+                }
+            }
         }
     }
 }
