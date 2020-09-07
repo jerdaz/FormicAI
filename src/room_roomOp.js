@@ -17,7 +17,7 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
-        this._visualiseRoomInfo = true;
+        this._visualiseRoomInfo = false;
 
 
 
@@ -88,6 +88,7 @@ module.exports = class RoomOp extends BaseChildOp {
     }
 
     _command() {
+        //draw room visualisations
         if(this._visualiseRoomInfo) {
             let roomVisual = new RoomVisual(this.roomName);
             let roomInfo = this._map.getRoomInfo(this.roomName);
