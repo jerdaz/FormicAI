@@ -1,6 +1,7 @@
 const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
+const { MAX_ROOM_SIZE } = require('./constants');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
@@ -10,7 +11,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_STORAGE},
     {type: STRUCTURE_LINK, max:1},
     {type: STRUCTURE_TERMINAL},
-    {type: STRUCTURE_LAB, max:1}
+//  {type: STRUCTURE_LAB, max:1}
 ]
 
 const TERRAIN_MASK_PLAIN = 0;
@@ -107,7 +108,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
     }
 
-    
+    /* Find a building spot for a new structure in the base*/
     _findBuildingSpot() {
         const CHECK = 20;
         const INVALID = 40;
@@ -115,6 +116,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let terrain = Game.map.getRoomTerrain(this.baseOp.name);
         let roomName = this.baseOp.name;
 
+        //first create an array with the terrain.
         /**@type {number[][]} */
         let terrainArray = [];
         for (let x = 0; x<c.MAX_ROOM_SIZE; x++) {
@@ -127,25 +129,33 @@ module.exports = class BasePlanOp extends BaseChildOp{
         /**@type {RoomPosition|undefined} */
         let validSpot = undefined;
 
+        //start with the base center position and search from there.
         /**@type {RoomPosition[]} */
         let checkSpots = [];
         checkSpots.push(centerPos);
 
+        // search as long as there are possible spots to be checked, until a valid spot has been found
         while(checkSpots.length > 0 && validSpot == undefined) {
+
+            // Create a new list of spots to check from the current list of spots
             /**@type {RoomPosition[]} */
             let newCheckSpots = [];
             for (let checkSpot of checkSpots) {
                 let x = checkSpot.x;
                 let y = checkSpot.y;
                 if (BasePlanOp._isValidBuildingSpot(x,y, this.baseOp)) {
+                    // we found a valid spot. return it
                     validSpot = new RoomPosition(x,y, roomName);
                     break;
                 }
                 else {
+                    // current spot is invalid, mark it to prevent checking it again
                     terrainArray[x][y] = INVALID;
+                    // add all the spots around this spot to the new check list
                     for (let x_ = x-1; x_ <= x+1; x_++ ) {
                         for (let y_ = y-1; y_<=y+1; y_++) {
-                            if (x==x_ || y==y_ || x_<2 || x_ > c.MAX_ROOM_SIZE-1 || y_ <2 || y_ > c.MAX_ROOM_SIZE-1) continue;
+                            // only add a spot if it is diagonal from the origin spot and is in the room borders
+                            if (x==x_ || y==y_ || x_<0 || x_ > c.MAX_ROOM_SIZE-1 || y_ <0 || y_ > c.MAX_ROOM_SIZE-1) continue;
                             let terrain = terrainArray[x_][y_];
                             if (terrain == TERRAIN_MASK_SWAMP || terrain == TERRAIN_MASK_PLAIN ) {
                                 terrainArray[x_][y_] = CHECK;
@@ -245,13 +255,19 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let walls = []
         let roomTerrain = base.getTerrain();
         for(let x=0; x<c.MAX_ROOM_SIZE;x++){
+            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_RADIUS})
             for(let y=0; y<c.MAX_ROOM_SIZE;y++){
                 if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS})
             }
         }
         let roomCallBack = function(/**@type {string}*/roomName) {
+            if (roomName != base.name) return false;
             let costs = new PathFinder.CostMatrix;
-            let structures = Game.rooms[roomName].find(FIND_STRUCTURES,{filter:o => {return o.structureType!=STRUCTURE_ROAD}});
+            let room = Game.rooms[roomName]
+            let structures = room.find(FIND_STRUCTURES,{filter:o => {return o.structureType!=STRUCTURE_ROAD}});
             for (let structure of structures) {
                 let pos = structure.pos
                 costs.set(pos.x, pos.y, 255);
