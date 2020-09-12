@@ -1,4 +1,5 @@
-const U = require('./util')
+const U = require('./util');
+const { stringify } = require('./util');
 
 module.exports = class Debug {
     constructor(){
@@ -26,9 +27,19 @@ module.exports = class Debug {
     }
 
     //log an error
-    /**@param {Error} err */
-    logError(err) {
-        this._errors.push(err);
+    /**@param {Error} err 
+     * @param {string} opName
+    */
+    static logError(err, opName) {
+        let message = 'Error in operation ' + opName + '\n'
+        message += err.message;
+        let stack = err.stack;
+        if (stack) {
+            message += '\n'
+            message += stack;
+        }
+        for (let line of message.split('\n')) U.l(line)
+        Game.notify(JSON.stringify(message));
     }
 
     //log state of an object in verbose log

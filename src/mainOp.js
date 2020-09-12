@@ -3,15 +3,24 @@ let c = require('./constants');
 let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
+
+//compat fix:
+const PIXEL_CPU_COST = 5000;
+//if (!Game.cpu.generatePixel) Game.cpu.generatePixel = function() {};
+//end compat fix
+
+
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
 
-module.exports = class Main extends Operation {
+module.exports = class MainOp extends Operation {
     constructor() {
         super();
         U.l('INIT MAIN');
+
+
         for (let memObj in Memory) {
             switch (memObj) {
                 case 'maxCPU':
@@ -25,11 +34,11 @@ module.exports = class Main extends Operation {
             }
         }
         Memory.creeps = {};
-        Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
+        if (Memory.rooms == undefined) Memory.rooms = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -53,6 +62,7 @@ module.exports = class Main extends Operation {
     }
 
     get type() { return c.OPERATION_MAIN; }
+
 
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
     /**@param {number} shardRequest */
@@ -125,7 +135,7 @@ module.exports = class Main extends Operation {
     }
 
     _command() {
-        if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel(); //generate pixels
+        if (Game.cpu.generatePixel && Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
     }
 
     /**@param {ShardMem} shardMem */
