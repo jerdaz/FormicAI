@@ -2,16 +2,18 @@ const U = require('./util');
 const c = require('./constants');
 const FillingOp = require('./base_fillingOp');
 const UpgradingOp = require('./base_upgradingOp');
+const BuildingOp = require('./base_buildingOp');
 const SpawningOp = require ('./base_spawningOp');
 const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
 const ColonizingOp = require('./base_colonizingOp');
+const HarvestingOp = require('./base_harvestingOp');
 const BasePlanOp = require('./base_basePlanOp');
 const LinkOp = require('./base_transportOp');
 const MiningOp = require('./base_miningOp');
 const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
-const RoomOp = require('./room_roomOp');
+const RoomOp = require('./base_roomOp');
 
 const UNCLAIM_TIME = 3000;
 
@@ -21,7 +23,6 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {ShardOp} shardOp */
     constructor (base, shardOp) {
         super(shardOp, shardOp);
-        
 
         /**@type {Base} */
         this._base = base;
@@ -31,6 +32,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new SpawningOp(this));
         this.addChildOp(new TowerOp(this));
         this.addChildOp(new FillingOp(this));
+        this.addChildOp(new BuildingOp(this));
         this.addChildOp(new UpgradingOp(this));
         this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));
@@ -38,8 +40,13 @@ module.exports = class BaseOp extends ShardChildOp{
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
-        this._myRoomOp = new RoomOp(this, this._name, 0);
-        this.addChildOp(this._myRoomOp);
+        this.addChildOp(new RoomOp(this, this._name));
+
+        let i = 0;
+        for (let source of base.find(FIND_SOURCES)) {
+            let harvestingOp = new HarvestingOp(this, source.id, i++)
+            this.addChildOp(harvestingOp);
+        }
 
         this._phase = c.BASE_PHASE_BIRTH;
         this._fillerEmergency = false;
@@ -51,11 +58,10 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     get type() {return c.OPERATION_BASE}
-    get roomOps() {return /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
+    get buildingOp() {return /**@type {BuildingOp} */(this._childOps[c.OPERATION_BUILDING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
-    get buildingOp() {return this._myRoomOp.buildingOp}
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
     get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
     get myStructures() {return this._structures};  
@@ -78,8 +84,6 @@ module.exports = class BaseOp extends ShardChildOp{
     initTick() {
         super.initTick();
         this._base = /**@type {Base} */ (Game.rooms[this._name])
-        // add op to room for easy access in debug console
-        this._base.baseOp = this;
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
@@ -109,29 +113,12 @@ module.exports = class BaseOp extends ShardChildOp{
         this._base.controller.activateSafeMode();
     }
 
-    /**
-     * add a subroom to the base
-     * @param {string} roomName 
-     */
-    addRoom(roomName) {
-        this.addChildOp(new RoomOp(this,roomName, 1));
-    }
-
-    /** remove a subroom from the base
-     * @param {string} roomName
-    */
-   removeRoom(roomName) {
-       for (let roomOp of this.roomOps) {
-           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
-       }
-   }
-
     _firstRun() {
         this._strategy();
     }
 
     _tactics() {
-        if (this.spawns.length == 0) {
+        if ((this.spawns.length == 0) && this.buildingOp.creepCount == 0) {
             this._shardOp.requestBuilder(this.name);
         }
     }
@@ -154,7 +141,7 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
-        if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
+        if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;

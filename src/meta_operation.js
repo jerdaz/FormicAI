@@ -55,34 +55,34 @@ module.exports = class Operation {
             try {
                 this._firstRun();
                 this._bFirstRun = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {this._debug.logError(err)};
         }
 
         if (this._runStrategy || Game.time % c.STRATEGY_INTERVAL == this._tickOffset % c.STRATEGY_INTERVAL) {
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {this._debug.logError(err)};
         }
         if (this._runTactics || Game.time % c.TACTICS_INTERVAL == this._tickOffset % c.TACTICS_INTERVAL) {
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {this._debug.logError(err)};
         }
         try {
             this._command();
-        } catch(err) {Debug.logError(err, this.name)};
+        } catch(err) {this._debug.logError(err)};
         for (let childOps of this._childOps) if(childOps) for (let childOp of childOps) {
             try {
                 childOp.run();
-            } catch(err) {Debug.logError(err, this.name)}
+            } catch(err) {this._debug.logError(err)}
         }
         if (this._runSupport || Game.time % c.SUPPORT_INTERVAL == this._tickOffset) {
             try {
                 this._support();
                 if (this._runSupport) this._runSupport = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {this._debug.logError(err)};
         }
         if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
             Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));
@@ -95,19 +95,9 @@ module.exports = class Operation {
         this._childOps[childOp.type].push(childOp);
     }
 
-    /**@param {ChildOp} childOp 
-     * @param {boolean} [recursive]
-    */
-    removeChildOp(childOp, recursive) {
+    /**@param {ChildOp} childOp */
+    removeChildOp(childOp) {
         this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
-        if (recursive) {
-            let parent = childOp
-            for (let childOps of parent.childOps) {
-                for (let childOp of childOps) {
-                    parent.removeChildOp(childOp, recursive)
-                }
-            }
-        }
     }
 
     _firstRun() {}

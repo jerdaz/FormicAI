@@ -1,17 +1,17 @@
 const U = require('./util');
 const c = require('./constants');
-const RoomChildOp = require('./room_childOp');
+const BaseChildOp = require('./base_childOp');
 
 const HARVESTER_SIZE_BIG = 48
 const HARVESTER_SIZE_SMALL = 6*3
 
-module.exports = class HarvestingOp extends RoomChildOp {
+module.exports = class HarvestingOp extends BaseChildOp {
     /** 
-     * @param {RoomOp} roomOp
+     * @param {BaseOp} baseOp
      * @param {String} sourceId 
      * @param {number} instance*/
-    constructor (roomOp, sourceId, instance) {
-        super(roomOp, instance);
+    constructor (baseOp, sourceId, instance) {
+        super(baseOp, instance);
         this._sourceId = sourceId;
         /**@type {Number|null} 
          * null for fixed harverster count
@@ -29,7 +29,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
     _strategy() {
         /**@type {Source | null} */
         let source = Game.getObjectById(this._sourceId);
-        if (!source) return //room is not visible
+        if (!source) throw Error('Source not found')
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
@@ -43,7 +43,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, Math.round(this._harvesterCount))
         }
 
-        if (this._isMainRoom && this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
+        if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
             let base = this.baseOp.base;
             if(links.length == 0) {
                 //create roomcallback to prevent building on room edges;
@@ -81,18 +81,14 @@ module.exports = class HarvestingOp extends RoomChildOp {
         /**@type {Source} */
         let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
         if (this._harvesterCount) {
-            if (source && source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
+            if (source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
             if (this._harvesterCount > 3) this._harvesterCount = 3;
-            else if (this._harvesterCount < 1) this._harvesterCount = 1;
         } ;
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
-            if (creepOp.instruction == c.COMMAND_NONE) {
-                if (source) creepOp.instructHarvest(source)
-                else creepOp.instructMoveTo(this.roomName)
-            }
+            creepOp.instructHarvest(source)
         }
     }
 }

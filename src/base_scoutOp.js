@@ -22,7 +22,7 @@ module.exports = class ScoutOp extends BaseChildOp {
 
     _strategy() {
         let creepCount = 1;
-        //if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
+        if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
@@ -52,9 +52,9 @@ module.exports = class ScoutOp extends BaseChildOp {
                     })
                 if (roomNames.length > 0) destRoomName = roomNames.pop();
                 else destRoomName = lastRoomName
-
                 if (destRoomName) {
-                    creepOp.instructMoveTo(destRoomName)
+                    let dest = new RoomPosition(25, 25, destRoomName);
+                    if (dest) creepOp.instructMoveTo(dest)
                     this._lastRoomName[creepName] = room.name;
                 }
             }

@@ -33,29 +33,13 @@ module.exports = function(grunt) {
           };
           password = config.cogd_password;
           break;
-      case 'atanner': 
+       case 'atanner': 
           server = {
             host: 'atannergaming.com',
             port: 21025,
             http: true
           };
           password = config.atanner_password;
-          break;
-      case 'atanner-thunderdome': 
-          server = {
-            host: 'thunderdomescreeps.atannergaming.com',
-            port: 21025,
-            http: true
-          };
-          password = config.atanner_password;
-          break;
-       case 'qbits': 
-          server = {
-            host: 'screeps.qbits.be',
-            port: 21025,
-            http: true
-          };
-          password = config.qbits_password;
           break;
        case 'screeps':
           break;
