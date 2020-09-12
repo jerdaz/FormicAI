@@ -2,6 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const CreepOp = require('./shard_creepOp');
+const { TACTICS_INTERVAL } = require('./constants');
 
 module.exports = class ShardChildOp extends ChildOp {
     /**
@@ -15,6 +16,7 @@ module.exports = class ShardChildOp extends ChildOp {
         this._shardOp = shardOp;
         this._map = shardOp._map;
         this._baseOp = baseOp;
+        this._roomOp = roomOp;
         this._instance = instance || 0
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
@@ -23,20 +25,37 @@ module.exports = class ShardChildOp extends ChildOp {
         if (roomOp) roomName = roomOp.roomName
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
-        this._ownerRoomName = roomName;
+        if (roomOp || baseOp) this._ownerRoomName = roomName;
+        else if (parent == shardOp) this._ownerRoomName = shardOp.name;
+        else this._ownerRoomName = '';
         shardOp.addOperation(this, roomName)
     }
 
     get instance() {return this._instance}
 
+    get baseOp() {return this._baseOp}
+    get roomOp() {return this._roomOp}
+
     get shardOp() {return this._shardOp};
 
     get ownerRoomName() {return this._ownerRoomName}
 
-    get creepCount(){
-        let res = _.size(this._creepOps)
-        if (!res) res = 0;
+    /** Returns the number of creeps in the operation
+     * Corrects for creeps that have TTL smaller than their spawn time
+     */
+    getCreepCountForSpawning(){
+        let res = 0;
+        for (let name in this._creepOps) {
+            let creepOp = this._creepOps[name];
+            let creep = creepOp.creep;
+            //only count a creep if ticks to live is larger then spawn time 
+            if (creep.spawning || creep.ticksToLive && creep.ticksToLive > creep.body.length * 3 ) res++;
+        }
         return res;
+    }
+
+    get creepCount(){
+        return _.size(this._creepOps)||0;
     }
 
     get idleCount() {
@@ -79,13 +98,24 @@ module.exports = class ShardChildOp extends ChildOp {
             creep.memory.operationType = this.type;
             creep.memory.operationInstance = this.instance;
         }
-
+        if (childOp instanceof ShardChildOp) {
+            this._shardOp.addOpId(childOp)
+        }
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
-        super.removeChildOp(childOp);
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
+        super.removeChildOp(childOp, recursive);
+
+        //Because we keep track of creepOps, we have to delete it here as well
         if (childOp.type == c.OPERATION_CREEP) delete this._creepOps[childOp.name];
+
+        //if it is a shardchildop, remove the id from the shardOp id's
+        if (childOp instanceof ShardChildOp) {
+            this._shardOp.removeOpId(childOp)
+        }
     }
 
     

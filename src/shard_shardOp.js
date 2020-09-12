@@ -5,6 +5,9 @@ const BaseOp = require('./base_baseOp');
 const MapOp = require('./shard_mapOp');
 const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
+const ShardSpawningOp = require('./shard_spawningOp');
+const ShardDefenseOp = require('./shard_defenseOp')
+const ShardChildOp = require('./shard_childOp')
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -17,6 +20,10 @@ module.exports = class ShardOp extends ChildOp {
         this._OperationIdByRoomByOpType = {};
         /** @type {{[key:string]: BaseOp }} */
         //this._baseOpsMap = {};
+
+        // an object containing all operations by ID
+        /**@type {{[opId:number]:ShardChildOp}} */
+        this._operationIds = {};
 
         // a map with all the baseops
         /**@type {Map<String, BaseOp>}*/
@@ -32,13 +39,21 @@ module.exports = class ShardOp extends ChildOp {
         this.addChildOp(this._map);
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
+        this.addChildOp(new ShardSpawningOp(this));
+        this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
     }
 
+
+
     get type() {return c.OPERATION_SHARD}
 
     get name() {return Game.shard.name};
+
+    get mainOp() {return this._parent}
+
+    get spawningOp () {return /**@type {ShardSpawningOp}*/( this.childOps[c.OPERATION_SHARDSPAWNING][0])}
 
     get userName() {return this._userName}
 
@@ -48,7 +63,44 @@ module.exports = class ShardOp extends ChildOp {
     get baseCount() {
         return this._baseOpsMap.size;
     }
+
+    get baseOps() {
+        return this._baseOpsMap;
+    }
+
+    get subRooms() {
+        return this._subRooms;
+    }
+
     
+    /**@param {number} id */
+    getOp(id) {
+        return this._operationIds[id];
+    }
+
+    /**@param {ShardChildOp} op */
+    removeOpId(op) {
+        let id = op.id;
+        if (this._operationIds[id]) {
+            delete this._operationIds[id]
+        } else throw Error();
+    }
+
+    /**@param {ShardChildOp} op */
+    addOpId(op) {
+        let id = op.id;
+        this._operationIds[id] = op;
+    }
+
+    /**@param {ChildOp} childOp */
+    addChildOp(childOp) {
+        super.addChildOp(childOp);
+        if (childOp instanceof ShardChildOp) {
+            this.addOpId(childOp)
+        }
+    }
+
+
     /**
      * @param {string} roomName
      * @returns {Room} returns room with RoomName */
@@ -96,10 +148,19 @@ module.exports = class ShardOp extends ChildOp {
      * @returns {BaseOp} */
     getBaseOp(roomName) {
         let result = this._baseOpsMap.get(roomName);
-        if (!result) throw Error('baseop does not exist')
+        if (!result) throw Error();
         return result;
     }
 
+    /**
+     * @param {string} roomName
+     * @returns {BaseOp|null} */
+    getBaseOpNoNullCheck(roomName) {
+        let result = this._baseOpsMap.get(roomName);
+        if (!result) return null;
+        return result;
+    }
+    
 
     //add's an operation to the basename/optype to operation map.
     /**
@@ -202,8 +263,17 @@ module.exports = class ShardOp extends ChildOp {
 
         //sort bases in order of importance
         this._baseOpsMap = new Map([...this._baseOpsMap].sort((a,b) => 
-            {return a[1].base.controller.level - b[1].base.controller.level})
+            {return b[1].base.controller.level - a[1].base.controller.level})
         );
+        
+        let iterator = this._baseOpsMap.keys();
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
+        U.l({sortedbases:iterator.next().value}) 
 
         //periodically remove all constructionsites
         let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);
@@ -250,13 +320,17 @@ module.exports = class ShardOp extends ChildOp {
                 let neighbourRoomName = neighbours[exit];
                 if (!this._subRooms[neighbourRoomName] && !this._baseOpsMap.get(neighbourRoomName)) {
                     this._subRooms[neighbourRoomName] = baseOpName;
-                    this.getBaseOp(baseOpName).addRoom(neighbourRoomName)
+                    let baseOp = this.getBaseOp(baseOpName);
+                    if (!baseOp) throw Error();
+                    baseOp.addRoom(neighbourRoomName)
                 }
             }
 
             //remove subroom if it is the main room of a baseOp
             if (this._subRooms[baseOpName]) {
-                this.getBaseOp(this._subRooms[baseOpName]).removeRoom(baseOpName);
+                let baseOp = this.getBaseOp(this._subRooms[baseOpName]);
+                if (!baseOp) throw Error();
+                baseOp.removeRoom(baseOpName);
                 delete this._subRooms[baseOpName]
             }
         }

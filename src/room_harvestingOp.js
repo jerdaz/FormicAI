@@ -84,6 +84,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
             if (source && source.ticksToRegeneration <= c.TACTICS_INTERVAL && source.energy > source.energyCapacity/ENERGY_REGEN_TIME * c.TACTICS_INTERVAL ) this._harvesterCount+=0.2;
             else this._harvesterCount -= 0.001;
             if (this._harvesterCount > 3) this._harvesterCount = 3;
+            else if (this._harvesterCount < 1) this._harvesterCount = 1;
         } ;
 
         for (let creepName in this._creepOps) {

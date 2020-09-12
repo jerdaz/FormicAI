@@ -1,6 +1,6 @@
 
 declare type DebugType = import ('./debug');
-declare type MainOp = import ('./mainOp').MainOp;
+declare type MainOp = import ('./mainOp');
 declare type Operation = import('./meta_operation')
 declare type ChildOp = import('./meta_childOp')
 declare type ShardOp = import('./shard_shardOp')
@@ -17,7 +17,12 @@ declare type TowerOp = import('./base_defenseOp');
 declare type ColonizingOp = import('./shard_colonizingOp');
 declare type RoomOp = import('./room_roomOp');
 
-declare interface Base extends Room {controller: StructureController, op?: BaseOp};
+declare module NodeJS  {
+    interface Global {
+        mainOp: MainOp
+    }
+}
+declare interface Base extends Room {controller: StructureController, baseOp?: BaseOp};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};
 declare interface OrderEx extends Order {transactionCost?: number, netPrice?: number}
 declare var _ = import('lodash');
@@ -31,4 +36,5 @@ interface MainOp {MainOp}
 interface ShardOp {ShardOp}
 
 interface CreepMemory {operationType: number, baseName: string, operationInstance:number}
+interface RoomMemory {distanceOffset: number}
 ;
