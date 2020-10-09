@@ -90,7 +90,8 @@ module.exports = class SpawningOp extends BaseChildOp {
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
-                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999),
+                                            {directions: [BOTTOM_LEFT,BOTTOM,BOTTOM_RIGHT]} )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
                                     this._log(result); 

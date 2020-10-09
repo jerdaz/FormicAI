@@ -14,8 +14,16 @@ const baseBuildTemplate = [
 //  {type: STRUCTURE_LAB, max:1}
 ]
 
+const baseCoreOffset = {x:-1, y:-1};
+const CORE_OUTER_RADIUS = 3;
+const CORE_INNER_RADIUS = 1;
+const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_TERMINAL, STRUCTURE_TOWER],
+                          [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
+                          [STRUCTURE_TOWER,STRUCTURE_SPAWN, STRUCTURE_TOWER]]
+
+    
+
 const TERRAIN_MASK_PLAIN = 0;
-const CORE_RADIUS = 3;
 
 module.exports = class BasePlanOp extends BaseChildOp{
     /** 
@@ -39,23 +47,26 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     _support() {
         let base = this.baseOp.base;
-        //find & destroy extensions that have become unreachable.
+        //find & destroy improperly placed buildings.
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
                 case STRUCTURE_LAB: //fix labs with incorrect resource types
                     if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
                 case STRUCTURE_EXTENSION:
-                case STRUCTURE_STORAGE:
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)) structure.destroy();
+                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)
+                       && !structure.pos.inRangeTo(this.baseCenter,CORE_INNER_RADIUS)) structure.destroy();
                     break;
-            }
+                case STRUCTURE_STORAGE:
+                case STRUCTURE_LAB:
+                    if (!structure.pos.inRangeTo(this.baseCenter,1)) structure.destroy();
+                break;
+                }
         }
-        for (let extension of this.baseOp.extensions) {
-        }
-
+        
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        if (this.baseOp.linkOp.baseLinks.length > 0 && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)) this.baseOp.linkOp.baseLinks[0].destroy();
         
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
@@ -94,21 +105,44 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
         } else if (structureSites.length < 1 ) {
+            //first try to build the inner core with a fixed template
+            let createdConstructionSite = false;
+            let y = this.baseCenter.y + baseCoreOffset.y - 1;
+            for(let structureRow of baseCoreTemplate) {
+                y++;
+                let x = this.baseCenter.x + baseCoreOffset.x - 1;
+                for (let structureType of structureRow) {
+                    x++
+                    let pos = new RoomPosition(x,y, this.baseName);
+                    pos.createConstructionSite(STRUCTURE_RAMPART);
+                    let structures = pos.lookFor('structure');
+                    for (let structure of structures) {
+                        if ((structure.structureType != structureType && structure.structureType != STRUCTURE_RAMPART) || structureType == null) structure.destroy();
+                    }
+                    if (structureType && structures.length == 0) {
+                        let result = pos.createConstructionSite(structureType);
+                        if (result == OK) createdConstructionSite = true;
+                    }
+                }
+            }
 
-            for(let template of baseBuildTemplate) {
-                let structureType = template.type;
-                let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
-                curCount += _.filter(constructionSites, {structureType: structureType}).length;
-                if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
-                    let pos = this._findBuildingSpot();
-                    if (pos) pos.createConstructionSite(structureType);
-                    else throw Error('WARNING: Cannot find building spot in room ' + room.name);
+            // then expand into the outer region of the base with a generic pattern
+            if (!createdConstructionSite) {
+                for(let template of baseBuildTemplate) {
+                    let structureType = template.type;
+                    let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
+                    curCount += _.filter(constructionSites, {structureType: structureType}).length;
+                    if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
+                        let pos = this._findBuildingSpot();
+                        if (pos) pos.createConstructionSite(structureType);
+                        else throw Error('WARNING: Cannot find building spot in room ' + room.name);
+                    }
                 }
             }
         }
     }
 
-    /* Find a building spot for a new structure in the base*/
+    /* Find a building spot for a new structure in the base*/ 
     _findBuildingSpot() {
         const CHECK = 20;
         const INVALID = 40;
@@ -181,6 +215,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         if (!base.controller) throw Error();
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
         let pos = new RoomPosition(x, y, base.name)
+        if (pos.inRangeTo(baseOp.centerPos,CORE_INNER_RADIUS)) return false;
         let terrain = pos.lookFor(LOOK_TERRAIN);
         if (_.includes(terrain,'wall')) return false;
         let structures = pos.lookFor(LOOK_STRUCTURES);
@@ -225,10 +260,14 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let base = baseOp.base;
         let firstSpawn = baseOp.spawns[0];
         let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES, {filter: {structureType: STRUCTURE_SPAWN}})[0];
-        if (firstSpawn) return firstSpawn.pos;
-        else if (firstConstructionSite) return firstConstructionSite.pos;
-
-
+        /**@type {RoomPosition|null} */
+        let centerPos = null;
+        if (firstSpawn) centerPos = firstSpawn.pos;
+        else if (firstConstructionSite) centerPos = firstConstructionSite.pos;
+        if (centerPos) {
+            centerPos.y--;
+            return centerPos;
+        }
 
         let controllerPos = base.controller.pos;
         let sources = base.find(FIND_SOURCES);
@@ -248,19 +287,19 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let path = sourcePos.findPathTo(controllerPos, {range:1, ignoreCreeps:true});
         if (path.length < 1) throw Error('no path between source and controller')
         let pathStep = path[Math.floor(path.length/2)];
-        let centerPos = new RoomPosition(pathStep.x, pathStep.y, base.name);
+        centerPos = new RoomPosition(pathStep.x, pathStep.y, base.name);
         
         // now 'flee' from all walls a distance with minimal free space
         /**@type {{pos:RoomPosition, range:number }[]} */
         let walls = []
         let roomTerrain = base.getTerrain();
         for(let x=0; x<c.MAX_ROOM_SIZE;x++){
-            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_RADIUS})
-            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_RADIUS})
-            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_RADIUS})
-            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_RADIUS})
+            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_OUTER_RADIUS})
+            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_OUTER_RADIUS})
+            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_OUTER_RADIUS})
+            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_OUTER_RADIUS})
             for(let y=0; y<c.MAX_ROOM_SIZE;y++){
-                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_RADIUS})
+                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS})
             }
         }
         let roomCallBack = function(/**@type {string}*/roomName) {
