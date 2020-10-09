@@ -18,7 +18,6 @@ module.exports = class ShardDefenseOp extends ShardChildOp {
     }
 
     _strategy() {
-        U.l('running shard defense strategy)')
         let creepCount=0;
         let subRooms = this._shardOp.subRooms;
         this._guardRooms = []
@@ -44,7 +43,6 @@ module.exports = class ShardDefenseOp extends ShardChildOp {
         }
         this._nextRoom = nextRoom
 
-        U.l({guardrooms:this._guardRooms, creepCount:creepCount})
     }
 
     _tactics() {
@@ -58,7 +56,6 @@ module.exports = class ShardDefenseOp extends ShardChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let pos = creepOp.pos;
-            U.l({defenseroomtactics: defendRooms, nextRoom:this._nextRoom})
             if (defendRooms.length == 0 && this._nextRoom ) creepOp.instructAttack(this._nextRoom)
             else if (defendRooms.length > 0) {
                 let roomName = this._map.findClosestRoomByPath(defendRooms, pos.roomName)

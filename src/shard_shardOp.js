@@ -267,14 +267,7 @@ module.exports = class ShardOp extends ChildOp {
         );
         
         let iterator = this._baseOpsMap.keys();
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-
+        
         //periodically remove all constructionsites
         let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);
         if (Game.time - lastConstructionSiteCleanTick > CONSTRUCTION_SITE_CLEAN_INTERVAL) {
