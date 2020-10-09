@@ -12,11 +12,11 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
      * @param {ShardChildOp} parent
-     * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
+     * @param {BaseOp} [baseOp] 
      * */
-    constructor(parent, shardOp, baseOp, mapOp, creep) {
+    constructor(parent, shardOp, mapOp, creep, baseOp) {
         super(parent);
         this._parent = parent;
         /**@type {number} */

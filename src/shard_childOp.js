@@ -123,7 +123,7 @@ module.exports = class ShardChildOp extends ChildOp {
     /**@param {Creep} creep */
     initCreep(creep) {
         if (this._creepOps[creep.name] == undefined) {
-            this.addChildOp(new CreepOp(this, this._shardOp, this._baseOp, this._map, creep))
+            this.addChildOp(new CreepOp(this, this._shardOp, this._map, creep, this._baseOp))
             this._runTactics = true;
         }
         this._creepOps[creep.name].initTickCreep(creep);
