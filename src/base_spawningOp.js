@@ -95,7 +95,7 @@ module.exports = class SpawningOp extends BaseChildOp {
                             let directions = [TOP_RIGHT, TOP, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
                             if (spawn == primarySpawn) {
                                 // Primary spawn should only send creeps down
-                                directions == [BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
+                                directions = [TOP_RIGHT, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
                                 // unless it is the transporter creep, it should go into the base center
                                 if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) directions = [TOP]
                             } else if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) {

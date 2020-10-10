@@ -71,9 +71,9 @@ module.exports = class TransportOp extends BaseChildOp {
         this.initTick();
 
         let creepCount = 0;
-        if (this._baseLinkIds.length>0) creepCount++;
+        if (this._baseLinkIds.length>0) creepCount = 1;
         //if (this.baseOp.labs.length>0) creepCount++;
-        this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY) }, creepCount)
+        this.baseOp.spawningOp.ltRequestSpawn(this, {body:[CARRY], maxLength: Math.floor(LINK_CAPACITY / CARRY_CAPACITY / 2) }, creepCount)
     }
 
     _tactics() {

@@ -17,8 +17,9 @@ const baseBuildTemplate = [
 const baseCoreOffset = {x:-1, y:-1};
 const CORE_OUTER_RADIUS = 3;
 const CORE_INNER_RADIUS = 1;
+/**@type {BuildableStructureConstant[][]} */
 const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_TERMINAL, STRUCTURE_TOWER],
-                          [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
+                          [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_LINK],
                           [STRUCTURE_TOWER,STRUCTURE_SPAWN, STRUCTURE_TOWER]]
 
     
@@ -59,14 +60,17 @@ module.exports = class BasePlanOp extends BaseChildOp{
                        && !structure.pos.inRangeTo(this.baseCenter,CORE_INNER_RADIUS)) structure.destroy();
                     break;
                 case STRUCTURE_STORAGE:
-                case STRUCTURE_LAB:
                     if (!structure.pos.inRangeTo(this.baseCenter,1)) structure.destroy();
+                    break;
+                case STRUCTURE_LAB:
                 break;
                 }
         }
         
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
-        if (this.baseOp.linkOp.baseLinks.length > 0 && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)) this.baseOp.linkOp.baseLinks[0].destroy();
+        if (this.baseOp.linkOp.baseLinks.length > 0 
+            && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
+            && this.baseOp.linkOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.linkOp.baseLinks[0].destroy();
         
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
@@ -114,7 +118,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 for (let structureType of structureRow) {
                     x++
                     let pos = new RoomPosition(x,y, this.baseName);
-                    pos.createConstructionSite(STRUCTURE_RAMPART);
                     let structures = pos.lookFor('structure');
                     for (let structure of structures) {
                         if ((    structure.structureType != structureType 
@@ -122,8 +125,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
                               && structure.structureType != STRUCTURE_ROAD
                             ) || structureType == null) structure.destroy();
                     }
-                    if (structureType && structures.length == 0) {
+                    if (structureType && !_.some(structures, ['structureType', structureType])) {
                         let result = pos.createConstructionSite(structureType);
+                    } else if (_.some(structures, ['structureType', structureType]) && !_.some(structures, ['structureType', STRUCTURE_RAMPART])) {
+                        let result = pos.createConstructionSite(STRUCTURE_RAMPART);
                         if (result == OK) createdConstructionSite = true;
                     }
                 }
