@@ -76,27 +76,27 @@ module.exports = class TransportOp extends BaseChildOp {
         this.baseOp.spawningOp.ltRequestSpawn(this, {body:[CARRY], maxLength: 1 }, creepCount)
     }
 
-    _tactics() {
-        if (!this.baseOp.storage) return;
-        let baseLink = this._baseLinks[0];
-        if (baseLink == null) return;
-        let creepNumber = 0;
-        let storage = this._baseOp.storage
-        if (!storage) return;
-        let terminal = this._baseOp.terminal;
-        let lab = this._baseOp.labs[0]
-        for (let creepName in this._creepOps) {
-            let creepOp = this._creepOps[creepName];
-            if (creepNumber == 0) { //first creep transfers between storage and base link
-                if (baseLink.store[RESOURCE_ENERGY] >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
-                else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
-            }
-            // else if (creepNumber == 1) { //second creep transfers between terminal and storage
-            //     if (terminal && terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]>0 && lab && lab.store && lab.store.getFreeCapacity(RESOURCE_CATALYZED_GHODIUM_ACID) ) creepOp.instructTransfer(terminal, lab, RESOURCE_CATALYZED_GHODIUM_ALKALIDE)
-            // }
-            creepNumber++;
-        }
-    }    
+    // _tactics() {
+    //     if (!this.baseOp.storage) return;
+    //     let baseLink = this._baseLinks[0];
+    //     if (baseLink == null) return;
+    //     let creepNumber = 0;
+    //     let storage = this._baseOp.storage
+    //     if (!storage) return;
+    //     let terminal = this._baseOp.terminal;
+    //     let lab = this._baseOp.labs[0]
+    //     for (let creepName in this._creepOps) {
+    //         let creepOp = this._creepOps[creepName];
+    //         if (creepNumber == 0) { //first creep transfers between storage and base link
+    //             if (baseLink.store[RESOURCE_ENERGY] >= CARRY_CAPACITY) creepOp.instructTransfer(baseLink, storage);
+    //             else if (terminal && terminal.store.getFreeCapacity() <= 0) creepOp.instructTransfer(terminal, storage); 
+    //         }
+    //         // else if (creepNumber == 1) { //second creep transfers between terminal and storage
+    //         //     if (terminal && terminal.store[RESOURCE_CATALYZED_GHODIUM_ACID]>0 && lab && lab.store && lab.store.getFreeCapacity(RESOURCE_CATALYZED_GHODIUM_ACID) ) creepOp.instructTransfer(terminal, lab, RESOURCE_CATALYZED_GHODIUM_ALKALIDE)
+    //         // }
+    //         creepNumber++;
+    //     }
+    // }    
 
     _command(){
         let controllerLink = this._controllerLinks[0];
@@ -110,6 +110,51 @@ module.exports = class TransportOp extends BaseChildOp {
             }
             else if (sourceLink.energyCapacity / 8 <= sourceLink.energy) {
                 sourceLink.transferEnergy(targetLink);
+            }
+        }
+
+        let creepOp = _.sample(this._creepOps);
+        if (creepOp) {
+            let storage = this._baseOp.storage;
+            let terminal = this._baseOp.terminal;
+            let pos = creepOp.creep.pos;
+            let structures = pos.findInRange(FIND_STRUCTURES,1)
+            /**@type {StructureSpawn | null} */
+            let spawn = null;
+            /**@type {StructureTerminal | null} */
+            /**@type {StructureTower[]} */
+            let towers = []
+            for (let structure of structures) {
+                switch (structure.structureType){
+                    case STRUCTURE_SPAWN:
+                        spawn = structure;
+                        break;
+                    case STRUCTURE_TOWER:
+                        towers.push(structure);
+                        break;
+                }
+            }
+            /**@type {Structure |null} */
+            let sourceStructure = null;
+            if (storage) sourceStructure = storage;
+            if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
+            if (baseLink && baseLink.store.energy >= CARRY_CAPACITY) sourceStructure = baseLink;
+            if (sourceStructure) {
+                /**@type {Structure |null} */
+                let targetStructure = null;
+                if (storage) targetStructure = storage;
+                if (spawn && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) targetStructure = spawn;
+                else {
+                    for (let tower of towers) {
+                        if (tower.store.getFreeCapacity(RESOURCE_ENERGY) >= CARRY_CAPACITY ) {
+                            targetStructure = tower;
+                            break;
+                        }
+                    }
+                }
+                if (targetStructure && sourceStructure != targetStructure) {
+                    creepOp.instructTransfer(sourceStructure, targetStructure);
+                }
             }
         }
     }

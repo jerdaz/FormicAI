@@ -72,8 +72,6 @@ module.exports = class SpawningOp extends BaseChildOp {
 
     _command() {
 
-
-        if (this.baseOp.name == 'W2N5') this._verbose=true
         let canSpawn = false;
         let spawns = this._baseOp.spawns;
         let primarySpawn = spawns[0];
