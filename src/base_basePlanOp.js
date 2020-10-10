@@ -76,20 +76,20 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     }
 
-    _strategy(){
-        let base = this.baseOp.base;
-        if (base.find(FIND_MY_CONSTRUCTION_SITES).length < c.MAX_CONSTRUCTION_SITES) {
-            let firstSpawn = this._baseOp.spawns[0];
-            let result = 0;
-            if (firstSpawn) result = firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
-            if (result != OK) {
-                for (let tower of this._baseOp.towers) {
-                    result = tower.pos.createConstructionSite(STRUCTURE_RAMPART);
-                    if (result == OK) break;
-                }
-            }
-        };
-    }
+    // _strategy(){
+    //     let base = this.baseOp.base;
+    //     if (base.find(FIND_MY_CONSTRUCTION_SITES).length < c.MAX_CONSTRUCTION_SITES) {
+    //         let firstSpawn = this._baseOp.spawns[0];
+    //         let result = 0;
+    //         if (firstSpawn) result = firstSpawn.pos.createConstructionSite(STRUCTURE_RAMPART);
+    //         if (result != OK) {
+    //             for (let tower of this._baseOp.towers) {
+    //                 result = tower.pos.createConstructionSite(STRUCTURE_RAMPART);
+    //                 if (result == OK) break;
+    //             }
+    //         }
+    //     };
+    // }
 
     _tactics() {
         let room = this.baseOp.base;
@@ -125,9 +125,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
                               && structure.structureType != STRUCTURE_ROAD
                             ) || structureType == null) structure.destroy();
                     }
-                    if (structureType && !_.some(structures, ['structureType', structureType])) {
+                    if (structureType && !_.some(structures, {structureType: structureType})) {
                         let result = pos.createConstructionSite(structureType);
-                    } else if (_.some(structures, ['structureType', structureType]) && !_.some(structures, ['structureType', STRUCTURE_RAMPART])) {
+                        if (result == OK) createdConstructionSite = true;
+                    } else if (_.some(structures, {structureType: structureType}) && !_.some(structures, {structureType: STRUCTURE_RAMPART})) {
                         let result = pos.createConstructionSite(STRUCTURE_RAMPART);
                         if (result == OK) createdConstructionSite = true;
                     }
