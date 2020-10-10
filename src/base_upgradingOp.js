@@ -67,7 +67,9 @@ module.exports = class UpgradingOp extends BaseChildOp {
             } else {
                 if (creepOp.instruction != c.COMMAND_UPGRADE) 
                 {
-                    creepOp.instructUpgradeController(this._baseOp.name);
+                    let link = this.baseOp.base.controller.pos.findInRange(FIND_MY_STRUCTURES, 2,  {filter: {structureType: STRUCTURE_LINK}})[0]
+                    if (link) creepOp.instructTransfer(link, this.baseOp.base.controller)
+                    else creepOp.instructUpgradeController(this._baseOp.name);
                 }
             }
         }
