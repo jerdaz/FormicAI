@@ -71,6 +71,9 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _command() {
+
+
+        if (this.baseOp.name == 'W2N5') this._verbose=true
         let canSpawn = false;
         let spawns = this._baseOp.spawns;
         let primarySpawn = spawns[0];
@@ -99,7 +102,7 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 // unless it is the transporter creep, it should go into the base center
                                 if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) directions = [TOP]
                             } else if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) {
-                                // transporter creeps should only be spawned on primary base center
+                                // transporter creeps should only be spawned on primary base center. pick something else
                                 let spawnItem2 = spawnList.pop();
                                 spawnList.push(spawnItem);
                                 spawnItem = spawnItem2;
@@ -169,7 +172,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, currentCount:nCreeps, requestCcount:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {

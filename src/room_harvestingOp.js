@@ -77,6 +77,8 @@ module.exports = class HarvestingOp extends RoomChildOp {
     }
 
     _tactics() {
+
+        
         if (!this.baseOp.storage) return;
         /**@type {Source} */
         let source = /**@type {Source} */(Game.getObjectById(this._sourceId));
@@ -90,7 +92,11 @@ module.exports = class HarvestingOp extends RoomChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             if (creepOp.instruction == c.COMMAND_NONE) {
-                if (source) creepOp.instructHarvest(source)
+                if (source) {
+                    let link = source.pos.findInRange(FIND_MY_STRUCTURES,3,{filter: o => {structureType: STRUCTURE_LINK}})[0];
+                    if (link) creepOp.instructTransfer(source, link);
+                    else creepOp.instructHarvest(source)
+                }
                 else creepOp.instructMoveTo(this.roomName)
             }
         }
