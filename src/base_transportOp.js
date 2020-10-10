@@ -21,7 +21,7 @@ module.exports = class TransportOp extends BaseChildOp {
         this._controllerLinks = [];
     }
 
-    get type() {return c.OPERATION_LINK}
+    get type() {return c.OPERATION_TRANSPORT}
     get baseLinks() {return this._baseLinks}
     get sourceLinks() {return this._sourceLinks};
     get controllerLinks() {return this._controllerLinks};

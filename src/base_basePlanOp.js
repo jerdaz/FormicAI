@@ -117,7 +117,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     pos.createConstructionSite(STRUCTURE_RAMPART);
                     let structures = pos.lookFor('structure');
                     for (let structure of structures) {
-                        if ((structure.structureType != structureType && structure.structureType != STRUCTURE_RAMPART) || structureType == null) structure.destroy();
+                        if ((    structure.structureType != structureType 
+                              && structure.structureType != STRUCTURE_RAMPART
+                              && structure.structureType != STRUCTURE_ROAD
+                            ) || structureType == null) structure.destroy();
                     }
                     if (structureType && structures.length == 0) {
                         let result = pos.createConstructionSite(structureType);
