@@ -7,6 +7,7 @@ const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 const ShardSpawningOp = require('./shard_spawningOp');
 const ShardDefenseOp = require('./shard_defenseOp')
+const ShardChildOp = require('./shard_childOp')
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -91,6 +92,15 @@ module.exports = class ShardOp extends ChildOp {
         this._operationIds[id] = op;
     }
 
+    /**@param {ChildOp} childOp */
+    addChildOp(childOp) {
+        super.addChildOp(childOp);
+        if (childOp instanceof ShardChildOp) {
+            this.addOpId(childOp)
+        }
+    }
+
+
     /**
      * @param {string} roomName
      * @returns {Room} returns room with RoomName */
@@ -138,10 +148,18 @@ module.exports = class ShardOp extends ChildOp {
      * @returns {BaseOp} */
     getBaseOp(roomName) {
         let result = this._baseOpsMap.get(roomName);
-        if (!result) throw Error('baseop does not exist')
+        if (!result) throw Error();
         return result;
     }
 
+    /**
+     * @param {string} roomName
+     * @returns {BaseOp|null} */
+    getBaseOpNoNullCheck(roomName) {
+        let result = this._baseOpsMap.get(roomName);
+        if (!result) return null;
+        return result;
+    }
     
 
     //add's an operation to the basename/optype to operation map.
@@ -249,14 +267,7 @@ module.exports = class ShardOp extends ChildOp {
         );
         
         let iterator = this._baseOpsMap.keys();
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-        U.l({sortedbases:iterator.next().value}) 
-
+        
         //periodically remove all constructionsites
         let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);
         if (Game.time - lastConstructionSiteCleanTick > CONSTRUCTION_SITE_CLEAN_INTERVAL) {
@@ -302,13 +313,17 @@ module.exports = class ShardOp extends ChildOp {
                 let neighbourRoomName = neighbours[exit];
                 if (!this._subRooms[neighbourRoomName] && !this._baseOpsMap.get(neighbourRoomName)) {
                     this._subRooms[neighbourRoomName] = baseOpName;
-                    this.getBaseOp(baseOpName).addRoom(neighbourRoomName)
+                    let baseOp = this.getBaseOp(baseOpName);
+                    if (!baseOp) throw Error();
+                    baseOp.addRoom(neighbourRoomName)
                 }
             }
 
             //remove subroom if it is the main room of a baseOp
             if (this._subRooms[baseOpName]) {
-                this.getBaseOp(this._subRooms[baseOpName]).removeRoom(baseOpName);
+                let baseOp = this.getBaseOp(this._subRooms[baseOpName]);
+                if (!baseOp) throw Error();
+                baseOp.removeRoom(baseOpName);
                 delete this._subRooms[baseOpName]
             }
         }

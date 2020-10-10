@@ -34,11 +34,11 @@ module.exports = class MainOp extends Operation {
             }
         }
         Memory.creeps = {};
-        Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
+        if (Memory.rooms == undefined) Memory.rooms = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);

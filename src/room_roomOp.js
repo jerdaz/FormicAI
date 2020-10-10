@@ -9,22 +9,42 @@ const ReservationOp = require('./room_reservationOp');
 module.exports = class RoomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
      * @param {String} roomName
+     * @param {number} distance the distance (in rooms) from the base room
      */
-    constructor(baseOp, roomName) {
+    constructor(baseOp, roomName, distance) {
         super(baseOp);
         this._roomName = roomName;
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this))
+        this._visualiseRoomInfo = false;
+
+
+
+        // calculate room distance from base.
+        if (Memory.rooms[roomName] == undefined) Memory.rooms[roomName] = {distanceOffset: Math.random()}
+        this._distanceOffset = Memory.rooms[roomName].distanceOffset || Math.random();
+        Memory.rooms[roomName].distanceOffset = this._distanceOffset;
+        if (distance == 0) this._distance = 0;
+        else this._distance = distance + this._distanceOffset;
+
 
         this._harvestingOpCreated = false;
         this._verbose = false;
     }
 
     get roomName() {return this._roomName}
-    /**@returns {Room | undefined} */
-    get room() {return Game.rooms[this.roomName]}
+
+    /**@returns {Room} */
+    get room() {
+        let result = Game.rooms[this.roomName]
+        return result;
+    }
     get type() {return c.OPERATION_ROOM}
+
+    /* return the distance in room from the base. This includes a constant random modifier between 0 and 1. Use Math.floor to 
+        get the real distance */
+    get distance() {return this._distance}
 
     get buildingOp() {return /**@type {BuildingOp} */ (this._childOps[c.OPERATION_BUILDING][0])}
 
@@ -47,6 +67,11 @@ module.exports = class RoomOp extends BaseChildOp {
     }
     
     _tactics() {
+        //add roomOp to room for debugging
+        // @ts-ignore
+        if (this.room) this.room.roomOp = this;
+
+
         if (  !this._harvestingOpCreated 
                 && this.room 
                 && this.room.controller 
@@ -59,6 +84,25 @@ module.exports = class RoomOp extends BaseChildOp {
                 this.addChildOp(harvestingOp);
             }    
             this._harvestingOpCreated = true;
+        }
+    }
+
+    _command() {
+        //draw room visualisations
+        if(this._visualiseRoomInfo) {
+            let roomVisual = new RoomVisual(this.roomName);
+            let roomInfo = this._map.getRoomInfo(this.roomName);
+            if (roomInfo) {
+                let terrainArray = roomInfo.terrainArray;
+                if (terrainArray) {
+                    for (let x =0; x < c.MAX_ROOM_SIZE; x++) {
+                        for (let y = 0; y< c.MAX_ROOM_SIZE; y++) {
+                            let cost = Math.round(terrainArray[x][y].fatigueCost*10)/10
+                            roomVisual.text(cost.toString(),x,y, {color:'yellow', font: 0.5})
+                        }
+                    }
+                }
+            }
         }
     }
 }

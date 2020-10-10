@@ -12,11 +12,11 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @param {ShardOp} shardOp
      * @param {ShardChildOp} parent
-     * @param {BaseOp} [baseOp] 
      * @param {MapOp} mapOp
      * @param {Creep} creep
+     * @param {BaseOp} [baseOp] 
      * */
-    constructor(parent, shardOp, baseOp, mapOp, creep) {
+    constructor(parent, shardOp, mapOp, creep, baseOp) {
         super(parent);
         this._parent = parent;
         /**@type {number} */
@@ -41,10 +41,12 @@ module.exports = class CreepOp extends ChildOp {
         this._cost = null;
         /**@type {boolean | null} */
         this._hasWorkParts = null;
+        this._shardOp = shardOp;
         this._idleTime = 0;
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
         this._notifyWhenAttacked = true
+        this._moveFlags = 0;
     }
     get type() {return c.OPERATION_CREEP}
     get source() {return Game.getObjectById(this._sourceId)}
@@ -152,8 +154,10 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
-    /**@param {RoomPosition | string} dest */
-    instructMoveTo(dest) {
+    /**@param {RoomPosition | string} dest 
+     * @param {number} [moveFlags]
+    */
+    instructMoveTo(dest, moveFlags) {
         if (dest instanceof RoomPosition) {
             this._destPos = dest;
             this._destRoomName = ''
@@ -163,6 +167,7 @@ module.exports = class CreepOp extends ChildOp {
             this._destRoomName = dest;
         }
         this._instruct = c.COMMAND_MOVETO
+        this._moveFlags = moveFlags || 0;
     }
 
     /**@param {string} roomName */
@@ -181,7 +186,6 @@ module.exports = class CreepOp extends ChildOp {
     instructAttack(roomName) {
         this._destRoomName = roomName;
         this._instruct = c.COMMAND_ATTACK
-        U.l({instructattack: roomName})
     }
 
     instructStop() {
@@ -222,7 +226,7 @@ module.exports = class CreepOp extends ChildOp {
     _tactics() {
         switch (this._instruct) {
             case c.COMMAND_NONE:
-                    if (this._parent.ownerRoomName && this._creep.pos.roomName != this._parent.ownerRoomName) {
+                    if (this._parent.ownerRoomName && this._parent.ownerRoomName != this._shardOp.name && this._creep.pos.roomName != this._parent.ownerRoomName) {
                             this.instructMoveTo(this._parent.ownerRoomName);
                     }
                 break;
@@ -390,9 +394,7 @@ module.exports = class CreepOp extends ChildOp {
                     else this._moveTo(this._destPos);
                 } else if (this._destRoomName) {
                     if (creep.pos.roomName != this._destRoomName || creep.pos.getRangeTo(new RoomPosition(25,25,this._destRoomName) ) > 20) {
-                        try {
                         this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
-                        } catch (err) {U.l(this._destRoomName); throw err}
 
                     } else {
                         this._instruct = c.COMMAND_NONE;
@@ -602,12 +604,21 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {RoomPosition | null} */
         let dest = endDest;
         let myPos = creep.pos;
+        let mapOp = this._mapOp
+        let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
-                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName);
+                let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
+                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                        let roomInfo = mapOp.getRoomInfo(toRoomName)
+                        if (roomInfo && roomInfo.hostileOwner) return Infinity
+                    }
+                    return 0;
+                }
+                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName, {routeCallback: callBack});
                 if (route instanceof Array && route.length > 2) {
                     optsCopy.range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
@@ -619,14 +630,15 @@ module.exports = class CreepOp extends ChildOp {
             }
         }
 
-        let mapOp = this._mapOp
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            let roomInfo = mapOp.getRoomInfo(roomName);
-            if (roomInfo && roomInfo.hostileOwner) {
-                for (let x =0; x<50;x++) {
-                    for (let y = 0; y<50; y++){
-                        costMatrix.set(x,y,255);
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                let roomInfo = mapOp.getRoomInfo(roomName);
+                if (roomInfo && roomInfo.hostileOwner) {
+                    for (let x =0; x<50;x++) {
+                        for (let y = 0; y<50; y++){
+                            costMatrix.set(x,y,255);
+                        }
                     }
                 }
             }
@@ -647,7 +659,7 @@ module.exports = class CreepOp extends ChildOp {
 
         optsCopy.maxOps = MAX_MOVE_OPS
         let result = creep.moveTo(dest, optsCopy);
-        if (result == ERR_NO_PATH) {
+        if (result == ERR_NO_PATH && !(myPos.x == 0 || myPos.x == 49 || myPos.y == 0 || myPos.y == 49)) {
             this._instruct = c.COMMAND_NONE;
             console.log('warning no path found for creep ' + creep.name + ' at pos ' + creep.pos + ' to dest ' + dest)
         }

@@ -24,6 +24,7 @@ module.exports = function(grunt) {
           http: true
         };
         password = config.sp2_password;
+        email = email.replace('@', "+sp2@");
         break;
       case 'cogd':
           server = {

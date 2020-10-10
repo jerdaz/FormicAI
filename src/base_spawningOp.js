@@ -28,6 +28,7 @@ module.exports = class SpawningOp extends BaseChildOp {
      * @param {CreepTemplate} template
      * @param {number} count */
     ltRequestSpawn(operation, template, count) {
+        if (count < 0) throw Error();
         this._spawnRequests[operation.id] = {operationId:operation.id, count:count, template: template};
     }
 
@@ -58,25 +59,32 @@ module.exports = class SpawningOp extends BaseChildOp {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
             this._spawnPrio[c.OPERATION_HARVESTING] = 50;
-            this._spawnPrio[c.OPERATION_LINK] = 40;
+            this._spawnPrio[c.OPERATION_TRANSPORT] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
             this._spawnPrio[c.OPERATION_RESERVATION] = 30;
+            this._spawnPrio[c.OPERATION_SHARDDEFENSE] = 60;
         }
     }
 
     _command() {
+
         let canSpawn = false;
         let spawns = this._baseOp.spawns;
-        for (let spawn of spawns) if (spawn.spawning == null) canSpawn = true;
+        let primarySpawn = spawns[0];
+        for (let spawn of spawns) {
+            if (spawn.spawning == null) canSpawn = true;
+            if (spawn.pos.inRangeTo(this.baseOp.centerPos,1)) primarySpawn = spawn;
+        }
+
         if (canSpawn) {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
-                && this._baseOp.fillingOp.creepCount >= 1
+                && this._baseOp.fillingOp.getCreepCountForSpawning() >= 1
                 )  this._prioritySpawn();
             else {
                 let spawnList = this._getSpawnList();
@@ -85,10 +93,24 @@ module.exports = class SpawningOp extends BaseChildOp {
                     for (let spawn of spawns) {
                         if (spawn.spawning == null) {
                             let spawnItem = spawnList.pop();
+                            let directions = [TOP_RIGHT, TOP, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
+                            if (spawn == primarySpawn) {
+                                // Primary spawn should only send creeps down
+                                directions = [TOP_RIGHT, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
+                                // unless it is the transporter creep, it should go into the base center
+                                if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) directions = [TOP]
+                            } else if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) {
+                                // transporter creeps should only be spawned on primary base center. pick something else
+                                let spawnItem2 = spawnList.pop();
+                                spawnList.push(spawnItem);
+                                spawnItem = spawnItem2;
+                            }
+
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
-                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999),
+                                            {directions: directions} )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
                                     this._log(result); 
@@ -129,7 +151,7 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _getSpawnList() {
-        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string}[]} */
+        /**@type {{prio:number, opType:number, opInstance:number, template:CreepTemplate, ownerRoomName: string, roomDistance: number}[]} */
         let spawnList = []
         let spawnRequests = this._spawnRequests;
 
@@ -140,9 +162,15 @@ module.exports = class SpawningOp extends BaseChildOp {
                 delete this._spawnRequests[spawnRequestId];
                 continue;
             }
+
+            //determine distance factor
+            let roomOp = shardChildOp.roomOp
+            let distance = 0;
+            if (roomOp) distance = roomOp.distance
+
             let nCreeps = 0;
-            if (shardChildOp) nCreeps = shardChildOp.creepCount;
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
+            if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, currentCount:nCreeps, requestCcount:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {
@@ -152,12 +180,15 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 opType: opType, 
                                 opInstance:opInstance, 
                                 template:spawnRequest.template,
-                                ownerRoomName: shardChildOp.ownerRoomName
+                                ownerRoomName: shardChildOp.ownerRoomName,
+                                roomDistance: distance
                             })
             }
         }
 
-        spawnList.sort((a, b) => {  if (a.prio < b.prio) return -1;
+        spawnList.sort((a, b) => {  if (a.roomDistance > b.roomDistance) return -1;
+                                    if (a.roomDistance < b.roomDistance) return 1;
+                                    if (a.prio < b.prio) return -1;
                                     if (a.prio > b.prio) return 1;
                                     return 0;
                                  });
@@ -180,8 +211,8 @@ module.exports = class SpawningOp extends BaseChildOp {
         var result = [];
         var i=0;
         var maxEnergy = base.energyCapacityAvailable;
-        if (baseOp.fillingOp.creepCount == 0) maxEnergy = base.energyAvailable;
-        this._log({fillingCreepcount: baseOp.fillingOp.creepCount, maxEnergy: maxEnergy});
+        if (baseOp.fillingOp.getCreepCountForSpawning() == 0) maxEnergy = base.energyAvailable;
+        this._log({fillingCreepcount: baseOp.fillingOp.getCreepCountForSpawning(), maxEnergy: maxEnergy});
 
         while (U.getCreepCost(result) <= maxEnergy && result.length < Math.min(maxLength + 1, MAX_CREEP_SIZE + 1)) {
             result.push(body[i++]);

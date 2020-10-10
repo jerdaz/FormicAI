@@ -4,7 +4,7 @@ const PIXEL_CPU_COST = 5000;
 
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
-    CREEP_EMOTES: true,
+    CREEP_EMOTES: false,
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
@@ -43,7 +43,7 @@ module.exports = {
     OPERATION_TOWER: 12,
     OPERATION_HARVESTING: 13,
     OPERATION_BASEPLAN: 14,
-    OPERATION_LINK: 15,
+    OPERATION_TRANSPORT: 15,
     OPERATION_MINING: 16,
     OPERATION_MARKET: 17,
     OPERATION_BANK: 18,
@@ -80,6 +80,8 @@ module.exports = {
     TICKS_MONTH: 1000 * 24 * 30,
     TICKS_YEAR:  1000 * 24 * 365,
 
+    MOVE_ALLOW_HOSTILE_ROOM : 1,
+
     MAX_TRANSACTION: TERMINAL_CAPACITY / 10,
     MAX_CONSTRUCTION_SITES: 4,
     
@@ -88,7 +90,7 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
-    MAX_BUCKET : 10000 - PIXEL_CPU_COST - 300,
+    MAX_BUCKET : 10000 - 5000 - 300,
 
     INVADER_USERNAME : 'Invader',
 

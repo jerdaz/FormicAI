@@ -38,7 +38,7 @@ module.exports = class BaseOp extends ShardChildOp{
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
-        this._myRoomOp = new RoomOp(this, this._name);
+        this._myRoomOp = new RoomOp(this, this._name, 0);
         this.addChildOp(this._myRoomOp);
 
         this._phase = c.BASE_PHASE_BIRTH;
@@ -51,12 +51,13 @@ module.exports = class BaseOp extends ShardChildOp{
     }
 
     get type() {return c.OPERATION_BASE}
+    get roomOps() {return /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
     get buildingOp() {return this._myRoomOp.buildingOp}
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
-    get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
+    get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_TRANSPORT][0])}
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
@@ -78,7 +79,7 @@ module.exports = class BaseOp extends ShardChildOp{
         super.initTick();
         this._base = /**@type {Base} */ (Game.rooms[this._name])
         // add op to room for easy access in debug console
-        this._base.op = this;
+        this._base.baseOp = this;
         this._structures = {};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
@@ -113,15 +114,15 @@ module.exports = class BaseOp extends ShardChildOp{
      * @param {string} roomName 
      */
     addRoom(roomName) {
-        this.addChildOp(new RoomOp(this,roomName));
+        this.addChildOp(new RoomOp(this,roomName, 1));
     }
 
     /** remove a subroom from the base
      * @param {string} roomName
     */
    removeRoom(roomName) {
-       for (let roomOp of /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])) {
-           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp);
+       for (let roomOp of this.roomOps) {
+           if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
        }
    }
 
@@ -153,7 +154,7 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
-        if (this.links.length > this._base.find(FIND_SOURCES).length) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
+        if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
         if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
         return;
