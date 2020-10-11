@@ -44,8 +44,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     _firstRun() {
         if (this._baseOp.base.controller.level == 1) this._support();
-        this._support();
     }
+
 
     _support() {
         let base = this.baseOp.base;
@@ -73,6 +73,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
         
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        
         if (this.baseOp.linkOp.baseLinks.length == 0 && this.baseOp.linkOp.controllerLinks.length>0) this.baseOp.linkOp.controllerLinks[0].destroy();
         if (this.baseOp.linkOp.baseLinks.length > 0 
             && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
