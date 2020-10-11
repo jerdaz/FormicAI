@@ -112,7 +112,8 @@ module.exports = class TransportOp extends BaseChildOp {
         }
 
         // transfer energy from baselink to controller link if possible
-        if (baseLink.store.energy > baseLink.store.getCapacity(RESOURCE_ENERGY) / 2 - CARRY_CAPACITY 
+        if (baseLink && controllerLink
+            && baseLink.store.energy > baseLink.store.getCapacity(RESOURCE_ENERGY) / 2 - CARRY_CAPACITY 
             && controllerLink.store.energy < controllerLink.store.getCapacity(RESOURCE_ENERGY) / 2)
         {
             baseLink.transferEnergy(controllerLink);
