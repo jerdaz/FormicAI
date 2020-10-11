@@ -561,9 +561,9 @@ module.exports = class CreepOp extends ChildOp {
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => { return o.structureType != STRUCTURE_RAMPART && o.hits < o.hitsMax }})
             dest = creep.pos.findClosestByPath(structures);
         }
-        if (!dest) { // repair roads
+        if (!dest) { // repair roads, containers
             let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
-                if (o.structureType != STRUCTURE_ROAD) return false;
+                if (o.structureType != STRUCTURE_ROAD && o.structureType != STRUCTURE_CONTAINER) return false;
                 let needRepair = o.hits < o.hitsMax * 0.8;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
