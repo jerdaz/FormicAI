@@ -111,6 +111,14 @@ module.exports = class TransportOp extends BaseChildOp {
             }
         }
 
+        // transfer energy from baselink to controller link if possible
+        if (baseLink.store.energy > baseLink.store.getCapacity(RESOURCE_ENERGY) / 2 - CARRY_CAPACITY 
+            && controllerLink.store.energy < controllerLink.store.getCapacity(RESOURCE_ENERGY) / 2)
+        {
+            baseLink.transferEnergy(controllerLink);
+        }    
+
+
         let creepOp = _.sample(this._creepOps);
         if (creepOp) {
             let storage = this._baseOp.storage;
@@ -136,11 +144,12 @@ module.exports = class TransportOp extends BaseChildOp {
             let sourceStructure = null;
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
-            if (baseLink && baseLink.store.energy >= CARRY_CAPACITY) sourceStructure = baseLink;
+            if (baseLink && baseLink.store.energy >= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 + CARRY_CAPACITY) sourceStructure = baseLink;
             if (sourceStructure) {
                 /**@type {Structure |null} */
                 let targetStructure = null;
                 if (storage) targetStructure = storage;
+                if (baseLink && baseLink.store.energy <= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 - CARRY_CAPACITY) targetStructure = baseLink;
                 if (spawn && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) targetStructure = spawn;
                 else {
                     for (let tower of towers) {
