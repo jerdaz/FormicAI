@@ -21,13 +21,16 @@ module.exports = class ScoutOp extends BaseChildOp {
     }
 
     _strategy() {
-        let creepCount = 1;
+        let creepCount = 0;
         //if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
+        if (Game.time - this._lastSpawn > CREEP_LIFE_TIME) creepCount = 1;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
     _tactics() {
         for (let creepName in this._creepOps) {
+            this._lastSpawn = Game.time;
+            this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},0);
             let lastRoomName = this._lastRoomName[creepName];
             let creepOp = this._creepOps[creepName]
             creepOp.notifyWhenAttacked = false;
