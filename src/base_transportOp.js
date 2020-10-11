@@ -162,7 +162,7 @@ module.exports = class TransportOp extends BaseChildOp {
                 }
                 if (targetStructure && sourceStructure != targetStructure) {
                     creepOp.instructTransfer(sourceStructure, targetStructure);
-                }
+                } else creepOp.instructStop();
             }
         }
     }
