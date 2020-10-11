@@ -43,7 +43,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
     get baseCenter() {return this._getBaseCenter();}
 
     _firstRun() {
-        if (this._baseOp.base.controller.level == 1) this._support();
+        //if (this._baseOp.base.controller.level == 1) this._support();
+        this._support();
     }
 
 
@@ -80,6 +81,16 @@ module.exports = class BasePlanOp extends BaseChildOp{
             && this.baseOp.linkOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.linkOp.baseLinks[0].destroy();
         
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
+
+        // if there are too many spawns for controller level, start removing them because the primary spawn
+        // MUST be active
+        if (this.baseOp.spawns.length > CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][this.baseOp.base.controller.level]) {
+            for (let spawn of this.baseOp.spawns) {
+                if (spawn.pos.inRangeTo(this.baseCenter,1)) continue;
+                spawn.destroy();
+                break;
+            }
+        }
 
     }
 

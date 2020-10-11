@@ -27,6 +27,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                  && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
                  && o.structureType != STRUCTURE_CONTROLLER
+                 && o.structureType != STRUCTURE_ROAD
                 }}
             )
 
@@ -65,6 +66,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                  && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
                  && o.structureType != STRUCTURE_CONTROLLER
+                 && o.structureType != STRUCTURE_ROAD
             }}
             )
 
