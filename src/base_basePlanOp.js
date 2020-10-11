@@ -44,16 +44,21 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
     _firstRun() {
         if (this._baseOp.base.controller.level == 1) this._support();
+        this._support();
     }
 
     _support() {
         let base = this.baseOp.base;
         //find & destroy improperly placed buildings.
+        let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
                 case STRUCTURE_LAB: //fix labs with incorrect resource types
                     if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
+                    break;
                 case STRUCTURE_EXTENSION:
+                    if ((structure.pos.x+structure.pos.y) % 2 != gridRemainder) structure.destroy();
+
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
                     if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)
@@ -68,6 +73,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
         
         if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        if (this.baseOp.linkOp.baseLinks.length == 0 && this.baseOp.linkOp.controllerLinks.length>0) this.baseOp.linkOp.controllerLinks[0].destroy();
         if (this.baseOp.linkOp.baseLinks.length > 0 
             && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
             && this.baseOp.linkOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.linkOp.baseLinks[0].destroy();

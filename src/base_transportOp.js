@@ -65,7 +65,7 @@ module.exports = class TransportOp extends BaseChildOp {
         this._controllerLinkIds = newControllerLinkIds;
 
         if (this._baseOp.storage) {
-            let newBaseLink = this._baseOp.storage.pos.findClosestByPath(FIND_STRUCTURES,{filter: {structureType: STRUCTURE_LINK}});
+            let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
             if (newBaseLink) this._baseLinkIds = [newBaseLink.id];
         } else this._baseLinkIds = [];
         this.initTick();

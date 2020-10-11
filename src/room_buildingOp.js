@@ -23,10 +23,11 @@ module.exports = class BuildingOp extends RoomChildOp {
         let room = this._roomOp.room;
         if (!room) return;
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
+        let repairSites = room.find(FIND_STRUCTURES, {filter: o => {
             return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                  && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
-            }}
+                 && o.structureType != STRUCTURE_CONTROLLER
+                }}
             )
 
         // update variable for repair work
@@ -60,9 +61,10 @@ module.exports = class BuildingOp extends RoomChildOp {
         let room = this._roomOp.room;
         if (!room) return;
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
+        let repairSites = room.find(FIND_STRUCTURES, {filter: o => {
             return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
                  && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
+                 && o.structureType != STRUCTURE_CONTROLLER
             }}
             )
 
