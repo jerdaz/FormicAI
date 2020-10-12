@@ -65,7 +65,7 @@ module.exports = function(grunt) {
       }
 
   grunt.loadNpmTasks('grunt-screeps');
-  grunt.loadNpmTasks('grunt-file-append')
+  //grunt.loadNpmTasks('grunt-file-append')
 
   var currentdate = new Date();
 
