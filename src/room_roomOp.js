@@ -35,6 +35,8 @@ module.exports = class RoomOp extends BaseChildOp {
 
     get roomName() {return this._roomName}
 
+    get harvestingOps() {return /**@type {HarvestingOp[]} */ (this._childOps[c.OPERATION_HARVESTING])}
+
     /**@returns {Room} */
     get room() {
         let result = Game.rooms[this.roomName]
