@@ -45,7 +45,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
             creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (creepCount <0) creepCount = 0;
-            if (creepCount <1 && this._buildWork) creepCount = 1;
+            if (creepCount <1 && this._buildWork && energy >= 10000) creepCount = 1;
         } else {
             creepCount = 20;
         }
