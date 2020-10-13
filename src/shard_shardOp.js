@@ -261,10 +261,18 @@ module.exports = class ShardOp extends ChildOp {
             if (!Game.creeps[creepName]) delete Memory.creeps[creepName]
         }
 
-        //sort bases in order of importance
+        //sort bases in order of importance (first level, then stored energy)
         this._baseOpsMap = new Map([...this._baseOpsMap].sort((a,b) => 
-            {return b[1].base.controller.level - a[1].base.controller.level})
-        );
+            {
+                let levelA = a[1].base.controller.level;
+                let levelB = b[1].base.controller.level
+                if (a > b) return -1;
+                if (b > a) return 1;
+                let storageA = a[1].storage;
+                let storageB = b[1].storage;
+                return ((storageB?storageB.store.energy:-1) - (storageA?storageA.store.energy:-1))
+            })
+        )
         
         let iterator = this._baseOpsMap.keys();
         
