@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
 const MAX_UPGRADER_COUNT = 20
-const DOWNGRADE_RESERVE = 0.75
+const DOWNGRADE_RESERVE = 0.5
 
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
@@ -40,7 +40,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             }
         }
 
-        if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) {
+        if (workerCount < 1 && controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]*DOWNGRADE_RESERVE) {
             workerCount = 1;
             if (this.baseOp.phase<c.BASE_PHASE_CONTROLLER_LINK) body = [MOVE,WORK,CARRY]
         }
