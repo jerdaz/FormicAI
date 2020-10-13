@@ -34,7 +34,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         else this._buildWork = false;
 
         if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder
-            if (this._buildWork) {
+            if (this._buildWork energy >= 10000) {
                 creepCount = 1;
             }
         }
