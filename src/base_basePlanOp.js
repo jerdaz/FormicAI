@@ -69,7 +69,15 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     if (!structure.pos.inRangeTo(this.baseCenter,1)) structure.destroy();
                     break;
                 case STRUCTURE_LAB:
-                break;
+                    break;
+                case STRUCTURE_LINK:
+                    let linkOp = this.baseOp.linkOp;
+                    if (!_.includes(linkOp.baseLinks, structure) 
+                        && !_.includes(linkOp.controllerLinks, structure)
+                        && !_.includes(linkOp.sourceLinks, structure)) {
+                            structure.destroy();
+                        }
+                    break;
                 }
         }
         

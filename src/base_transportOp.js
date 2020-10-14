@@ -60,7 +60,6 @@ module.exports = class TransportOp extends BaseChildOp {
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
             else if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
-            else link.destroy(); // destroy rogue links
         }
         this._sourceLinkIds = newSourceLinkIds;
         this._controllerLinkIds = newControllerLinkIds;
