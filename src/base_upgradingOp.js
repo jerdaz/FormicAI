@@ -4,7 +4,7 @@ const BaseChildOp = require('./base_childOp');
 
 const REDUCE_UPGRADER_COUNT_LEVEL = 6
 const MAX_UPGRADER_COUNT = 20
-const DOWNGRADE_RESERVE = 0.75
+const DOWNGRADE_RESERVE = 0.5
 
 module.exports = class UpgradingOp extends BaseChildOp {
     get type() {return c.OPERATION_UPGRADING}
@@ -16,7 +16,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
     _strategy() {
         let controller = this.baseOp.base.controller;
         let workerCount = 0;
-        let body = [MOVE,MOVE,CARRY,WORK,WORK,WORK,WORK];
+        let body = [MOVE,CARRY,WORK,MOVE,WORK,WORK,WORK];
         let maxSize = MAX_CREEP_SIZE;
 
         //until controller link phase, buildingOp is responsible for upgrading
@@ -30,7 +30,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             }
 
             //create link construction site if necessary.
-            let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
+            let link = controller.pos.findInRange(FIND_MY_STRUCTURES,3,{filter: {structureType: STRUCTURE_LINK}})[0];
             if (!link) {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
                 let pos = result.path[1];
@@ -40,9 +40,10 @@ module.exports = class UpgradingOp extends BaseChildOp {
             }
         }
 
-        if (workerCount < 1 && this.baseOp.base.controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[1]*DOWNGRADE_RESERVE) {
+        if (workerCount < 1 && controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]*DOWNGRADE_RESERVE) {
             workerCount = 1;
-            if (this.baseOp.phase<c.BASE_PHASE_CONTROLLER_LINK) body = [MOVE,WORK,CARRY]
+            maxSize = 3;
+            //if (this.baseOp.phase<c.BASE_PHASE_CONTROLLER_LINK) body = [MOVE,CARRY,WORK]
         }
         this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
 
