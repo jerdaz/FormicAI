@@ -49,6 +49,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
 
     _support() {
+        this._baseOp.linkOp.updateLinks();
         let base = this.baseOp.base;
         //find & destroy improperly placed buildings.
         let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2

@@ -26,6 +26,23 @@ module.exports = class TransportOp extends BaseChildOp {
     get sourceLinks() {return this._sourceLinks};
     get controllerLinks() {return this._controllerLinks};
 
+    // force update link allocations
+    updateLinks() {
+        let links = this._baseOp.links;
+        let newSourceLinkIds = [];
+        let newControllerLinkIds = [];
+        for (let link of links) {
+            if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
+            else if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
+        }
+        this._sourceLinkIds = newSourceLinkIds;
+        this._controllerLinkIds = newControllerLinkIds;
+
+        let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
+        if (newBaseLink) this._baseLinkIds = [newBaseLink.id];
+        this.initTick();
+    }
+
     initTick() {
         super.initTick();
         let newSourceLinks = [];
@@ -54,20 +71,7 @@ module.exports = class TransportOp extends BaseChildOp {
     }
 
     _strategy() {
-        let links = this._baseOp.links;
-        let newSourceLinkIds = [];
-        let newControllerLinkIds = [];
-        for (let link of links) {
-            if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
-            else if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
-        }
-        this._sourceLinkIds = newSourceLinkIds;
-        this._controllerLinkIds = newControllerLinkIds;
-
-        let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
-        if (newBaseLink) this._baseLinkIds = [newBaseLink.id];
-        this.initTick();
-
+        this.updateLinks();
         let creepCount = 0;
         if (this._baseLinkIds.length>0) creepCount = 1;
         //if (this.baseOp.labs.length>0) creepCount++;
