@@ -34,21 +34,22 @@ module.exports = class BuildingOp extends RoomChildOp {
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
         else this._buildWork = false;
 
-        let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
 
-        if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder
-            if (this._buildWork && energy >= 10000) {
-                creepCount = 1;
-            }
-        }
 
-        else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
-            let controller = this.baseOp.base.controller;
-            let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
-            creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+        if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
+            let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
+            if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder
+                if (this._buildWork) {
+                    creepCount = 1;
+                }
+            } else { // spawn creeps based on energy surpluss
+                let controller = this.baseOp.base.controller;
+                let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
+                creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+                }
             if (creepCount <0) creepCount = 0;
             // always try to spawn 1 builder to continue build work if storage is not large enough
-            if (creepCount <1 && this._buildWork) {
+            if (creepCount == 1 ) {
                 // scale down the size of the worker in case energy is low to prevent completely draining the energy reserve
                 maxLength = Math.floor(energy / 3000) * 3
                 creepCount = (maxLength==0)?0:1;
