@@ -19,6 +19,7 @@ module.exports = class BuildingOp extends RoomChildOp {
 
     _strategy() {
         let creepCount = 0;
+        let maxLength = 45;
         let level = this._baseOp.base.controller.level
         let room = this._roomOp.room;
         if (!room) return;
@@ -46,12 +47,17 @@ module.exports = class BuildingOp extends RoomChildOp {
             let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
             creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (creepCount <0) creepCount = 0;
-            if (creepCount <1 && this._buildWork && energy >= 10000) creepCount = 1;
+            // always try to spawn 1 builder to continue build work if storage is not large enough
+            if (creepCount <1 && this._buildWork) {
+                // scale down the size of the worker in case energy is low to prevent completely draining the energy reserve
+                maxLength = Math.floor(energy / 3000) * 3
+                creepCount = (maxLength==0)?0:1;
+            }
         } else {
             creepCount = 20;
         }
         
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,WORK,CARRY],maxLength:45}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,WORK,CARRY],maxLength:maxLength}, creepCount)
         this._creepRequestCount = creepCount;
     }
 
