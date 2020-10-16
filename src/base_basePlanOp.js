@@ -57,9 +57,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
             switch (structure.structureType) {
                 case STRUCTURE_LAB: //fix labs with incorrect resource types
                     if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
-                    break;
                 case STRUCTURE_EXTENSION:
                 case STRUCTURE_TOWER:
+                case STRUCTURE_TERMINAL:
                 case STRUCTURE_SPAWN:
                     if (
                           (
