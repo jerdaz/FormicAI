@@ -59,12 +59,19 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
                     break;
                 case STRUCTURE_EXTENSION:
-                    if ((structure.pos.x+structure.pos.y) % 2 != gridRemainder) structure.destroy();
-
                 case STRUCTURE_TOWER:
                 case STRUCTURE_SPAWN:
-                    if (!BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true)
-                       && !structure.pos.inRangeTo(this.baseCenter,CORE_INNER_RADIUS)) structure.destroy();
+                    if (
+                          (
+                              !BasePlanOp._isValidBuildingSpot(structure.pos.x,structure.pos.y,this._baseOp,true) 
+                              || 
+                              (structure.pos.x+structure.pos.y) % 2 != gridRemainder
+                          )
+                          && !structure.pos.inRangeTo(this.baseCenter,CORE_INNER_RADIUS)
+                       ) 
+                        {
+                           structure.destroy();
+                        }
                     break;
                 case STRUCTURE_STORAGE:
                     if (!structure.pos.inRangeTo(this.baseCenter,1)) structure.destroy();
