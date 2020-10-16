@@ -20,15 +20,10 @@ module.exports = class BuildingOp extends RoomChildOp {
     _strategy() {
         let creepCount = 0;
         let maxLength = 45;
-        let level = this._baseOp.base.controller.level
         let room = this._roomOp.room;
         if (!room) return;
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
-            return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
-                 && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
-                }}
-            )
+        let repairSites = this._repairSites()
 
         // update variable for repair work
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
@@ -68,11 +63,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         let room = this._roomOp.room;
         if (!room) return;
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = room.find(FIND_MY_STRUCTURES, {filter: o => {
-            return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
-                 && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
-            }}
-            )
+        let repairSites = this._repairSites();
 
         // update variable for repair work
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
@@ -87,5 +78,22 @@ module.exports = class BuildingOp extends RoomChildOp {
                 creepOp.instructBuild()
             }
         }
+    }
+
+    _repairSites  () {
+        let room = this._roomOp.room;
+        let level = this._baseOp.base.controller.level
+        let result = room.find(FIND_MY_STRUCTURES, {filter: o => {
+            if (o.structureType == STRUCTURE_RAMPART) {
+                let structures = o.pos.lookFor(LOOK_STRUCTURES);
+                _.remove(structures,{structureType:STRUCTURE_ROAD});
+                if (structures.length <=1) return false;
+            }
+            return  o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[level] 
+                 && o.hits < Math.max(o.hitsMax - REPAIR_POWER * MAX_CREEP_SIZE / 3 * CREEP_LIFE_TIME, o.hitsMax / 2)
+
+                }}
+            )       
+        return result; 
     }
 }
