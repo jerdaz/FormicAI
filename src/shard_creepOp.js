@@ -125,6 +125,8 @@ module.exports = class CreepOp extends ChildOp {
         super.newParent(newParent);
         this._creep.memory.operationType = newParent.type;
         this._creep.memory.operationInstance = newParent.instance;
+        if (newParent.baseOp) this._creep.memory.baseName = newParent.baseOp.name;
+        if (newParent.roomOp) this._creep.memory.baseName = newParent.roomOp.name;
     }
 
     /**@param {Structure | ConstructionSite} [dest] */
@@ -587,7 +589,7 @@ module.exports = class CreepOp extends ChildOp {
                 let structures = o.pos.lookFor(LOOK_STRUCTURES);
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return;
-                
+
                 let roomLevel = 1;
                 if (this._baseOp) roomLevel = this._baseOp.level
                 let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
