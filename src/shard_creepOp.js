@@ -456,7 +456,32 @@ module.exports = class CreepOp extends ChildOp {
                 if (targets.length>0) {
                     let poss = []
                     for (let target of targets) poss.push({pos: target.pos, range: 3})
-                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    let roomCallback = function(/**@type {string}*/ roomName) {
+
+                        let room = Game.rooms[roomName];
+                        if (!room) return false;
+                        let costs = new PathFinder.CostMatrix;
+                
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                          if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                     (struct.structureType !== STRUCTURE_RAMPART ||
+                                      !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                          }
+                        });
+                
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                
+                        return costs;
+                      }
+                    let result = PathFinder.search(creep.pos, poss,{flee:true, roomCallback: roomCallback})
                     creep.moveByPath(result.path)
                 }
                 if (c.CREEP_EMOTES) creep.say('💤')

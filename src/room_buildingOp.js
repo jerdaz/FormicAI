@@ -49,7 +49,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 maxLength = Math.floor(energy / 3000) * 3
                 creepCount = (maxLength==0)?0:1;
             }
-        } else {
+        } else if (this._roomOp.name == this._baseOp.name) {
             creepCount = 20;
         }
         
