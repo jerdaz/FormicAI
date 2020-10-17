@@ -17,10 +17,11 @@ const baseBuildTemplate = [
 const baseCoreOffset = {x:-1, y:-1};
 const CORE_OUTER_RADIUS = 3;
 const CORE_INNER_RADIUS = 1;
+// BASE TEMPLATE IS UPSIDE DOWN, builds from down to up (first south row with spawn, finally terminal row north)
 /**@type {(BuildableStructureConstant|null)[][]} */
-const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_TERMINAL, STRUCTURE_TOWER],
+const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
                           [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
-                          [STRUCTURE_TOWER,STRUCTURE_SPAWN, STRUCTURE_TOWER]]
+                          [STRUCTURE_TOWER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
 
     
 
@@ -140,7 +141,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
             }
             if (constructionSites.length == 0) {
                 let pos = this._baseOp.centerPos;
-                if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
+                if (pos) {
+                    pos = new RoomPosition(pos.x, pos.y+1, pos.roomName)
+                    pos.createConstructionSite(STRUCTURE_SPAWN);
+                }
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
         } else if (structureSites.length < 1 && this._baseOp.extensions.length < prioExtensionsCount) {
