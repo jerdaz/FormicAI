@@ -133,7 +133,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
         let structureSites = constructionSites.filter(o => {return o.structureType != STRUCTURE_ROAD})
-        let prioExtensionsCount = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 / EXTENSION_ENERGY_CAPACITY[this.baseOp.level]
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
@@ -147,38 +146,42 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 }
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
-        } else if (structureSites.length < 1 && this._baseOp.extensions.length >= prioExtensionsCount) {
-            //first try to build the inner core with a fixed template
+        } else if (structureSites.length < 1 ) {
             let createdConstructionSite = false;
-            let y = this.baseCenter.y - baseCoreOffset.y + 1;
-            for(let structureRow of baseCoreTemplate) {
-                y--;
-                let x = this.baseCenter.x + baseCoreOffset.x - 1;
-                for (let structureType of structureRow) {
-                    x++
-                    let pos = new RoomPosition(x,y, this.baseName);
-                    let structures = pos.lookFor('structure');
-                    for (let structure of structures) {
-                        if ((    structure.structureType != structureType 
-                              && structure.structureType != STRUCTURE_RAMPART
-                              && structure.structureType != STRUCTURE_ROAD
-                            ) || structureType == null) structure.destroy();
-                    }
-                    if (structureType && !_.some(structures, {structureType: structureType})) {
-                        let result = pos.createConstructionSite(structureType);
-                        if (result == OK) createdConstructionSite = true;
-                    } else if (
-                                ((this.baseCenter.x == x && this.baseCenter.y == y) ||_.some(structures, {structureType: structureType})) 
-                                && !_.some(structures, {structureType: STRUCTURE_RAMPART})
-                              ) {
-                        let result = pos.createConstructionSite(STRUCTURE_RAMPART);
-                        if (result == OK) createdConstructionSite = true;
+
+            //first try to build the inner core with a fixed template (only if there are enough extentions)
+            let prioExtensionsCount = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 / EXTENSION_ENERGY_CAPACITY[this.baseOp.level]
+            if (this._baseOp.extensions.length >= prioExtensionsCount) {
+                let y = this.baseCenter.y - baseCoreOffset.y + 1;
+                for(let structureRow of baseCoreTemplate) {
+                    y--;
+                    let x = this.baseCenter.x + baseCoreOffset.x - 1;
+                    for (let structureType of structureRow) {
+                        x++
+                        let pos = new RoomPosition(x,y, this.baseName);
+                        let structures = pos.lookFor('structure');
+                        for (let structure of structures) {
+                            if ((    structure.structureType != structureType 
+                                && structure.structureType != STRUCTURE_RAMPART
+                                && structure.structureType != STRUCTURE_ROAD
+                                ) || structureType == null) structure.destroy();
+                        }
+                        if (structureType && !_.some(structures, {structureType: structureType})) {
+                            let result = pos.createConstructionSite(structureType);
+                            if (result == OK) createdConstructionSite = true;
+                        } else if (
+                                    ((this.baseCenter.x == x && this.baseCenter.y == y) ||_.some(structures, {structureType: structureType})) 
+                                    && !_.some(structures, {structureType: STRUCTURE_RAMPART})
+                                ) {
+                            let result = pos.createConstructionSite(STRUCTURE_RAMPART);
+                            if (result == OK) createdConstructionSite = true;
+                        }
+                        if (createdConstructionSite) break;
                     }
                     if (createdConstructionSite) break;
                 }
-                if (createdConstructionSite) break;
             }
-
+            
             // then expand into the outer region of the base with a generic pattern
             if (!createdConstructionSite) {
                 for(let template of baseBuildTemplate) {
