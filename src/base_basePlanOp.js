@@ -17,9 +17,9 @@ const baseBuildTemplate = [
 const baseCoreOffset = {x:-1, y:-1};
 const CORE_OUTER_RADIUS = 3;
 const CORE_INNER_RADIUS = 1;
-/**@type {BuildableStructureConstant[][]} */
+/**@type {(BuildableStructureConstant|null)[][]} */
 const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_TERMINAL, STRUCTURE_TOWER],
-                          [STRUCTURE_STORAGE, STRUCTURE_CONTAINER, STRUCTURE_LINK],
+                          [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
                           [STRUCTURE_TOWER,STRUCTURE_SPAWN, STRUCTURE_TOWER]]
 
     
@@ -163,7 +163,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     if (structureType && !_.some(structures, {structureType: structureType})) {
                         let result = pos.createConstructionSite(structureType);
                         if (result == OK) createdConstructionSite = true;
-                    } else if (_.some(structures, {structureType: structureType}) && !_.some(structures, {structureType: STRUCTURE_RAMPART})) {
+                    } else if (
+                                ((this.baseCenter.x == x && this.baseCenter.y == y) ||_.some(structures, {structureType: structureType})) 
+                                && !_.some(structures, {structureType: STRUCTURE_RAMPART})
+                              ) {
                         let result = pos.createConstructionSite(STRUCTURE_RAMPART);
                         if (result == OK) createdConstructionSite = true;
                     }
@@ -258,8 +261,11 @@ module.exports = class BasePlanOp extends BaseChildOp{
      * @param {BaseOp} baseOp */
     static _isValidBuildingSpot(x, y, baseOp, ignoreStructures = false) {
         let base = baseOp.base;
+        let centerPos = baseOp.centerPos;
         if (!base.controller) throw Error();
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
+        if (x == centerPos.x - 2 && y == centerPos.y) return false // keep space near storage
+        if (x == centerPos.x && y == centerPos.y + 2) return false // keep space near spawn
         let pos = new RoomPosition(x, y, base.name)
         if (pos.inRangeTo(baseOp.centerPos,CORE_INNER_RADIUS)) return false;
         let terrain = pos.lookFor(LOOK_TERRAIN);
