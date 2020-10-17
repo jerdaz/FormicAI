@@ -132,6 +132,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
         let structureSites = constructionSites.filter(o => {return o.structureType != STRUCTURE_ROAD})
+        let prioExtensionsCount = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 / EXTENSION_ENERGY_CAPACITY[this.baseOp.level]
 
         if (baseOp.spawns.length == 0) {
             for (let site of constructionSites) {
@@ -142,12 +143,12 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (pos) pos.createConstructionSite(STRUCTURE_SPAWN);
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
-        } else if (structureSites.length < 1 ) {
+        } else if (structureSites.length < 1 && this._baseOp.extensions.length < prioExtensionsCount) {
             //first try to build the inner core with a fixed template
             let createdConstructionSite = false;
-            let y = this.baseCenter.y + baseCoreOffset.y - 1;
+            let y = this.baseCenter.y - baseCoreOffset.y + 1;
             for(let structureRow of baseCoreTemplate) {
-                y++;
+                y--;
                 let x = this.baseCenter.x + baseCoreOffset.x - 1;
                 for (let structureType of structureRow) {
                     x++
@@ -166,7 +167,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
                         let result = pos.createConstructionSite(STRUCTURE_RAMPART);
                         if (result == OK) createdConstructionSite = true;
                     }
+                    if (createdConstructionSite) break;
                 }
+                if (createdConstructionSite) break;
             }
 
             // then expand into the outer region of the base with a generic pattern
