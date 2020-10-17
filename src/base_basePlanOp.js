@@ -5,12 +5,12 @@ const { MAX_ROOM_SIZE } = require('./constants');
 
 const baseBuildOrder = [STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER, STRUCTURE_STORAGE,];
 const baseBuildTemplate = [
-    {type: STRUCTURE_SPAWN},
     {type: STRUCTURE_EXTENSION},
     {type: STRUCTURE_TOWER},
     {type: STRUCTURE_STORAGE},
     {type: STRUCTURE_LINK, max:1},
     {type: STRUCTURE_TERMINAL},
+    {type: STRUCTURE_SPAWN},
 //  {type: STRUCTURE_LAB, max:1}
 ]
 
@@ -150,8 +150,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
             let createdConstructionSite = false;
 
             //first try to build the inner core with a fixed template (only if there are enough extentions)
-            let prioExtensionsCount = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 / EXTENSION_ENERGY_CAPACITY[this.baseOp.level]
-            if (this._baseOp.extensions.length >= prioExtensionsCount) {
+            let viableWorkerCost = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 
+            if (this._baseOp.base.energyCapacityAvailable >=  viableWorkerCost) {
                 let y = this.baseCenter.y - baseCoreOffset.y + 1;
                 for(let structureRow of baseCoreTemplate) {
                     y--;
@@ -181,7 +181,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     if (createdConstructionSite) break;
                 }
             }
-            
+
             // then expand into the outer region of the base with a generic pattern
             if (!createdConstructionSite) {
                 for(let template of baseBuildTemplate) {
