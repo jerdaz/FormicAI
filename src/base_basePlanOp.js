@@ -147,7 +147,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 }
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
             }
-        } else if (structureSites.length < 1 && this._baseOp.extensions.length < prioExtensionsCount) {
+        } else if (structureSites.length < 1 && this._baseOp.extensions.length >= prioExtensionsCount) {
             //first try to build the inner core with a fixed template
             let createdConstructionSite = false;
             let y = this.baseCenter.y - baseCoreOffset.y + 1;
