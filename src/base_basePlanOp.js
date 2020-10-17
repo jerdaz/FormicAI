@@ -139,7 +139,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             for (let site of constructionSites) {
                 if (site.structureType != STRUCTURE_SPAWN) site.remove();
             }
-            if (constructionSites.length < 1 ) {
+            if (!_.some(constructionSites,{structureType: STRUCTURE_SPAWN} )) {
                 let pos = this._baseOp.centerPos;
                 if (pos) {
                     pos = new RoomPosition(pos.x, pos.y+1, pos.roomName)
