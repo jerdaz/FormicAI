@@ -33,17 +33,20 @@ module.exports = class BuildingOp extends RoomChildOp {
 
         if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
             let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
-            if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder. external rooms have max 1 builder
-                if (this._buildWork) {
-                    creepCount = 1;
-                }
-            } else { // spawn creeps based on energy surpluss
-                let controller = this.baseOp.base.controller;
-                let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
-                creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
-                }
+            // if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder. external rooms have max 1 builder
+            //     if (this._buildWork) {
+            //         creepCount = 1;
+            //     }
+            // } else { // spawn creeps based on energy surpluss
+            let controller = this.baseOp.base.controller;
+            let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
+            creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+            // }
             if (creepCount <0) creepCount = 0;
-            // always try to spawn 1 builder to continue build work if storage is not large enough
+            if (this._buildWork && creepCount <= 1) {
+                creepCount = 1;
+            }
+        // always try to spawn 1 builder to continue build work if storage is not large enough
             if (creepCount == 1 ) {
                 // scale down the size of the worker in case energy is low to prevent completely draining the energy reserve
                 maxLength = Math.floor(energy / 3000) * 3
@@ -73,7 +76,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
-            if (creepOp.room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            if (room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
             else if (!this._buildWork) creepOp.newParent(this._baseOp.buildingOp);
             else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && this._buildWork) {
                 creepOp.instructBuild()
