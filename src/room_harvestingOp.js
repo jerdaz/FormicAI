@@ -43,7 +43,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, Math.round(this._harvesterCount))
         }
 
-        if (this._isMainRoom && this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS) {
+        if (this._isMainRoom && this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && this.baseOp.linkOp.baseLinks.length >= 1) {
             let base = this.baseOp.base;
             if(links.length == 0) {
                 //create roomcallback to prevent building on room edges;
