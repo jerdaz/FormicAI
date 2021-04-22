@@ -589,7 +589,7 @@ module.exports = class CreepOp extends ChildOp {
     _findBuildTarget() {
         let creep = this._creep;
         // find construction sites not blocked by creeps
-        let cSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES,{filter:o => {return o.pos.lookFor(LOOK_CREEPS).length == 0}})
+        let cSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES,{filter:o => {return o.structureType == STRUCTURE_RAMPART || o.structureType == STRUCTURE_CONTAINER || o.pos.lookFor(LOOK_CREEPS).length == 0}})
         /**@type {Structure|ConstructionSite|null}  */
         let dest = creep.pos.findClosestByPath(cSites)
         if (!dest) { //repair normal structures
