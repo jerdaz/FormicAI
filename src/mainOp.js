@@ -4,12 +4,6 @@ let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
 
-//compat fix:
-const PIXEL_CPU_COST = 5000;
-//if (!Game.cpu.generatePixel) Game.cpu.generatePixel = function() {};
-//end compat fix
-
-
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 

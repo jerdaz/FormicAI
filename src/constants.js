@@ -1,6 +1,3 @@
-//compat fix:
-const PIXEL_CPU_COST = 5000;
-//end compat fix
 
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
