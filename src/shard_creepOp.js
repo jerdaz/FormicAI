@@ -449,11 +449,11 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 break;
             case c.STATE_NONE:
-                //flee from sources and spawns
+                //flee from sources and spawns and construction sites
                 /**@type {RoomObject[]} */
                 let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
-                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
-                targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
+                targets = targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                targets = targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
                 if (targets.length>0) {
                     let poss = []
                     for (let target of targets) poss.push({pos: target.pos, range: 3})
@@ -499,6 +499,7 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {RoomObjectEx | null} [destObj] */
     _deliver(destObj) {
         let creep = this._creep;
+        // become idle if destination is invalid
         if(!destObj) this._instruct = c.COMMAND_NONE;
         else {
             let range = 1;
