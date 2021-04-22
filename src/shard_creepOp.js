@@ -453,6 +453,7 @@ module.exports = class CreepOp extends ChildOp {
                 /**@type {RoomObject[]} */
                 let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
                 targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
                 if (targets.length>0) {
                     let poss = []
                     for (let target of targets) poss.push({pos: target.pos, range: 3})
@@ -526,7 +527,8 @@ module.exports = class CreepOp extends ChildOp {
                 } 
                 this._moveTo(destPos, {range:range});
             }
-            if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
+            else if (result != OK) this._instruct = c.COMMAND_NONE
+            else if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
         }
     }
 
@@ -585,8 +587,10 @@ module.exports = class CreepOp extends ChildOp {
 
     _findBuildTarget() {
         let creep = this._creep;
+        // find construction sites not blocked by creeps
+        let cSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES,{filter:o => {return o.pos.lookFor(LOOK_CREEPS).length == 0}})
         /**@type {Structure|ConstructionSite|null}  */
-        let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+        let dest = creep.pos.findClosestByPath(cSites)
         if (!dest) { //repair normal structures
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => { return o.structureType != STRUCTURE_RAMPART && o.hits < o.hitsMax }})
             dest = creep.pos.findClosestByPath(structures);
