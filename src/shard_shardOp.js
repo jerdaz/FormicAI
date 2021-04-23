@@ -250,7 +250,6 @@ module.exports = class ShardOp extends ChildOp {
             let  cpuReserve = maxCPU / 20;
             let  cpuRange = maxCPU - 2 * cpuReserve
             maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
-            this._pixelGeneratedLastTurn = false;
         }
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
@@ -263,7 +262,9 @@ module.exports = class ShardOp extends ChildOp {
         this._teamShardColonizing.run();
 
         //generate pixels & reset maxBucket if successful
+        this._pixelGeneratedLastTurn = false;
         if (Game.cpu.generatePixel && Game.cpu.bucket >= PIXEL_CPU_COST) {
+            U.l('generating pixel')
             let result = Game.cpu.generatePixel();
             if (result == OK) {
                 this._pixelGeneratedLastTurn = true;
