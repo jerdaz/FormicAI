@@ -2,6 +2,7 @@
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
     CREEP_EMOTES: false,
+    GENERATE_PIXELS: false, //enable generating pixels. Causes cpu timeout errors
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,

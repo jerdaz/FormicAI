@@ -253,6 +253,7 @@ module.exports = class ShardOp extends ChildOp {
         }
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
+            if (Game.cpu.bucket < 500 && Game.cpu.getUsed() >= Game.cpu.bucket / maxBasesToRun * (maxBasesToRun-1) ) break; //stop executing if not enough time
             if (++baseCount > maxBasesToRun) break;
             let baseOp = baseOpKey[1];
             baseOp.run();
@@ -263,8 +264,7 @@ module.exports = class ShardOp extends ChildOp {
 
         //generate pixels & reset maxBucket if successful
         this._pixelGeneratedLastTurn = false;
-        if (Game.cpu.generatePixel && Game.cpu.bucket >= PIXEL_CPU_COST) {
-            U.l('generating pixel')
+        if (c.GENERATE_PIXELS && Game.cpu.generatePixel && Game.cpu.bucket >= PIXEL_CPU_COST) {
             let result = Game.cpu.generatePixel();
             if (result == OK) {
                 this._pixelGeneratedLastTurn = true;
