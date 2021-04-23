@@ -128,10 +128,6 @@ module.exports = class MainOp extends Operation {
         }
     }
 
-    _command() {
-        if (Game.cpu.generatePixel && Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
-    }
-
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){
         if(!InterShardMemory) return;

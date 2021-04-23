@@ -43,6 +43,8 @@ module.exports = class ShardOp extends ChildOp {
         this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
+        this._maxBucket = Game.cpu.bucket // The maximum bucket size seen since previous pixel generation (used in _run())
+        this._pixelGeneratedLastTurn = false // has a pixel been generated last turn (used in run())
     }
 
 
@@ -235,10 +237,21 @@ module.exports = class ShardOp extends ChildOp {
 
         // run the base operations in order of priority
         // if bucket is low, low priority bases are skipped 
-        let maxCPU = c.MAX_BUCKET
-        const cpuReserve = maxCPU / 20;
-        const cpuRange = maxCPU - 2 * cpuReserve
-        const maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
+        // bucket size is dynamic and grows. When a pixel is generated it is reset.
+        // when cpu starved, cpu goes down, bases shut down in priority
+        // when cpu is plentiful, bucket goes up, until a pixel is generated, both are reset and they go up again
+        // all bases keep running unless the buckets decreases.
+
+        this._maxBucket = Math.max(Game.cpu.bucket, this._maxBucket)
+
+        let maxCPU = this._maxBucket;
+        let maxBasesToRun = this._baseOpsMap.size
+        if (!this._pixelGeneratedLastTurn) {
+            let  cpuReserve = maxCPU / 20;
+            let  cpuRange = maxCPU - 2 * cpuReserve
+            maxBasesToRun = Math.floor(this._baseOpsMap.size * (Game.cpu.bucket - cpuReserve) / cpuRange);
+            this._pixelGeneratedLastTurn = false;
+        }
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
             if (++baseCount > maxBasesToRun) break;
@@ -248,6 +261,15 @@ module.exports = class ShardOp extends ChildOp {
 
         //run colonizing operation;
         this._teamShardColonizing.run();
+
+        //generate pixels & reset maxBucket if successful
+        if (Game.cpu.generatePixel && Game.cpu.bucket >= PIXEL_CPU_COST) {
+            let result = Game.cpu.generatePixel();
+            if (result == OK) {
+                this._pixelGeneratedLastTurn = true;
+                this._maxBucket = 0;
+            }
+        }
     }
 
     _firstRun() {
