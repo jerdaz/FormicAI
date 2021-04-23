@@ -107,10 +107,10 @@ module.exports = class TransportOp extends BaseChildOp {
         if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < CARRY_CAPACITY) targetLink = this._baseLinks[0];
         for(let sourceLink of this._sourceLinks) {
             //if source and controller share link, keep a larger reserve in the link for the upgrader
-            if (sourceLink == targetLink && targetLink == controllerLink && sourceLink.energy > sourceLink.energyCapacity / 8 * 5 ) {
+            if (sourceLink == targetLink && targetLink == controllerLink && sourceLink.store.energy > sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 * 5 ) {
                 sourceLink.transferEnergy(baseLink, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME * 10);
             }
-            else if (sourceLink.energyCapacity / 8 <= sourceLink.energy) {
+            else if (sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 <= sourceLink.store.energy) {
                 sourceLink.transferEnergy(targetLink);
             }
         }
@@ -147,14 +147,15 @@ module.exports = class TransportOp extends BaseChildOp {
             }
             /**@type {Structure |null} */
             let sourceStructure = null;
+            let creepCapacity = creepOp.creep.body.filter(o => o.type == 'carry').length * CARRY_CAPACITY;
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
-            if (baseLink && baseLink.store.energy >= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 + CARRY_CAPACITY) sourceStructure = baseLink;
+            if (baseLink && baseLink.store.energy >= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 + creepCapacity) sourceStructure = baseLink;
             if (sourceStructure) {
                 /**@type {Structure |null} */
                 let targetStructure = null;
                 if (storage) targetStructure = storage;
-                if (baseLink && baseLink.store.energy <= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 - CARRY_CAPACITY) targetStructure = baseLink;
+                if (baseLink && baseLink.store.energy <= baseLink.store.getCapacity(RESOURCE_ENERGY)/2 - creepCapacity) targetStructure = baseLink;
                 if (spawn && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) targetStructure = spawn;
                 else {
                     for (let tower of towers) {
