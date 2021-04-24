@@ -59,7 +59,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
             this._spawnPrio[c.OPERATION_HARVESTING] = 50;
-            this._spawnPrio[c.OPERATION_LINK] = 40;
+            this._spawnPrio[c.OPERATION_TRANSPORT] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 2;
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
@@ -71,9 +71,15 @@ module.exports = class SpawningOp extends BaseChildOp {
     }
 
     _command() {
+
         let canSpawn = false;
         let spawns = this._baseOp.spawns;
-        for (let spawn of spawns) if (spawn.spawning == null) canSpawn = true;
+        let primarySpawn = spawns[0];
+        for (let spawn of spawns) {
+            if (spawn.spawning == null) canSpawn = true;
+            if (spawn.pos.inRangeTo(this.baseOp.centerPos,1)) primarySpawn = spawn;
+        }
+
         if (canSpawn) {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
@@ -87,10 +93,24 @@ module.exports = class SpawningOp extends BaseChildOp {
                     for (let spawn of spawns) {
                         if (spawn.spawning == null) {
                             let spawnItem = spawnList.pop();
+                            let directions = [TOP_RIGHT, TOP, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
+                            if (spawn == primarySpawn) {
+                                // Primary spawn should only send creeps down
+                                directions = [TOP_RIGHT, TOP_LEFT, LEFT, RIGHT, BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT]
+                                // unless it is the transporter creep, it should go into the base center
+                                if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) directions = [TOP]
+                            } else if (spawnItem && spawnItem.opType == c.OPERATION_TRANSPORT) {
+                                // transporter creeps should only be spawned on primary base center. pick something else
+                                let spawnItem2 = spawnList.pop();
+                                spawnList.push(spawnItem);
+                                spawnItem = spawnItem2;
+                            }
+
                             if (spawnItem) {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
-                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999) )
+                                    let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999),
+                                            {directions: directions} )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
                                     this._log(result); 
@@ -150,7 +170,7 @@ module.exports = class SpawningOp extends BaseChildOp {
 
             let nCreeps = 0;
             if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
-            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, count:spawnRequest.count })
+            this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, currentCount:nCreeps, requestCcount:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
             if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {

@@ -125,6 +125,8 @@ module.exports = class CreepOp extends ChildOp {
         super.newParent(newParent);
         this._creep.memory.operationType = newParent.type;
         this._creep.memory.operationInstance = newParent.instance;
+        if (newParent.baseOp) this._creep.memory.baseName = newParent.baseOp.name;
+        if (newParent.roomOp) this._creep.memory.baseName = newParent.roomOp.name;
     }
 
     /**@param {Structure | ConstructionSite} [dest] */
@@ -327,14 +329,17 @@ module.exports = class CreepOp extends ChildOp {
                 if (tombstone) {
                     let res = creep.withdraw(tombstone, resourceType);
                     // also withdraw other stuff & bring to terminal if that is destination
-                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
+                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) res = creep.withdraw(tombstone, U.getLargestStoreResource(creep.store));
+                    if (res == OK) break;
                 }
                 else {
                     let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
                     if (dropped_resource) {
-                        if (dropped_resource.resourceType == resourceType) creep.pickup(dropped_resource);
+                        let result;
+                        if (dropped_resource.resourceType == resourceType) result = creep.pickup(dropped_resource);
                         // also withdraw other stuff & bring to terminal if that is destination
-                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
+                        else if (destObj instanceof StructureTerminal) result = creep.pickup(dropped_resource);
+                        if (result == OK) break;
                     }
                 }
 
@@ -372,7 +377,10 @@ module.exports = class CreepOp extends ChildOp {
                 if (destObj instanceof Structure) {
                     let roomLevel = 1;
                     if (this._baseOp) roomLevel = this._baseOp.level
-                    let needRepair = destObj.hits < destObj.hitsMax && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
+                    let needRepair = destObj.hits < destObj.hitsMax && destObj.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;            
+                    // only repair walls/ramparts if there are no structures to build        
+                    if (needRepair && destObj.structureType == STRUCTURE_RAMPART || destObj.structureType == STRUCTURE_WALL
+                            && creep.room.find(FIND_MY_CONSTRUCTION_SITES).length>0) needRepair = false; 
                     if (!needRepair) destObj = null;
                 } ;
                 if (destObj == null) {
@@ -444,14 +452,40 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 break;
             case c.STATE_NONE:
-                //flee from sources and spawns
+                //flee from sources and spawns and construction sites
                 /**@type {RoomObject[]} */
                 let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
-                targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                targets = targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                targets = targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
                 if (targets.length>0) {
                     let poss = []
                     for (let target of targets) poss.push({pos: target.pos, range: 3})
-                    let result = PathFinder.search(creep.pos, poss,{flee:true})
+                    let roomCallback = function(/**@type {string}*/ roomName) {
+
+                        let room = Game.rooms[roomName];
+                        if (!room) return false;
+                        let costs = new PathFinder.CostMatrix;
+                
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                          if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                     (struct.structureType !== STRUCTURE_RAMPART ||
+                                      !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                          }
+                        });
+                
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                
+                        return costs;
+                      }
+                    let result = PathFinder.search(creep.pos, poss,{flee:true, roomCallback: roomCallback})
                     creep.moveByPath(result.path)
                 }
                 if (c.CREEP_EMOTES) creep.say('💤')
@@ -468,6 +502,7 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {RoomObjectEx | null} [destObj] */
     _deliver(destObj) {
         let creep = this._creep;
+        // become idle if destination is invalid
         if(!destObj) this._instruct = c.COMMAND_NONE;
         else {
             let range = 1;
@@ -496,7 +531,8 @@ module.exports = class CreepOp extends ChildOp {
                 } 
                 this._moveTo(destPos, {range:range});
             }
-            if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
+            else if (result != OK) this._instruct = c.COMMAND_NONE
+            else if (c.CREEP_EMOTES) creep.say('🚚➤' + ' '+ destObj.pos.x + ' ' + destObj.pos.y )
         }
     }
 
@@ -555,15 +591,17 @@ module.exports = class CreepOp extends ChildOp {
 
     _findBuildTarget() {
         let creep = this._creep;
+        // find construction sites not blocked by creeps
+        let cSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES,{filter:o => {return o.structureType == STRUCTURE_RAMPART || o.structureType == STRUCTURE_CONTAINER || o.pos.lookFor(LOOK_CREEPS).length == 0}})
         /**@type {Structure|ConstructionSite|null}  */
-        let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
+        let dest = creep.pos.findClosestByRange(cSites)
         if (!dest) { //repair normal structures
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => { return o.structureType != STRUCTURE_RAMPART && o.hits < o.hitsMax }})
-            dest = creep.pos.findClosestByPath(structures);
+            dest = creep.pos.findClosestByRange(structures);
         }
-        if (!dest) { // repair roads
+        if (!dest) { // repair roads, containers
             let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
-                if (o.structureType != STRUCTURE_ROAD) return false;
+                if (o.structureType != STRUCTURE_ROAD && o.structureType != STRUCTURE_CONTAINER) return false;
                 let needRepair = o.hits < o.hitsMax * 0.8;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
@@ -574,18 +612,24 @@ module.exports = class CreepOp extends ChildOp {
                 this._log('canrepair');
                 return true;
             }});
-            dest = creep.pos.findClosestByPath(roads);
+            dest = creep.pos.findClosestByRange(roads);
         }
         if (!dest) { //repair ramparts
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
                 if (o.structureType != STRUCTURE_RAMPART) return false;
+
+                //only repair ramparts protecting structures
+                let structures = o.pos.lookFor(LOOK_STRUCTURES);
+                _.remove(structures,{structureType:STRUCTURE_ROAD});
+                if (structures.length <=1) return;
+
                 let roomLevel = 1;
                 if (this._baseOp) roomLevel = this._baseOp.level
                 let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
                 if (!needRepair) return false;
                 else return true;
             }});
-            dest = creep.pos.findClosestByPath(structures);
+            dest = creep.pos.findClosestByRange(structures);
         }
         return dest;
     }

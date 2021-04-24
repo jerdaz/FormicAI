@@ -4,12 +4,6 @@ let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
 
-//compat fix:
-const PIXEL_CPU_COST = 5000;
-//if (!Game.cpu.generatePixel) Game.cpu.generatePixel = function() {};
-//end compat fix
-
-
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
@@ -132,10 +126,6 @@ module.exports = class MainOp extends Operation {
             interShardMem.shards[this._shardNum].baseCount = myBasesCount;
             this._writeInterShardMem(interShardMem);
         }
-    }
-
-    _command() {
-        if (Game.cpu.generatePixel && Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
     }
 
     /**@param {ShardMem} shardMem */

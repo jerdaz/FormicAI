@@ -1,10 +1,8 @@
-//compat fix:
-const PIXEL_CPU_COST = 5000;
-//end compat fix
 
 module.exports = {
     MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
     CREEP_EMOTES: false,
+    GENERATE_PIXELS: false, //enable generating pixels. Causes cpu timeout errors
     COMMAND_NONE: 0,
     COMMAND_TRANSFER: 1,
     COMMAND_MOVETO: 2,
@@ -43,7 +41,7 @@ module.exports = {
     OPERATION_TOWER: 12,
     OPERATION_HARVESTING: 13,
     OPERATION_BASEPLAN: 14,
-    OPERATION_LINK: 15,
+    OPERATION_TRANSPORT: 15,
     OPERATION_MINING: 16,
     OPERATION_MARKET: 17,
     OPERATION_BANK: 18,

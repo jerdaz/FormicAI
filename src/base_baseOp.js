@@ -52,12 +52,13 @@ module.exports = class BaseOp extends ShardChildOp{
 
     get type() {return c.OPERATION_BASE}
     get roomOps() {return /**@type {RoomOp[]}*/( this._childOps[c.OPERATION_ROOM])}
+    get mainRoomOp() {return this._myRoomOp}
     get fillingOp() {return /**@type {FillingOp} */(this._childOps[c.OPERATION_FILLING][0]) };
     get spawningOp() {return /**@type {SpawningOp} */(this._childOps[c.OPERATION_SPAWNING][0]) };  
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
     get buildingOp() {return this._myRoomOp.buildingOp}
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
-    get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_LINK][0])}
+    get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_TRANSPORT][0])}
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
@@ -148,10 +149,21 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
+        // start harvesting when there is a storage.
         if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
         else return;
+        // stored energy phase if thre is energy in the store -or- harvesters are busy filling the store.
         if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
-        else return;
+        else {
+            for (let harvestingOp of this.mainRoomOp.harvestingOps) {
+                if (harvestingOp.creepCount > 0) {
+                    this._phase = c.BASE_PHASE_STORED_ENERGY
+                    break;
+                }
+            }
+            if (this._phase < c.BASE_PHASE_STORED_ENERGY) return;
+        }
+        ;
         if (this.links.length > 0) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
