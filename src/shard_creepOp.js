@@ -591,10 +591,10 @@ module.exports = class CreepOp extends ChildOp {
         // find construction sites not blocked by creeps
         let cSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES,{filter:o => {return o.structureType == STRUCTURE_RAMPART || o.structureType == STRUCTURE_CONTAINER || o.pos.lookFor(LOOK_CREEPS).length == 0}})
         /**@type {Structure|ConstructionSite|null}  */
-        let dest = creep.pos.findClosestByPath(cSites)
+        let dest = creep.pos.findClosestByRange(cSites)
         if (!dest) { //repair normal structures
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => { return o.structureType != STRUCTURE_RAMPART && o.hits < o.hitsMax }})
-            dest = creep.pos.findClosestByPath(structures);
+            dest = creep.pos.findClosestByRange(structures);
         }
         if (!dest) { // repair roads, containers
             let roads = creep.room.find(FIND_STRUCTURES, {filter: o => {
@@ -609,7 +609,7 @@ module.exports = class CreepOp extends ChildOp {
                 this._log('canrepair');
                 return true;
             }});
-            dest = creep.pos.findClosestByPath(roads);
+            dest = creep.pos.findClosestByRange(roads);
         }
         if (!dest) { //repair ramparts
             let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
@@ -626,7 +626,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (!needRepair) return false;
                 else return true;
             }});
-            dest = creep.pos.findClosestByPath(structures);
+            dest = creep.pos.findClosestByRange(structures);
         }
         return dest;
     }
