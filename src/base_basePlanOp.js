@@ -15,8 +15,8 @@ const baseBuildTemplate = [
 ]
 
 const baseCoreOffset = {x:-1, y:-1};
-const CORE_OUTER_RADIUS = 3;
-const CORE_INNER_RADIUS = 1;
+const CORE_OUTER_RADIUS = 2; // radius of core with free space around it
+const CORE_INNER_RADIUS = 1; // radius of the base core used for placing buildings
 // BASE TEMPLATE IS UPSIDE DOWN, builds from down to up (first south row with spawn, finally terminal row north)
 /**@type {(BuildableStructureConstant|null)[][]} */
 const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
@@ -52,6 +52,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
     _support() {
         this._baseOp.linkOp.updateLinks();
         let base = this.baseOp.base;
+
         //find & destroy improperly placed buildings.
         let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
@@ -317,11 +318,41 @@ module.exports = class BasePlanOp extends BaseChildOp{
     _calcBaseCenter() {
         let baseOp = this._baseOp
         let base = baseOp.base;
-        let firstSpawn = baseOp.spawns[0];
+        /**@type {StructureSpawn | null} */
+        let firstSpawn = null;
         let firstConstructionSite = base.find(FIND_MY_CONSTRUCTION_SITES, {filter: {structureType: STRUCTURE_SPAWN}})[0];
         /**@type {RoomPosition|null} */
         let centerPos = null;
+        let terrain = base.getTerrain();
+
+        //find a spawn that is suitable as base center
+        //prefer the first spawn, but may not be close to walls.
+        for (let spawn of baseOp.spawns) {
+            let pos = spawn.pos
+            let validSpot = true;
+            for (let x=pos.x - CORE_OUTER_RADIUS;x<= pos.x + CORE_OUTER_RADIUS;x++) {
+                if (x<0 || x>= c.MAX_ROOM_SIZE) {
+                    validSpot = false;
+                    break;
+                }
+                for (let y=pos.y - CORE_OUTER_RADIUS - 1; y<= pos.y +CORE_OUTER_RADIUS + 1;y++){
+                    if (y<0 || y>=c.MAX_ROOM_SIZE || terrain.get(x,y) == TERRAIN_MASK_WALL) {
+                        validSpot = false;
+                        break;
+                    }
+                }
+                if (!validSpot) break;
+            }
+            if (validSpot) {
+                firstSpawn = spawn;
+                break;
+            }
+        }
+        //if (!firstSpawn) U.l('no valid spawn in room ' + base.name)
+        //firstSpawn = baseOp.spawns[0];
         if (firstSpawn) centerPos = firstSpawn.pos;
+
+
         else if (firstConstructionSite) centerPos = firstConstructionSite.pos;
         if (centerPos) {
             centerPos.y--;
@@ -344,21 +375,23 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //now find the center of the path between the previously found position and the controller
         let path = sourcePos.findPathTo(controllerPos, {range:1, ignoreCreeps:true});
-        if (path.length < 1) throw Error('no path between source and controller')
-        let pathStep = path[Math.floor(path.length/2)];
-        centerPos = new RoomPosition(pathStep.x, pathStep.y, base.name);
-        
-        // now 'flee' from all walls a distance with minimal free space
+        if (path.length < 1) centerPos = sourcePos;
+        else {
+            let pathStep = path[Math.floor(path.length/2)];
+            centerPos = new RoomPosition(pathStep.x, pathStep.y, base.name);
+        }
+
+        // now 'flee' from all walls so there is enough free space.
         /**@type {{pos:RoomPosition, range:number }[]} */
         let walls = []
         let roomTerrain = base.getTerrain();
         for(let x=0; x<c.MAX_ROOM_SIZE;x++){
-            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_OUTER_RADIUS})
-            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_OUTER_RADIUS})
-            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_OUTER_RADIUS})
-            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_OUTER_RADIUS})
+            walls.push({pos: new RoomPosition(x,0, base.name), range:CORE_OUTER_RADIUS+1})
+            walls.push({pos: new RoomPosition(x,MAX_ROOM_SIZE-1, base.name), range:CORE_OUTER_RADIUS+1})
+            walls.push({pos: new RoomPosition(0, x, base.name), range:CORE_OUTER_RADIUS+1})
+            walls.push({pos: new RoomPosition(MAX_ROOM_SIZE-1, x, base.name), range:CORE_OUTER_RADIUS+1})
             for(let y=0; y<c.MAX_ROOM_SIZE;y++){
-                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS})
+                if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS+1})
             }
         }
         let roomCallBack = function(/**@type {string}*/roomName) {
@@ -372,12 +405,11 @@ module.exports = class BasePlanOp extends BaseChildOp{
             }
             return costs;
         }
-        let fleePath = PathFinder.search(centerPos,walls,{flee:true, roomCallback: roomCallBack, swampCost:1})
+        let fleePath = PathFinder.search(centerPos,walls,{flee:true/*, roomCallback: roomCallBack, swampCost:1*/})
         if (fleePath.path.length>0) {
             let path = fleePath.path;
             centerPos = path[path.length-1]
         }
-
         return centerPos
 
         // let x = 0;
