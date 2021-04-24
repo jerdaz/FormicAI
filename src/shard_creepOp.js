@@ -329,14 +329,17 @@ module.exports = class CreepOp extends ChildOp {
                 if (tombstone) {
                     let res = creep.withdraw(tombstone, resourceType);
                     // also withdraw other stuff & bring to terminal if that is destination
-                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) creep.withdraw(tombstone, U.getLargestStoreResource(creep.store))
+                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) res = creep.withdraw(tombstone, U.getLargestStoreResource(creep.store));
+                    if (res == OK) break;
                 }
                 else {
                     let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
                     if (dropped_resource) {
-                        if (dropped_resource.resourceType == resourceType) creep.pickup(dropped_resource);
+                        let result;
+                        if (dropped_resource.resourceType == resourceType) result = creep.pickup(dropped_resource);
                         // also withdraw other stuff & bring to terminal if that is destination
-                        else if (destObj instanceof StructureTerminal) creep.pickup(dropped_resource)
+                        else if (destObj instanceof StructureTerminal) result = creep.pickup(dropped_resource);
+                        if (result == OK) break;
                     }
                 }
 
