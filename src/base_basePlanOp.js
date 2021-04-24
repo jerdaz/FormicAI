@@ -102,11 +102,19 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         // if there are too many spawns for controller level, start removing them because the primary spawn
         // MUST be active
-        if (this.baseOp.spawns.length > CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][this.baseOp.base.controller.level]) {
+        // also destroy one spawn if there is no spawn in the core.
+        if (this.baseOp.spawns.length >= CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][this.baseOp.base.controller.level]) {
+            let coreSpawn = null;
             for (let spawn of this.baseOp.spawns) {
-                if (spawn.pos.inRangeTo(this.baseCenter,1)) continue;
-                spawn.destroy();
-                break;
+                if (spawn.pos.x == this.baseCenter.x && spawn.pos.y == this.baseCenter.y +1 ) coreSpawn = spawn;
+            }
+            if (!coreSpawn || this.baseOp.spawns.length > CONTROLLER_STRUCTURES[STRUCTURE_SPAWN][this.baseOp.base.controller.level]) {
+                for (let spawn of this.baseOp.spawns) {
+                    if (spawn != coreSpawn) {
+                        spawn.destroy();
+                        break;
+                    }
+                }
             }
         }
 
