@@ -37,11 +37,13 @@ module.exports = class BasePlanOp extends BaseChildOp{
         // determine out center of the base
         /**@type {RoomPosition | undefined} */
         this._centerPos = undefined;
+        this._maxWallHeight = c.MAX_WALL_HEIGHT;
     }
 
 
     get type() {return c.OPERATION_BASEPLAN}
     get baseCenter() {return this._getBaseCenter();}
+    get maxWallHeight() {return this._maxWallHeight}
 
     _firstRun() {
         //if (this._baseOp.base.controller.level == 1) this._support();
@@ -50,8 +52,25 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
 
     _support() {
-        this._baseOp.linkOp.updateLinks();
+        //check for new build links and notify link Operations
+        this._baseOp.transportOp.updateLinks();
         let base = this.baseOp.base;
+
+        //update maximum wall height
+        //ramparts shouldn't be repaired beyond 2x the lowest height
+        let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
+        let minHeight = c.MAX_WALL_HEIGHT;
+        for (let rampart of ramparts) {
+            //only repair ramparts protecting structures
+            let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
+            _.remove(structures,{structureType:STRUCTURE_ROAD});
+            if (structures.length <=1) continue;
+            if (rampart.hits > minHeight) minHeight = rampart.hits
+        }
+        let roomLevel = 1;
+        if (this._baseOp) roomLevel = this._baseOp.level
+        this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);                    
+
 
         //find & destroy improperly placed buildings.
         let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2
@@ -81,7 +100,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 case STRUCTURE_LAB:
                     break;
                 case STRUCTURE_LINK:
-                    let linkOp = this.baseOp.linkOp;
+                    let linkOp = this.baseOp.transportOp;
                     if (!_.includes(linkOp.baseLinks, structure) 
                         && !_.includes(linkOp.controllerLinks, structure)
                         && !_.includes(linkOp.sourceLinks, structure)) {
@@ -91,12 +110,12 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 }
         }
         
-        if (this.baseOp.linkOp.baseLinks.length > 1) this.baseOp.linkOp.baseLinks[1].destroy();
+        if (this.baseOp.transportOp.baseLinks.length > 1) this.baseOp.transportOp.baseLinks[1].destroy();
         
-        if (this.baseOp.linkOp.baseLinks.length == 0 && this.baseOp.linkOp.controllerLinks.length>0) this.baseOp.linkOp.controllerLinks[0].destroy();
-        if (this.baseOp.linkOp.baseLinks.length > 0 
-            && !this.baseOp.linkOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
-            && this.baseOp.linkOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.linkOp.baseLinks[0].destroy();
+        if (this.baseOp.transportOp.baseLinks.length == 0 && this.baseOp.transportOp.controllerLinks.length>0) this.baseOp.transportOp.controllerLinks[0].destroy();
+        if (this.baseOp.transportOp.baseLinks.length > 0 
+            && !this.baseOp.transportOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
+            && this.baseOp.transportOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.transportOp.baseLinks[0].destroy();
         
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 

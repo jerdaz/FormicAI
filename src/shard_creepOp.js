@@ -615,21 +615,23 @@ module.exports = class CreepOp extends ChildOp {
             dest = creep.pos.findClosestByRange(roads);
         }
         if (!dest) { //repair ramparts
-            let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
-                if (o.structureType != STRUCTURE_RAMPART) return false;
+            let baseOp = this._shardOp.getBaseOp(creep.room.name);
+            let roomLevel = baseOp.level;
+            if (baseOp) {
+                let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
+                    if (o.structureType != STRUCTURE_RAMPART) return false;
 
-                //only repair ramparts protecting structures
-                let structures = o.pos.lookFor(LOOK_STRUCTURES);
-                _.remove(structures,{structureType:STRUCTURE_ROAD});
-                if (structures.length <=1) return;
+                    //only repair ramparts protecting structures
+                    let structures = o.pos.lookFor(LOOK_STRUCTURES);
+                    _.remove(structures,{structureType:STRUCTURE_ROAD});
+                    if (structures.length <=1) return;
 
-                let roomLevel = 1;
-                if (this._baseOp) roomLevel = this._baseOp.level
-                let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[roomLevel] * 3;                    
-                if (!needRepair) return false;
-                else return true;
-            }});
-            dest = creep.pos.findClosestByRange(structures);
+                    let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < baseOp.basePlanOp.maxWallHeight;                    
+                    if (!needRepair) return false;
+                    else return true;
+                }});
+                dest = creep.pos.findClosestByRange(structures);
+            }
         }
         return dest;
     }

@@ -7,7 +7,7 @@ const TowerOp = require('./base_defenseOp');
 const ShardChildOp = require('./shard_childOp');
 const ColonizingOp = require('./base_colonizingOp');
 const BasePlanOp = require('./base_basePlanOp');
-const LinkOp = require('./base_transportOp');
+const TransportOp = require('./base_transportOp');
 const MiningOp = require('./base_miningOp');
 const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
@@ -34,7 +34,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this.addChildOp(new UpgradingOp(this));
         this.addChildOp(new ColonizingOp(this));
         this.addChildOp(new BasePlanOp(this));
-        this.addChildOp(new LinkOp(this));
+        this.addChildOp(new TransportOp(this));
         //this.addChildOp(new MiningOp(this));
         this.addChildOp(new MarketOp(this));
         this.addChildOp(new ScoutOp(this));
@@ -58,7 +58,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get basePlanOp() {return /**@type {BasePlanOp} */ (this._childOps[c.OPERATION_BASEPLAN][0])};
     get buildingOp() {return this._myRoomOp.buildingOp}
     get upgradingOp() {return /**@type {UpgradingOp} */ (this._childOps[c.OPERATION_UPGRADING][0])};
-    get linkOp() {return /**@type {LinkOp} */ (this._childOps[c.OPERATION_TRANSPORT][0])}
+    get transportOp() {return /**@type {TransportOp} */ (this._childOps[c.OPERATION_TRANSPORT][0])}
     get myStructures() {return this._structures};  
     get spawns() {return /**@type {StructureSpawn[]}*/ (this._structures[STRUCTURE_SPAWN]) || []}
     get extensions() {return /**@type {StructureExtension[]}*/ (this._structures[STRUCTURE_EXTENSION]) || []}
@@ -81,7 +81,7 @@ module.exports = class BaseOp extends ShardChildOp{
         this._base = /**@type {Base} */ (Game.rooms[this._name])
         // add op to room for easy access in debug console
         this._base.baseOp = this;
-        this._structures = {};
+        this._structures = {spawn:[], extension:[], rampart:[], link:[], storage:[], observer:[], powerBank:[], extractor:[], lab:[], terminal:[], nuker:[], factory:[]};
         let structures = this._base.find(FIND_MY_STRUCTURES);
         for (let structure of structures) {
             if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];

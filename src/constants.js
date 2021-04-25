@@ -92,7 +92,7 @@ module.exports = {
 
     INVADER_USERNAME : 'Invader',
 
-    MAX_WALL_HEIGHT : 0.01,
+    MAX_WALL_HEIGHT : 0.02, 
     ROAD_IDLE_REPAIR_TIME : 100,
     ROAD_FACTOR: 0.5,
     ENERGY_RESERVE : 0.1 * STORAGE_CAPACITY,
