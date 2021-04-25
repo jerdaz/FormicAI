@@ -383,7 +383,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         else if (firstConstructionSite) centerPos = firstConstructionSite.pos;
         if (centerPos) {
             centerPos.y--;
-            return centerPos;
+            return new RoomPosition(centerPos.x, centerPos.y-1, centerPos.roomName);
         }
 
         let controllerPos = base.controller.pos;

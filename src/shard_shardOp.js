@@ -42,7 +42,8 @@ module.exports = class ShardOp extends ChildOp {
         this.addChildOp(new ShardSpawningOp(this));
         this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
-        this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
+        this._userName = ''
+        if (Game.spawns[Object.keys(Game.spawns)[0]]) this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
         this._maxBucket = Game.cpu.bucket // The maximum bucket size seen since previous pixel generation (used in _run())
         this._pixelGeneratedLastTurn = false // has a pixel been generated last turn (used in run())
     }
