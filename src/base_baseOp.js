@@ -165,7 +165,7 @@ module.exports = class BaseOp extends ShardChildOp{
             if (this._phase < c.BASE_PHASE_STORED_ENERGY) return;
         }
         ;
-        if (this.links.length >= 2) this._phase = c.BASE_PHASE_SOURCE_LINKS;
+        if (this.transportOp.baseLinks.length >= 1) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
