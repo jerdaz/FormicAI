@@ -615,8 +615,7 @@ module.exports = class CreepOp extends ChildOp {
             dest = creep.pos.findClosestByRange(roads);
         }
         if (!dest) { //repair ramparts
-            let baseOp = this._shardOp.getBaseOp(creep.room.name);
-            let roomLevel = baseOp.level;
+            let baseOp = this._shardOp.getBaseOpNoNullCheck(creep.room.name);
             if (baseOp) {
                 let structures = creep.room.find(FIND_MY_STRUCTURES, {filter: o => {
                     if (o.structureType != STRUCTURE_RAMPART) return false;
@@ -625,11 +624,12 @@ module.exports = class CreepOp extends ChildOp {
                     let structures = o.pos.lookFor(LOOK_STRUCTURES);
                     _.remove(structures,{structureType:STRUCTURE_ROAD});
                     if (structures.length <=1) return;
-
+                    if (!baseOp) return false;
                     let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < baseOp.basePlanOp.maxWallHeight;                    
                     if (!needRepair) return false;
                     else return true;
-                }});
+                }
+                });
                 dest = creep.pos.findClosestByRange(structures);
             }
         }
