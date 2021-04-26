@@ -110,9 +110,14 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 }
         }
         
+        //there can only be one baselink, destroy the rest
         if (this.baseOp.transportOp.baseLinks.length > 1) this.baseOp.transportOp.baseLinks[1].destroy();
         
-        if (this.baseOp.transportOp.baseLinks.length == 0 && this.baseOp.transportOp.controllerLinks.length>0) this.baseOp.transportOp.controllerLinks[0].destroy();
+        // if there is no baselink, it cannot be build because there ar too many links and there is a controller link, destroy it.
+        if (this.baseOp.transportOp.baseLinks.length == 0 
+            && this.baseOp.myStructures[STRUCTURE_LINK].length>= CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.baseOp.level]
+            && this.baseOp.transportOp.controllerLinks.length>0) this.baseOp.transportOp.controllerLinks[0].destroy();
+
         if (this.baseOp.transportOp.baseLinks.length > 0 
             && !this.baseOp.transportOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
             && this.baseOp.transportOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.transportOp.baseLinks[0].destroy();
@@ -375,8 +380,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 break;
             }
         }
-        //if (!firstSpawn) U.l('no valid spawn in room ' + base.name)
-        //firstSpawn = baseOp.spawns[0];
+        
         if (firstSpawn) centerPos = firstSpawn.pos;
 
 
