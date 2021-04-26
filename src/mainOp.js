@@ -14,13 +14,15 @@ module.exports = class MainOp extends Operation {
         super();
         U.l('INIT MAIN');
 
-
+        //clean and init memory
         for (let memObj in Memory) {
             switch (memObj) {
                 case 'maxCPU':
                 case 'bank':
                 case 'colonizations':
                 case 'lastConstructionSiteCleanTick':
+                case 'stats':
+                case 'rooms':
                     break;
                 default:
                     delete Memory[memObj];
@@ -33,6 +35,7 @@ module.exports = class MainOp extends Operation {
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
         if (Memory.rooms == undefined) Memory.rooms = {};
+        if (Memory.stats == undefined) Memory.stats = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -42,6 +45,8 @@ module.exports = class MainOp extends Operation {
         /**@type {String[]} */
         this._shards = [];
         this._shardNum = parseInt(Game.shard.name.slice(-1));
+        this._lastStatUpdate = 0;
+        this._statTick = false;
 
         try {
             let i=0;
@@ -127,6 +132,14 @@ module.exports = class MainOp extends Operation {
             this._writeInterShardMem(interShardMem);
         }
     }
+
+    _stats() {
+        Memory.stats.cpu = {};
+        Memory.stats.cpu.bucket = Game.cpu.bucket;
+        Memory.stats.cpu.limit = Game.cpu.limit;
+        Memory.stats.cpu.used = Game.cpu.getUsed();
+    }
+
 
     /**@param {ShardMem} shardMem */
     _writeInterShardMem(shardMem){

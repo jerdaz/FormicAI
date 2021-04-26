@@ -18,7 +18,7 @@ module.exports = class Operation {
         this._tickOffset = _.random(0,c.SUPPORT_INTERVAL - 1)
         this._verbose = false;
         this._verboseAll = false // if true, log all running operations
-        this._tickFirstLog = true;
+        this._tickFirstLog = true; //Used in _log
     }
 
     get type() {
@@ -34,6 +34,7 @@ module.exports = class Operation {
     }
 
     get id() {return this._id}
+    
 
 
     initTick() {
@@ -84,7 +85,12 @@ module.exports = class Operation {
                 if (this._runSupport) this._runSupport = false;
             } catch(err) {Debug.logError(err, this.name)};
         }
-        if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
+        if (Game.time % c.STATS_INTERVAL == this._tickOffset % c.STATS_INTERVAL) {
+            try {
+                this._stats();
+            } catch(err) {Debug.logError(err, this.name)};
+        }
+            if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
             Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));
         }
     }
@@ -115,6 +121,7 @@ module.exports = class Operation {
     _strategy() {}
     _tactics() {}
     _command() {}
+    _stats() {}
 
     /**
      * @param {any} message 
