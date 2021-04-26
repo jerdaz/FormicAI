@@ -49,7 +49,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         // always try to spawn 1 builder to continue build work if storage is not large enough
             if (creepCount == 1 ) {
                 // scale down the size of the worker in case energy is low to prevent completely draining the energy reserve
-                maxLength = Math.floor(energy / 3000) * 3
+                maxLength = Math.floor(energy / 4000) * 3
                 creepCount = (maxLength==0)?0:1;
             }
         } else if (this._roomOp.name == this._baseOp.name) {
