@@ -13,7 +13,7 @@ const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
 const RoomOp = require('./room_roomOp');
 
-const UNCLAIM_TIME = 3000;
+const UNCLAIM_TIME = 100000;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
@@ -142,6 +142,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
         this._setPhase()
 
+        // give up base if the spawn is gone and rebuilding fails within a UNCLAIM_TIME
         if (this.spawns.length == 0 && this._unclaimTimer == 0 ) this._unclaimTimer = Game.time;
         else if (this.spawns.length == 0 && Game.time - this._unclaimTimer > UNCLAIM_TIME) this.base.controller.unclaim();
         else if (this.spawns.length>0) this._unclaimTimer = 0;
