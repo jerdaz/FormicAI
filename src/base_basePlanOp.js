@@ -306,6 +306,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
         if (x<2 || x > 47 || y < 2 || y > 47) return false;
         if (x == centerPos.x - 2 && y == centerPos.y) return false // keep space near storage
         if (x == centerPos.x && y == centerPos.y + 2) return false // keep space near spawn
+        if (x == centerPos.x + 2 && y == centerPos.y) return false // keep space near link
+        if (x == centerPos.x && y == centerPos.y -2) return false // keep space near terminal
         let pos = new RoomPosition(x, y, base.name)
         if (pos.inRangeTo(baseOp.centerPos,CORE_INNER_RADIUS)) return false;
         let terrain = pos.lookFor(LOOK_TERRAIN);
