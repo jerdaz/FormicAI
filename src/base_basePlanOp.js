@@ -371,7 +371,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     validSpot = false;
                     break;
                 }
-                for (let y=pos.y - CORE_OUTER_RADIUS - 1; y<= pos.y +CORE_OUTER_RADIUS + 1;y++){
+                for (let y=pos.y - 1 - CORE_OUTER_RADIUS ; y<= pos.y -1 + CORE_OUTER_RADIUS ;y++){
                     if (y<0 || y>=c.MAX_ROOM_SIZE || terrain.get(x,y) == TERRAIN_MASK_WALL) {
                         validSpot = false;
                         break;
