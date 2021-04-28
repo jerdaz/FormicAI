@@ -184,7 +184,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
             //first try to build the inner core with a fixed template (only if there are enough extentions)
             let viableWorkerCost = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 
-            if (this._baseOp.base.energyCapacityAvailable >=  viableWorkerCost) {
+            let prioritizeExtensions = this._baseOp.base.energyCapacityAvailable <  viableWorkerCost
+            if (prioritizeExtensions) {
                 let y = this.baseCenter.y - baseCoreOffset.y + 1;
                 for(let structureRow of baseCoreTemplate) {
                     y--;
@@ -219,6 +220,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             if (!createdConstructionSite) {
                 for(let template of baseBuildTemplate) {
                     let structureType = template.type;
+                    if (prioritizeExtensions && structureType != STRUCTURE_EXTENSION) continue;
                     let curCount = (structures[structureType] == undefined) ? 0 : structures[structureType].length;
                     curCount += _.filter(constructionSites, {structureType: structureType}).length;
                     if( curCount < CONTROLLER_STRUCTURES[structureType][room.controller.level] && (template.max == undefined || template.max > curCount)) {
