@@ -59,7 +59,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         //update maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
         let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
-        let minHeight = c.MAX_WALL_HEIGHT;
+        let minHeight = 0;
         for (let rampart of ramparts) {
             //only repair ramparts protecting structures
             let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
