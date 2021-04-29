@@ -22,7 +22,7 @@ module.exports = class RoomOp extends BaseChildOp {
 
 
         // calculate room distance from base.
-        if (Memory.rooms[roomName] == undefined) Memory.rooms[roomName] = {distanceOffset: Math.random()}
+        if (!Memory.rooms[roomName]) Memory.rooms[roomName] = {distanceOffset: Math.random(), unclaimTimer:0}
         this._distanceOffset = Memory.rooms[roomName].distanceOffset || Math.random();
         Memory.rooms[roomName].distanceOffset = this._distanceOffset;
         if (distance == 0) this._distance = 0;

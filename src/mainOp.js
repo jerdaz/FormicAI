@@ -17,6 +17,7 @@ module.exports = class MainOp extends Operation {
 
         for (let memObj in Memory) {
             switch (memObj) {
+                case 'rooms' :
                 case 'maxCPU':
                 case 'bank':
                 case 'colonizations':

@@ -46,8 +46,6 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
-
-        this._unclaimTimer = 0;
     }
 
     get type() {return c.OPERATION_BASE}
@@ -144,12 +142,12 @@ module.exports = class BaseOp extends ShardChildOp{
 
         // give up base if the spawn is gone and rebuilding fails within a UNCLAIM_TIME
         // reset
-        if (this.spawns.length == 0 && this.base.memory.unclaimTimer||0 == 0 ) this.base.memory.unclaimTimer = Game.time;
-        else if (this.spawns.length == 0 && Game.time - this.base.memory.unclaimTimer||0 > UNCLAIM_TIME) {
+        if (this.spawns.length == 0 && (this.base.memory.unclaimTimer||0) == 0 ) this.base.memory.unclaimTimer = Game.time;
+        else if (this.spawns.length == 0 && Game.time - (this.base.memory.unclaimTimer||0) > UNCLAIM_TIME) {
             this.base.controller.unclaim();
             this.base.memory.unclaimTimer = 0;
         }
-        else if (this.spawns.length>0) this._unclaimTimer = 0;
+        else if (this.spawns.length>0) this.base.memory.unclaimTimer = 0;
     }
 
     _setPhase() {
