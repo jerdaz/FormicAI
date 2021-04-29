@@ -14,7 +14,7 @@ const baseBuildTemplate = [
 //  {type: STRUCTURE_LAB, max:1}
 ]
 
-const baseCoreOffset = {x:-1, y:-1};
+const baseCoreOffset = {x:-1, y:-1}; // starting point of base
 const CORE_OUTER_RADIUS = 2; // radius of core with free space around it
 const CORE_INNER_RADIUS = 1; // radius of the base core used for placing buildings
 // BASE TEMPLATE IS UPSIDE DOWN, builds from down to up (first south row with spawn, finally terminal row north)
@@ -185,7 +185,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             //first try to build the inner core with a fixed template (only if there are enough extentions)
             let viableWorkerCost = (BODYPART_COST[CARRY] + BODYPART_COST[MOVE] + BODYPART_COST[WORK]) * 5 
             let prioritizeExtensions = !(baseOp.level <=3) || this._baseOp.base.energyCapacityAvailable <  viableWorkerCost
-            if (prioritizeExtensions) {
+            if (!prioritizeExtensions) {
                 let y = this.baseCenter.y - baseCoreOffset.y + 1;
                 for(let structureRow of baseCoreTemplate) {
                     y--;
