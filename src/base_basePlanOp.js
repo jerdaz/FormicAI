@@ -73,6 +73,22 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
 
         //find & destroy improperly placed buildings.
+        //destroy center structure if necessary (transport creep lives there);
+        let centerStructures = this.baseCenter.lookFor(LOOK_STRUCTURES);
+        for (let structure of centerStructures) {
+            switch (structure.structureType) {
+                case STRUCTURE_ROAD:
+                    break;
+                case STRUCTURE_RAMPART:
+                    break;
+                case STRUCTURE_CONTAINER:
+                    break;
+                default:
+                    structure.destroy();
+                    break;
+            }
+        }
+        //check all other structures as well
         let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2
         for (let structure of base.find(FIND_MY_STRUCTURES)) {
             switch (structure.structureType) {
