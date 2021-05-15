@@ -32,16 +32,11 @@ module.exports = class BuildingOp extends RoomChildOp {
         if (!this.isMainRoom) { // no need for upgraders in subrooms
             creepCount = 0;
         }
-        if (!this._buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { //upgrading takes over, no need for builders if no build work
+        else if (!this._buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work 
             creepCount = 0;
         }
-        if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together
+        else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together when not in controller link phase. always spawn at least 1
             let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
-            // if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder. external rooms have max 1 builder
-            //     if (this._buildWork) {
-            //         creepCount = 1;
-            //     }
-            // } else { // spawn creeps based on energy surpluss
             let controller = this.baseOp.base.controller;
             let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
             creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
