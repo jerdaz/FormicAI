@@ -29,9 +29,13 @@ module.exports = class BuildingOp extends RoomChildOp {
         if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
         else this._buildWork = false;
 
-
-
-        if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrader & building together
+        if (!this.isMainRoom) { // no need for upgraders in subrooms
+            creepCount = 0;
+        }
+        if (!this._buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { //upgrading takes over, no need for builders if no build work
+            creepCount = 0;
+        }
+        if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together
             let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
             // if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || !this.isMainRoom) { //upgrading Op takes over. max 1 builder. external rooms have max 1 builder
             //     if (this._buildWork) {
