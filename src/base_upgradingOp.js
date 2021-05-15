@@ -40,10 +40,10 @@ module.exports = class UpgradingOp extends BaseChildOp {
             }
         }
 
+        //spawn small upgrader to prevent controller downgrade
         if (workerCount < 1 && controller.ticksToDowngrade < CONTROLLER_DOWNGRADE[controller.level]*DOWNGRADE_RESERVE) {
             workerCount = 1;
             maxSize = 3;
-            //if (this.baseOp.phase<c.BASE_PHASE_CONTROLLER_LINK) body = [MOVE,CARRY,WORK]
         }
         this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
 
