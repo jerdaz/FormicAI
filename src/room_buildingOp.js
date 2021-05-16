@@ -92,7 +92,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
             }
-            return  o.hits < this._baseOp.basePlanOp.maxWallHeight
+            return o.hits < o.hitsMax && o.hits < this._baseOp.basePlanOp.maxWallHeight
         }}
         )       
         return result; 
