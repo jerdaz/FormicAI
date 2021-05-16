@@ -13,7 +13,7 @@ const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
 const RoomOp = require('./room_roomOp');
 
-const UNCLAIM_TIME = 30000;
+const UNCLAIM_TIME = 50000;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
@@ -147,7 +147,7 @@ module.exports = class BaseOp extends ShardChildOp{
             this.base.controller.unclaim();
             this.base.memory.unclaimTimer = 0;
         }
-        else if (this.spawns.length>0) this.base.memory.unclaimTimer = 0;
+        else if (this.spawns.length>0 && this.towers.length>0) this.base.memory.unclaimTimer = 0;
     }
 
     _setPhase() {
