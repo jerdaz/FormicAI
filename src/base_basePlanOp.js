@@ -69,7 +69,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
         let roomLevel = 1;
         if (this._baseOp) roomLevel = this._baseOp.level
-        this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);                    
+        this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
+        if (this._maxWallHeight <= RAMPART_DECAY_AMOUNT * 2) this._maxWallHeight = RAMPART_DECAY_AMOUNT * 2 + 1;            
 
 
         //find & destroy improperly placed buildings.
