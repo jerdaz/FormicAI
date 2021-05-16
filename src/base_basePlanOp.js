@@ -78,10 +78,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (let structure of centerStructures) {
             switch (structure.structureType) {
                 case STRUCTURE_ROAD:
-                    break;
-                case STRUCTURE_RAMPART:
-                    break;
                 case STRUCTURE_CONTAINER:
+                case STRUCTURE_RAMPART:
                     break;
                 default:
                     structure.destroy();
@@ -140,6 +138,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             && !this.baseOp.transportOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
             && this.baseOp.transportOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.transportOp.baseLinks[0].destroy();
         
+        //destroy all hostile structures
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
         // if there are too many spawns for controller level, start removing them because the primary spawn
@@ -211,12 +210,12 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     for (let structureType of structureRow) {
                         x++
                         let pos = new RoomPosition(x,y, this.baseName);
-                        let structures = pos.lookFor('structure');
+                        let structures = pos.lookFor(LOOK_STRUCTURES);
                         for (let structure of structures) {
-                            if ((    structure.structureType != structureType 
+                            if ((  structure.structureType != structureType || structureType == null)
                                 && structure.structureType != STRUCTURE_RAMPART
                                 && structure.structureType != STRUCTURE_ROAD
-                                ) || structureType == null) structure.destroy();
+                                )  structure.destroy();
                         }
                         if (structureType && !_.some(structures, {structureType: structureType})) {
                             let result = pos.createConstructionSite(structureType);
