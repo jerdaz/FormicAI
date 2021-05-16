@@ -584,12 +584,14 @@ module.exports = class CreepOp extends ChildOp {
                     && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB 
                         );
             }})
-        // if nothing found, start filling the terminal
-        if (!dest) dest = creep.room.find(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
+        // if nothing found, start filling the terminal if storage has more then reserve energy
+        if (!dest && this._baseOp && this._baseOp.storage && this._baseOp.storage.store.energy >= c.ENERGY_RESERVE) {
+            dest = creep.room.find(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
                 let store = /**@type {any} */ (o).store;
                 if (store == undefined) return false
                 return o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION
             }})[0]
+        }
         return dest;
     }
 
