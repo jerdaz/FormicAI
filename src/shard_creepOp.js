@@ -625,10 +625,10 @@ module.exports = class CreepOp extends ChildOp {
                     if (o.structureType != STRUCTURE_RAMPART) return false;
 
                     //only repair ramparts protecting structures
+                    if (!baseOp) return false;
                     let structures = o.pos.lookFor(LOOK_STRUCTURES);
                     _.remove(structures,{structureType:STRUCTURE_ROAD});
-                    if (structures.length <=1) return;
-                    if (!baseOp) return false;
+                    if (structures.length <=1 && !o.pos.isEqualTo(baseOp.centerPos)) return;
                     let needRepair = o.hits < o.hitsMax - REPAIR_POWER * creep.body.length / 3 && o.hits < baseOp.basePlanOp.maxWallHeight;                    
                     if (!needRepair) return false;
                     else return true;
