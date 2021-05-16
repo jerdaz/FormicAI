@@ -13,7 +13,7 @@ module.exports = class TowerOp extends BaseChildOp {
         let towers = this._baseOp.towers;
         let creepsHit = base.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
         let structuresHit = base.find(FIND_STRUCTURES, {filter: (structure) => {
-            if (structure.structureType == STRUCTURE_RAMPART) {
+            if (structure.structureType == STRUCTURE_RAMPART && !structure.pos.isEqualTo(this._baseOp.centerPos)) {
                 let structures = structure.pos.lookFor(LOOK_STRUCTURES);
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
