@@ -89,7 +89,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
         //check all other structures as well
         let gridRemainder = (this.baseCenter.x + this.baseCenter.y) % 2
-        for (let structure of base.find(FIND_MY_STRUCTURES)) {
+        for (let structure of base.find(FIND_STRUCTURES)) {
             switch (structure.structureType) {
                 case STRUCTURE_LAB: //fix labs with incorrect resource types
                     if (structure.mineralType && structure.mineralType != RESOURCE_CATALYZED_GHODIUM_ACID) structure.destroy();
@@ -123,6 +123,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
                         && !_.includes(linkOp.sourceLinks, structure)) {
                             structure.destroy();
                         }
+                    break;
+                case STRUCTURE_WALL:
+                    structure.destroy();
                     break;
                 }
         }
