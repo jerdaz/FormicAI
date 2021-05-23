@@ -23,16 +23,15 @@ module.exports = class BuildingOp extends RoomChildOp {
         let room = this._roomOp.room;
         if (!room) return;
         let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
-        let repairSites = this._repairSites()
+        let repairSites = this._repairSites(true)
 
-        // update variable for repair work
-        if (repairSites.length > 0 || constructionSites.length >0 ) this._buildWork = true;
-        else this._buildWork = false;
-
+        let buildWork = false;
+        if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
+        
         if (!this.isMainRoom) { // no need for upgraders in subrooms
             creepCount = 0;
         }
-        else if (!this._buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work 
+        else if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work 
             creepCount = 0;
         }
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together when not in controller link phase. always spawn at least 1
@@ -42,7 +41,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             // }
             if (creepCount <0) creepCount = 0;
-            if (this._buildWork && creepCount <= 1) {
+            if (buildWork && creepCount <= 1) {
                 creepCount = 1;
             }
         // always try to spawn 1 builder to continue build work if storage is not large enough
@@ -83,7 +82,8 @@ module.exports = class BuildingOp extends RoomChildOp {
         }
     }
 
-    _repairSites  () {
+    /**@param {boolean} [forSpawn] find repairsite for spawning a building creep */
+    _repairSites  (forSpawn) {
         let room = this._roomOp.room;
         let level = this._baseOp.base.controller.level
         let result = room.find(FIND_MY_STRUCTURES, {filter: o => {
@@ -92,7 +92,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
             }
-            return o.hits < o.hitsMax && o.hits < this._baseOp.basePlanOp.maxWallHeight
+            return o.hits < o.hitsMax && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
         }}
         )       
         return result; 
