@@ -92,7 +92,7 @@ module.exports = {
 
     INVADER_USERNAME : 'Invader',
 
-    MAX_WALL_HEIGHT : 0.04, 
+    MAX_WALL_HEIGHT : 0.04, // walls will be kept withing 0.5 - 1 * maximum wall hits for the base level * MAX_WALL_HEIGHT
     ROAD_IDLE_REPAIR_TIME : 100,
     ROAD_FACTOR: 0.5,
     ENERGY_RESERVE : 0.1 * STORAGE_CAPACITY,
