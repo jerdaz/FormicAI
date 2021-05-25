@@ -76,9 +76,10 @@ module.exports = class BuildingOp extends RoomChildOp {
             if (!creep) throw Error();
             if (creepOp.instruction == c.COMMAND_NONE && room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
             else if (!this._buildWork) creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
-            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && this._buildWork) {
+            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && constructionSites.length>0) { //stop upgrading if there are construction sites
                 creepOp.instructBuild()
             }
+            else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork
         }
     }
 
@@ -92,7 +93,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
             }
-            return o.hits < o.hitsMax && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
+            return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
         }}
         )       
         return result; 
