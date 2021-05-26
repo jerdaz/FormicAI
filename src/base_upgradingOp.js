@@ -26,7 +26,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
                 if (workerCount > 1) workerCount = 1;
-                maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4) * 7 
+                maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4 * 7 ) 
             }
 
             //create link construction site if necessary.
