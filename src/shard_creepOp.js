@@ -450,6 +450,7 @@ module.exports = class CreepOp extends ChildOp {
                     creep.attack(hostile)
                     creep.rangedAttack(hostile);
                 }
+                if (creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
             case c.STATE_NONE:
                 //flee from sources and spawns and construction sites
