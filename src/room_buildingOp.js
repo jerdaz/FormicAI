@@ -27,10 +27,6 @@ module.exports = class BuildingOp extends RoomChildOp {
 
         let buildWork = false;
         if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
-        
-        if (!this.isMainRoom && buildWork) { //only need one in subroom
-            creepCount = 1;
-        }
         else if (!this.isMainRoom) { // no need for anything else in subrooms
             creepCount = 0;
         }
@@ -41,9 +37,17 @@ module.exports = class BuildingOp extends RoomChildOp {
             let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
             let controller = this.baseOp.base.controller;
             let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
-            creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
-            // }
-            if (creepCount <0) creepCount = 0;
+
+            if (this.isMainRoom) {
+                creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
+                // }
+                if (creepCount <0) creepCount = 0;
+            }
+            else {
+                if (buildWork) creepCount = 1; //only need one in subroom
+                else creepCount = 0; // no need for anything else in subrooms
+            }
+
             if (buildWork && creepCount <= 1) {
                 creepCount = 1;
             }
