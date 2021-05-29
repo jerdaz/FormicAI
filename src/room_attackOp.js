@@ -41,7 +41,7 @@ module.exports = class AttackOp extends RoomChildOp {
 
         // spawn attackers
         let creepCount = 0;
-        let body = [MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,ATTACK,HEAL]
+        let body = [MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,HEAL]
         if (attackLevel == 1) creepCount = 1;
         
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: 6}, creepCount)
