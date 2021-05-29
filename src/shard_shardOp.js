@@ -351,7 +351,7 @@ module.exports = class ShardOp extends ChildOp {
                 }
             }
 
-            //remove subroom if it is the main room of a baseOp
+            //remove subrooms from a baseOp if it has become the main room of another (new) baseOp
             if (this._subRooms[baseOpName]) {
                 let baseOp = this.getBaseOp(this._subRooms[baseOpName]);
                 if (!baseOp) throw Error();

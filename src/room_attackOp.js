@@ -16,20 +16,21 @@ module.exports = class AttackOp extends RoomChildOp {
 
     _strategy() {
         if (this.isMainRoom) return;
-        let room = this._roomOp.room;
-        let controller = room.controller
-        if (!controller) return;
 
         let attackLevel = 0;
+        let scoutInfo = this._map.getRoomInfo(this.roomName);
+        if (!scoutInfo) {
+            this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE], maxLength:1},1)
+            return;
+        }
         
         // check for attack level 1
-        if (controller.owner 
-            && controller.owner != this._baseOp.base.controller.owner
-            && !controller.safeMode
+        if (scoutInfo.hostileOwner
+            && !scoutInfo.safeMode
+            && scoutInfo.activeTowers <= 0
             ) 
         {
-            let towers = room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}})
-            if (_.size(towers) == 0 ) attackLevel = 1 ;
+            attackLevel = 1 ;
         }
 
         // spawn attackers
