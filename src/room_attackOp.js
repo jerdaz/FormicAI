@@ -2,6 +2,9 @@ const U = require('./util');
 const c = require('./constants');
 const RoomChildOp = require('./room_childOp');
 
+const MAX_ATTACK_LENGTH = 50000
+const ATTACK_RETRY_TIME = 1000000
+
 module.exports = class AttackOp extends RoomChildOp {
     /**@param {RoomOp} roomOp
      */
@@ -18,6 +21,7 @@ module.exports = class AttackOp extends RoomChildOp {
         if (this.isMainRoom) return;
 
         let attackLevel = 0;
+        let lastAttackTicks = Game.time - ( Memory.rooms[this.roomName].attackStartTime||0);
         let scoutInfo = this._map.getRoomInfo(this.roomName);
         if (!scoutInfo) {
             this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE], maxLength:1},1)
@@ -28,14 +32,16 @@ module.exports = class AttackOp extends RoomChildOp {
         if (scoutInfo.hostileOwner
             && !scoutInfo.safeMode
             && scoutInfo.activeTowers <= 0
+            && (lastAttackTicks < MAX_ATTACK_LENGTH || lastAttackTicks > ATTACK_RETRY_TIME)
             ) 
         {
             attackLevel = 1 ;
+            if (!Memory.rooms[this.roomName].attackStartTime || lastAttackTicks > ATTACK_RETRY_TIME) Memory.rooms[this.roomName].attackStartTime = Game.time;
         }
 
         // spawn attackers
         let creepCount = 0;
-        let body = [MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,HEAL]
+        let body = [MOVE,MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,ATTACK,HEAL]
         if (attackLevel == 1) creepCount = 1;
         
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: 6}, creepCount)

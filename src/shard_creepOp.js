@@ -446,9 +446,12 @@ module.exports = class CreepOp extends ChildOp {
                 if (healHostiles.length>0) hostiles = healHostiles;
                 let hostile = creep.pos.findClosestByPath(hostiles)
                 if (hostile) {
-                    this._moveTo (hostile.pos, {}, {noEvade: true})
-                    creep.attack(hostile)
-                    creep.rangedAttack(hostile);
+                    let pos = creep.pos
+                    if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
+                    else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
+                    U.l('attacking creep: ' + hostile.name + ' in room ' + hostile.pos.roomName)
+                    U.l(creep.attack(hostile))
+                    U.l(creep.rangedAttack(hostile));
                 }
                 if (creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
@@ -665,7 +668,7 @@ module.exports = class CreepOp extends ChildOp {
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
                 let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
-                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
                         let roomInfo = mapOp.getRoomInfo(toRoomName)
                         if (roomInfo && roomInfo.hostileOwner) return Infinity
                     }
@@ -685,7 +688,7 @@ module.exports = class CreepOp extends ChildOp {
 
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
                 if (roomInfo && roomInfo.hostileOwner) {
                     for (let x =0; x<50;x++) {
