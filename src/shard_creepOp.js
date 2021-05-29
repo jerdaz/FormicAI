@@ -446,7 +446,7 @@ module.exports = class CreepOp extends ChildOp {
                 if (healHostiles.length>0) hostiles = healHostiles;
                 /**@type {AnyOwnedStructure | AnyCreep | null} */
                 let hostile = creep.pos.findClosestByPath(hostiles)
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES)
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType != STRUCTURE_CONTROLLER}})
                 if (hostile) {
                     let pos = creep.pos
                     if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
@@ -454,6 +454,9 @@ module.exports = class CreepOp extends ChildOp {
                     U.l('attacking creep: ' + hostile.pos + ' in room ' + hostile.pos.roomName)
                     U.l(creep.attack(hostile))
                     U.l(creep.rangedAttack(hostile));
+                } else {
+                    let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
+                    if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
                 }
                 if (creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
