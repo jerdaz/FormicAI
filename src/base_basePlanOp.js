@@ -118,8 +118,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     break;
                 case STRUCTURE_LINK:
                     let linkOp = this.baseOp.transportOp;
-                    if (linkOp.baseLink != structure
-                        && linkOp.controllerLink != structure
+                    if (   (!linkOp.baseLink || linkOp.baseLink.id != structure.id)
+                        && (!linkOp.controllerLink || linkOp.controllerLink.id != structure.id)
                         && !_.includes(linkOp.sourceLinks, structure)) {
                             structure.destroy();
                         }
