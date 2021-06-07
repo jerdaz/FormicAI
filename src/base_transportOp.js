@@ -42,7 +42,9 @@ module.exports = class TransportOp extends BaseChildOp {
         if (newControllerLinkIds.length == null) this._controllerLinkId = null
         else if (newControllerLinkIds.length == 1) this._controllerLinkId = newControllerLinkIds[0]
         else {
-            let result = _.intersection (newControllerLinkIds, [newBaseLink.id])
+            /**@type {Id<Structure>[]} */
+            let result = [];
+            if (newBaseLink) _.intersection (newControllerLinkIds, [newBaseLink.id])
             if (!result)  result = _.intersection(newControllerLinkIds, newSourceLinkIds)
             if (!result) result = newControllerLinkIds;
             this._controllerLinkId = result[0]
