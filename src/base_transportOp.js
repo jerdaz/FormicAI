@@ -66,7 +66,7 @@ module.exports = class TransportOp extends BaseChildOp {
         /**@type {StructureLink|null} */
         let link = null
         if (linkId) {
-            let link = Game.getObjectById(linkId);
+            link = /**@type {StructureLink}*/ (Game.getObjectById(linkId));
         }
         this._controllerLink = link;
 
@@ -74,7 +74,7 @@ module.exports = class TransportOp extends BaseChildOp {
         /**@type {StructureLink|null} */
         link = null
         if (linkId) {
-            let link = Game.getObjectById(linkId);
+            link = /**@type {StructureLink}*/ (Game.getObjectById(linkId));
         }
         this._baseLink = link;
     }
