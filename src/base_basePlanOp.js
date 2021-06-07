@@ -118,8 +118,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     break;
                 case STRUCTURE_LINK:
                     let linkOp = this.baseOp.transportOp;
-                    if (!_.includes(linkOp.baseLinks, structure) 
-                        && !_.includes(linkOp.controllerLinks, structure)
+                    if (linkOp.baseLink != structure
+                        && linkOp.controllerLink != structure
                         && !_.includes(linkOp.sourceLinks, structure)) {
                             structure.destroy();
                         }
@@ -130,18 +130,11 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 }
         }
         
-        //there can only be one baselink, destroy the rest
-        if (this.baseOp.transportOp.baseLinks.length > 1) this.baseOp.transportOp.baseLinks[1].destroy();
-        
         // if there is no baselink, it cannot be build because there ar too many links and there is a controller link, destroy it.
-        if (this.baseOp.transportOp.baseLinks.length == 0 
+        if (!this.baseOp.transportOp.baseLink 
             && this.baseOp.myStructures[STRUCTURE_LINK].length>= CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.baseOp.level]
-            && this.baseOp.transportOp.controllerLinks.length>0) this.baseOp.transportOp.controllerLinks[0].destroy();
+            && this.baseOp.transportOp.controllerLink) this.baseOp.transportOp.controllerLink.destroy();
 
-        if (this.baseOp.transportOp.baseLinks.length > 0 
-            && !this.baseOp.transportOp.baseLinks[0].pos.inRangeTo(this.baseCenter,1)
-            && this.baseOp.transportOp.baseLinks[0].pos.findInRange(FIND_SOURCES,2).length == 0) this.baseOp.transportOp.baseLinks[0].destroy();
-        
         //destroy all hostile structures
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
 
