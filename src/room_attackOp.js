@@ -2,8 +2,8 @@ const U = require('./util');
 const c = require('./constants');
 const RoomChildOp = require('./room_childOp');
 
-const MAX_ATTACK_LENGTH = 50000
-const ATTACK_RETRY_TIME = 1000000
+const MAX_ATTACK_LENGTH = 500000
+const ATTACK_RETRY_TIME = 5000000
 
 module.exports = class AttackOp extends RoomChildOp {
     /**@param {RoomOp} roomOp
