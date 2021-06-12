@@ -40,7 +40,7 @@ module.exports = class TowerOp extends BaseChildOp {
             }        
         }
 
-        if (hostiles.length>0) {
+        if (hostiles.length>0 && hostiles[0].owner.username != c.INVADER_USERNAME) {
             for (let event of this.baseOp.events) {
                 let activateSafeMode = false;
                 if (event.event == EVENT_ATTACK_CONTROLLER) activateSafeMode = true;
@@ -51,8 +51,8 @@ module.exports = class TowerOp extends BaseChildOp {
                         if (object && object instanceof OwnedStructure && object.structureType && object.my) {
                             let structureType = object.structureType;
                             switch (structureType) {
-                                case STRUCTURE_RAMPART:
-                                    break;
+                                //case STRUCTURE_RAMPART:
+                                //    break;
                                 default:
                                     activateSafeMode = true;
                             }
@@ -60,8 +60,8 @@ module.exports = class TowerOp extends BaseChildOp {
                         else if (object && object instanceof Creep && this._baseOp.spawns.length == 0) activateSafeMode = true;
         
                     }
-                    else if (event.event == EVENT_ATTACK && _.filter(this.baseOp.events, o => {o.event == EVENT_OBJECT_DESTROYED && event.data && o.objectId == targetId})) activateSafeMode = true;
                 }
+                else if (event.event == EVENT_OBJECT_DESTROYED ) activateSafeMode = true;
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();
                     break;

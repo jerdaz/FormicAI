@@ -13,7 +13,7 @@ const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
 const RoomOp = require('./room_roomOp');
 
-const UNCLAIM_TIME = 50000;
+const UNCLAIM_TIME = 20000;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
