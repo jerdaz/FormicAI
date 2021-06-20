@@ -52,7 +52,7 @@ module.exports = class ShardSpawningOp extends ShardChildOp {
         //if spawningOp is not valid, try running support to find a new spawning base, otherwise cancel
         if (!baseOp) {
             this._support();
-            baseOp = this._shardOp.getBaseOp(this._spawnBase)
+            baseOp = this._shardOp.getBaseOpNoNullCheck(this._spawnBase)
             if (!baseOp) return;
         }
         let spawningOp = baseOp.spawningOp;
