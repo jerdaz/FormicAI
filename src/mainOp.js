@@ -104,15 +104,16 @@ module.exports = class MainOp extends Operation {
         // // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
         // // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
 
-        // check for shard requests
-        let myBasesCount = this._shardOp.baseCount;
+        // read and process the intershard memory of other shards
+        let myBasesCount = this._shardOp.baseCount; //this is the total number of bases on this shard.
         let interShardMem = this._loadInterShardMem();
-        let totalBases = 0;
+        let totalBases = 0; // this will contain the total number of cross shard bases
         for (let i=0; i < interShardMem.shards.length; i++) {
             if (interShardMem.shards[i] && interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
+            // if the shard is a neighbour, check for colonization requests and help colonizing the shard.
             if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
                 let shardRequest = interShardMem.shards[i];
-                if (shardRequest && shardRequest.request == c.SHARDREQUEST_BUILDER) {
+                if (shardRequest) {
                     this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
                     shardRequest.request = c.SHARDREQUEST_NONE;
                     this._writeInterShardMem(interShardMem);
@@ -120,6 +121,8 @@ module.exports = class MainOp extends Operation {
                 }
             }
         }
+
+
         if (totalBases == 0) totalBases = myBasesCount;
         if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
