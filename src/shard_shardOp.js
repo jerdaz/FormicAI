@@ -326,7 +326,7 @@ module.exports = class ShardOp extends ChildOp {
         for (let baseOpKey of this._baseOpsMap) baseOpKey[1].setDirective(directive);
 
         // check if we need to request a colonizer
-        if (_.isEmpty(this._baseOpsMap)) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
+        if (this._baseOpsMap.size == 0) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
         else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
         else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
