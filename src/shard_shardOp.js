@@ -223,10 +223,14 @@ module.exports = class ShardOp extends ChildOp {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 
             }
+            else if (creep.hits >0) {
+                // creep isn't from this shard, have shard colonizer handle it.
+                this._teamShardColonizing.initCreep(creep);
+            }
             else delete Memory.creeps[creepName];
         }
 
-
+        this._teamShardColonizing.initTick();
         super.initTick()
     }
 
@@ -235,6 +239,8 @@ module.exports = class ShardOp extends ChildOp {
         super.run();
 
         // now run all nonstandard child operations
+        //run colonizing operation;
+        this._teamShardColonizing.run();
 
         // run the base operations in order of priority
         // if bucket is low, low priority bases are skipped 
@@ -264,8 +270,6 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
 
-        //run colonizing operation;
-        this._teamShardColonizing.run();
 
         //generate pixels & reset maxBucket if successful
         this._pixelGeneratedLastTurn = false;
@@ -327,7 +331,7 @@ module.exports = class ShardOp extends ChildOp {
 
         // check if we need to request a colonizer
         if (this._baseOpsMap.size == 0) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
-        else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
+        else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 1) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
         else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
         //check if we need to unclaim bases
