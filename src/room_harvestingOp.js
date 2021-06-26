@@ -62,7 +62,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
                     return matrix;
 
                 } 
-                let result = PathFinder.search(source.pos, {pos:source.pos, range:2},{roomCallback: roomCallback, flee:true} )
+                let result = PathFinder.search(source.pos, [{pos:source.pos, range:2}, {pos:this.baseOp.centerPos, range:3}],{roomCallback: roomCallback, flee:true} )
                 let pos = result.path[1];
                 if (pos) {
                     let structures = pos.lookFor(LOOK_STRUCTURES)

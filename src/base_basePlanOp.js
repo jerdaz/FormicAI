@@ -441,6 +441,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS+1})
             }
         }
+        
         let roomCallBack = function(/**@type {string}*/roomName) {
             if (roomName != base.name) return false;
             let costs = new PathFinder.CostMatrix;
