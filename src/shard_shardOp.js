@@ -294,8 +294,8 @@ module.exports = class ShardOp extends ChildOp {
             {
                 let levelA = a[1].base.controller.level;
                 let levelB = b[1].base.controller.level
-                if (a > b) return -1;
-                if (b > a) return 1;
+                if (levelA > levelB) return -1;
+                if (levelB > levelA) return 1;
                 let storageA = a[1].storage;
                 let storageB = b[1].storage;
                 return ((storageB?storageB.store.energy:-1) - (storageA?storageA.store.energy:-1))
