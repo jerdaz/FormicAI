@@ -444,12 +444,24 @@ module.exports = class CreepOp extends ChildOp {
                     }
                 }
                 if (healHostiles.length>0) hostiles = healHostiles;
+                /**@type {AnyStructure | AnyCreep | null} */
                 let hostile = creep.pos.findClosestByPath(hostiles)
+                let attackResult = -100;
+                let rangedAttackResult = -100
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType != STRUCTURE_CONTROLLER}})
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_WALL}})
                 if (hostile) {
-                    this._moveTo (hostile.pos, {}, {noEvade: true})
-                    creep.attack(hostile)
-                    creep.rangedAttack(hostile);
+                    let pos = creep.pos
+                    if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
+                    else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
+                    U.l('attacking creep: ' + hostile.pos + ' in room ' + hostile.pos.roomName)
+                    attackResult = creep.attack(hostile);
+                    rangedAttackResult = creep.rangedAttack(hostile);
+                } else {
+                    let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
+                    if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
                 }
+                if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
             case c.STATE_NONE:
                 //flee from sources and spawns and construction sites
@@ -664,7 +676,7 @@ module.exports = class CreepOp extends ChildOp {
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
             else {
                 let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
-                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
                         let roomInfo = mapOp.getRoomInfo(toRoomName)
                         if (roomInfo && roomInfo.hostileOwner) return Infinity
                     }
@@ -684,7 +696,7 @@ module.exports = class CreepOp extends ChildOp {
 
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM)) {
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
                 if (roomInfo && roomInfo.hostileOwner) {
                     for (let x =0; x<50;x++) {

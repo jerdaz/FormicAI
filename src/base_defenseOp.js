@@ -40,24 +40,28 @@ module.exports = class TowerOp extends BaseChildOp {
             }        
         }
 
-        if (hostiles.length>0) {
+        if (hostiles.length>0 && hostiles[0].owner.username != c.INVADER_USERNAME) {
             for (let event of this.baseOp.events) {
                 let activateSafeMode = false;
                 if (event.event == EVENT_ATTACK_CONTROLLER) activateSafeMode = true;
-                else if (event.event == EVENT_ATTACK && event.data.damage > 0) {
-                    let object = Game.getObjectById(event.data.targetId);
-                    if (object && object.structureType && object.my) {
-                        let structureType = object.structureType;
-                        switch (structureType) {
-                            case STRUCTURE_WALL:
-                            case STRUCTURE_RAMPART:
-                                break;
-                            default:
-                                activateSafeMode = true;
-                        }
-                    } 
-                    else if (object && object instanceof Creep && this._baseOp.spawns.length == 0) activateSafeMode = true;
+                else if (event.event == EVENT_ATTACK) {
+                    let targetId = event.data.targetId
+                    if (event.data.damage > 0) {
+                        let object = /**@type {RoomObject|null} */ (Game.getObjectById(/**@type {Id<RoomObject>}**/ (event.data.targetId)));
+                        if (object && object instanceof OwnedStructure && object.structureType && object.my) {
+                            let structureType = object.structureType;
+                            switch (structureType) {
+                                //case STRUCTURE_RAMPART:
+                                //    break;
+                                default:
+                                    activateSafeMode = true;
+                            }
+                        } 
+                        else if (object && object instanceof Creep && this._baseOp.spawns.length == 0) activateSafeMode = true;
+        
+                    }
                 }
+                else if (event.event == EVENT_OBJECT_DESTROYED ) activateSafeMode = true;
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();
                     break;

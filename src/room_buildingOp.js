@@ -91,6 +91,7 @@ module.exports = class BuildingOp extends RoomChildOp {
     /**@param {boolean} [forSpawn] find repairsite for spawning a building creep */
     _repairSites  (forSpawn) {
         let room = this._roomOp.room;
+        if (!room) return [];
         let level = this._baseOp.base.controller.level
         let result = room.find(FIND_MY_STRUCTURES, {filter: o => {
             if (o.structureType == STRUCTURE_RAMPART && !o.pos.isEqualTo(this._baseOp.centerPos)) {

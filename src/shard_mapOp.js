@@ -10,6 +10,8 @@ const ChildOp = require('./meta_childOp');
  *      invasion:boolean,
  *      invasionEnd:number,
  *      hasController: boolean,
+ *      safeMode: number|undefined,
+ *      activeTowers: number,
  *      level: number
  *   }}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
@@ -199,7 +201,7 @@ module.exports = class MapOp extends ChildOp {
 
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0}
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0}
                 for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
                     this._roomInfo[roomName].terrainArray[x] = [];
                     for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
@@ -224,10 +226,13 @@ module.exports = class MapOp extends ChildOp {
             if (room.controller) {
                 this._roomInfo[roomName].hasController = true;
                 this._roomInfo[roomName].level = room.controller.level
+                this._roomInfo[roomName].safeMode = room.controller.safeMode
             } else {
                 this._roomInfo[roomName].hasController= false;
                 this._roomInfo[roomName].level = 0;
+                this._roomInfo[roomName].safeMode = undefined;
             }
+            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
         }
     }
 }

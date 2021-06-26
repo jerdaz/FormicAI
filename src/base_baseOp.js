@@ -13,7 +13,7 @@ const MarketOp = require('./base_marketOp');
 const ScoutOp = require('./base_scoutOp');
 const RoomOp = require('./room_roomOp');
 
-const UNCLAIM_TIME = 50000;
+const UNCLAIM_TIME = 20000;
 
 module.exports = class BaseOp extends ShardChildOp{
     /** 
@@ -167,7 +167,7 @@ module.exports = class BaseOp extends ShardChildOp{
             if (this._phase < c.BASE_PHASE_STORED_ENERGY) return;
         }
         ;
-        if (this.transportOp.baseLinks.length >= 1) this._phase = c.BASE_PHASE_SOURCE_LINKS;
+        if (this.transportOp.baseLink) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;

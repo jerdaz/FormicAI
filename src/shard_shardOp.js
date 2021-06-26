@@ -254,10 +254,14 @@ module.exports = class ShardOp extends ChildOp {
         }
         let baseCount = 0;
         for (let baseOpKey of this._baseOpsMap) {
-            if (Game.cpu.bucket < 500 && Game.cpu.getUsed() >= Game.cpu.bucket / maxBasesToRun * (maxBasesToRun-1) ) break; //stop executing if not enough time
-            if (++baseCount > maxBasesToRun) break;
-            let baseOp = baseOpKey[1];
-            baseOp.run();
+            if (Game.cpu.bucket < 500 && Game.cpu.getUsed() >= Game.cpu.bucket / maxBasesToRun * (maxBasesToRun-1)  //stop executing if not enough time
+                 || (++baseCount > maxBasesToRun)) 
+            {
+                U.l('Warning not enough CPU time. Skipping base: ' + baseOpKey[0])
+            } else {
+                let baseOp = baseOpKey[1];
+                baseOp.run();
+            }
         }
 
         //run colonizing operation;
@@ -290,8 +294,8 @@ module.exports = class ShardOp extends ChildOp {
             {
                 let levelA = a[1].base.controller.level;
                 let levelB = b[1].base.controller.level
-                if (a > b) return -1;
-                if (b > a) return 1;
+                if (levelA > levelB) return -1;
+                if (levelB > levelA) return 1;
                 let storageA = a[1].storage;
                 let storageB = b[1].storage;
                 return ((storageB?storageB.store.energy:-1) - (storageA?storageA.store.energy:-1))
@@ -351,7 +355,7 @@ module.exports = class ShardOp extends ChildOp {
                 }
             }
 
-            //remove subroom if it is the main room of a baseOp
+            //remove subrooms from a baseOp if it has become the main room of another (new) baseOp
             if (this._subRooms[baseOpName]) {
                 let baseOp = this.getBaseOp(this._subRooms[baseOpName]);
                 if (!baseOp) throw Error();

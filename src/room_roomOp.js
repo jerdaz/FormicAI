@@ -5,6 +5,7 @@ const RoadOp = require('./room_roadOp')
 const HarvestingOp = require('./room_harvestingOp');
 const BuildingOp = require('./room_buildingOp');
 const ReservationOp = require('./room_reservationOp');
+const AttackOp = require('./room_attackOp');
 
 module.exports = class RoomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
@@ -16,7 +17,9 @@ module.exports = class RoomOp extends BaseChildOp {
         this._roomName = roomName;
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
-        this.addChildOp(new ReservationOp(this))
+        this.addChildOp(new ReservationOp(this));
+        this.addChildOp(new AttackOp(this));
+
         this._visualiseRoomInfo = false;
 
 
@@ -38,7 +41,7 @@ module.exports = class RoomOp extends BaseChildOp {
 
     get harvestingOps() {return /**@type {HarvestingOp[]} */ (this._childOps[c.OPERATION_HARVESTING]||[])}
 
-    /**@returns {Room} */
+    /**@returns {Room|null} */
     get room() {
         let result = Game.rooms[this.roomName]
         return result;
