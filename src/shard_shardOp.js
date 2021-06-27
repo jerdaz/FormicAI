@@ -13,6 +13,7 @@ const { OPERATION_SHARDCOLONIZING } = require('./constants');
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
+
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */
     constructor(main) {
@@ -46,7 +47,6 @@ module.exports = class ShardOp extends ChildOp {
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = ''
         if (Game.spawns[Object.keys(Game.spawns)[0]]) this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
-        this._maxBucket = Game.cpu.bucket // The maximum bucket size seen since previous pixel generation (used in _run())
         this._pixelGeneratedLastTurn = false // has a pixel been generated last turn (used in run())
     }
 
@@ -251,9 +251,8 @@ module.exports = class ShardOp extends ChildOp {
         // when cpu is plentiful, bucket goes up, until a pixel is generated, both are reset and they go up again
         // all bases keep running unless the buckets decreases.
 
-        this._maxBucket = Math.max(Game.cpu.bucket, this._maxBucket)
-
-        let maxCPU = this._maxBucket;
+        
+        let maxCPU = c.MAX_BUCKET;
         let maxBasesToRun = this._baseOpsMap.size
         if (!this._pixelGeneratedLastTurn) {
             let  cpuReserve = maxCPU / 20;
