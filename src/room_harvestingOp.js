@@ -94,7 +94,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
             if (creepOp.instruction == c.COMMAND_NONE) {
                 if (source) {
                     let link = source.pos.findInRange(FIND_MY_STRUCTURES,2,{filter: {structureType: STRUCTURE_LINK}})[0];
-                    if (link && this.baseOp.transportOp.baseLink) creepOp.instructTransfer(source, link);
+                    if (link && link.isActive() && this.baseOp.transportOp.baseLink) creepOp.instructTransfer(source, link);
                     else creepOp.instructHarvest(source)
                 }
                 else creepOp.instructMoveTo(this.roomName)

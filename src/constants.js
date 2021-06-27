@@ -1,6 +1,6 @@
 
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
+    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully Autonomous - Custom Codebase',
     CREEP_EMOTES: false,
     GENERATE_PIXELS: false, //enable generating pixels. Causes cpu timeout errors
     COMMAND_NONE: 0,

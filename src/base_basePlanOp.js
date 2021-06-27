@@ -453,7 +453,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             }
             return costs;
         }
-        let fleePath = PathFinder.search(centerPos,walls,{flee:true/*, roomCallback: roomCallBack, swampCost:1*/})
+        let fleePath = PathFinder.search(centerPos,walls,{flee:true, roomCallback: roomCallBack, swampCost:1})
         if (fleePath.path.length>0) {
             let path = fleePath.path;
             centerPos = path[path.length-1]
