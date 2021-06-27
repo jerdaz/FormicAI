@@ -61,7 +61,7 @@ module.exports = class TowerOp extends BaseChildOp {
         
                     }
                 }
-                else if (event.event == EVENT_OBJECT_DESTROYED ) activateSafeMode = true;
+                else if (event.event == EVENT_OBJECT_DESTROYED && event.data.type != 'creep') activateSafeMode = true;
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();
                     break;

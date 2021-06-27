@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ShardChildOp = require('./shard_childOp');
 
-module.exports = class ColonizingOp extends ShardChildOp {
+module.exports = class ShardColonizingOp extends ShardChildOp {
     /**
      * @param {ShardOp}  shardOp
      * @param {Operation}  parent
@@ -13,7 +13,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
         this._lastRoomName = {};
     }
     
-    get type() {return c.OPERATION_COLONIZING}
+    get type() {return c.OPERATION_SHARDCOLONIZING}
 
     _tactics() {
         // if running under a base give spawn requests.

@@ -7,7 +7,9 @@ const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 const ShardSpawningOp = require('./shard_spawningOp');
 const ShardDefenseOp = require('./shard_defenseOp')
-const ShardChildOp = require('./shard_childOp')
+const ShardChildOp = require('./shard_childOp');
+const { stubString } = require('lodash');
+const { OPERATION_SHARDCOLONIZING } = require('./constants');
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
 
@@ -223,8 +225,8 @@ module.exports = class ShardOp extends ChildOp {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 
             }
-            else if (creep.hits >0) {
-                // creep isn't from this shard, have shard colonizer handle it.
+            else if (creep.hits >0 && opType == OPERATION_SHARDCOLONIZING) {
+                // creep is a shard colonizer, have shard colonizer handle it.
                 this._teamShardColonizing.initCreep(creep);
             }
             else delete Memory.creeps[creepName];
