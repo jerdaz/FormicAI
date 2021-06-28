@@ -88,10 +88,10 @@ module.exports = class ColonizingOp extends BaseChildOp {
         colRooms.sort((a, b) => {
             let lastColStartA = Memory.colonizations[a.name]
             let lastColStartB = Memory.colonizations[b.name]
-            if (lastColStartA && lastColStartB) return lastColStartA - lastColStartB
-            if (!lastColStartA && !lastColStartA) return a.distance-b.distance;
-            if (lastColStartA) return -1;
-            if (lastColStartB) return 1;
+            if (lastColStartA && lastColStartB) return lastColStartA - lastColStartB // if both have been colonized before, try the room that was colonized the most in the past, first;
+            if (!lastColStartA && !lastColStartA) return a.distance-b.distance; //sort distance ascending
+            if (lastColStartA) return 1; //if A has been colonized before, try B first 
+            if (lastColStartB) return -1; // if B has been colonized before, try A first
             return 0;
         })
         if (colRooms.length > 0) return colRooms[0].name;
