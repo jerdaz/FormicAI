@@ -113,11 +113,10 @@ module.exports = class MainOp extends Operation {
             // if the shard is a neighbour, check for colonization requests and help colonizing the shard.
             if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
                 let shardRequest = interShardMem.shards[i];
-                if (shardRequest) {
+                if (shardRequest && shardRequest.request != c.SHARDREQUEST_NONE) {
                     this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
                     shardRequest.request = c.SHARDREQUEST_NONE;
                     this._writeInterShardMem(interShardMem);
-                    break;
                 }
             }
         }

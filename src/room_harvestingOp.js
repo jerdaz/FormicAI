@@ -30,7 +30,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         /**@type {Source | null} */
         let source = Game.getObjectById(this._sourceId);
         if (!source) return //room is not visible
-        let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK, isActive:true}});
+        let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: o => {return o.structureType == STRUCTURE_LINK && o.isActive() == true}});
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
