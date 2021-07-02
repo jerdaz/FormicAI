@@ -12,6 +12,7 @@ const ChildOp = require('./meta_childOp');
  *      hasController: boolean,
  *      safeMode: number|undefined,
  *      activeTowers: number,
+ *      sourceCount: number,
  *      level: number
  *   }}} RoomInfo*/
 /**@typedef {{roomName:string, dist:number}} BaseDist */
@@ -201,7 +202,7 @@ module.exports = class MapOp extends ChildOp {
 
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0}
+                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0}
                 for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
                     this._roomInfo[roomName].terrainArray[x] = [];
                     for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
@@ -223,6 +224,7 @@ module.exports = class MapOp extends ChildOp {
             } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;
             this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null );
+            this._roomInfo[roomName].sourceCount = room.find(FIND_SOURCES).length;
             if (room.controller) {
                 this._roomInfo[roomName].hasController = true;
                 this._roomInfo[roomName].level = room.controller.level

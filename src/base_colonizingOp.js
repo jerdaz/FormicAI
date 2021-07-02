@@ -4,6 +4,8 @@ const BaseChildOp = require('./base_childOp');
 
 // time we try to colonize a room before trying another
 const ROOM_CLAIM_TIMEOUT = 2000
+// time after which we retry colonizing a room
+const COLONIZE_RETRY_TIME = 100000
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
 // maximum lineair distance for colonization
@@ -66,7 +68,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     /**@returns {string | null} */
     _findColRoom() {
-        /**@type {{name: string, distance: number}[]} */
+        /**@type {{name: string, distance: number, sources: number}[]} */
         let colRooms = [];
         let knownRooms = this._map.knownRooms;
         for (let roomName in this._map.knownRooms) {
@@ -77,22 +79,19 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
                 && roomInfo.level == 0
+                && Memory.colonizations[roomName] < Game.time - COLONIZE_RETRY_TIME
                 && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
                ) {
                     let path = Game.map.findRoute(this._baseName, roomName);
                     if (!(path instanceof Array)) continue;
-                    let colRoom = {name: roomName, distance: path.length}
+                    let colRoom = {name: roomName, distance: path.length, sources: roomInfo.sourceCount}
                     colRooms.push(colRoom);
                }
         }
         colRooms.sort((a, b) => {
-            let lastColStartA = Memory.colonizations[a.name]
-            let lastColStartB = Memory.colonizations[b.name]
-            if (lastColStartA && lastColStartB) return lastColStartA - lastColStartB // if both have been colonized before, try the room that was colonized the most in the past, first;
-            if (!lastColStartA && !lastColStartA) return a.distance-b.distance; //sort distance ascending
-            if (lastColStartA) return 1; //if A has been colonized before, try B first 
-            if (lastColStartB) return -1; // if B has been colonized before, try A first
-            return 0;
+            if (a.sources > b.sources) return -1;
+            if (b.sources > a.sources) return 1;
+            return a.distance-b.distance; //sort distance ascending
         })
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
