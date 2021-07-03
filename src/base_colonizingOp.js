@@ -36,7 +36,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _strategy() {
         let nCreep = 0;
-        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE) {
+        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
             nCreep = 1;
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
@@ -71,6 +71,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         /**@type {{name: string, distance: number, sources: number}[]} */
         let colRooms = [];
         let knownRooms = this._map.knownRooms;
+        let minSources = (this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE)?2:1
         for (let roomName in this._map.knownRooms) {
             let roomInfo = knownRooms[roomName];
             if (   roomInfo.hostileOwner == false 
@@ -79,6 +80,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
                 && roomInfo.level == 0
+                && roomInfo.sourceCount >= minSources
                 && Memory.colonizations[roomName] < Game.time - COLONIZE_RETRY_TIME
                 && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
                ) {
@@ -89,9 +91,9 @@ module.exports = class ColonizingOp extends BaseChildOp {
                }
         }
         colRooms.sort((a, b) => {
-            if (a.sources > b.sources) return -1;
-            if (b.sources > a.sources) return 1;
-            return a.distance-b.distance; //sort distance ascending
+            if (a.sources > b.sources) return -1; // if A has more sources sort it first
+            if (b.sources > a.sources) return 1; // if B has more sources, sort it first
+            return a.distance-b.distance; // else sort distance ascending
         })
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;

@@ -7,7 +7,7 @@ let ShardOp = require('./shard_shardOp');
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
-/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: {name: string, sources: number, avgControl: number}[]}[]}} ShardMem */
 
 module.exports = class MainOp extends Operation {
     constructor() {
@@ -153,8 +153,8 @@ module.exports = class MainOp extends Operation {
         for (let shard of this._shards) {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
-                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount};
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: this._shardOp.baseCount};
+                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo()};
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[]};
             }
         }
         return interShardMem;

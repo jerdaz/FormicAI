@@ -165,6 +165,21 @@ module.exports = class ShardOp extends ChildOp {
         if (!result) return null;
         return result;
     }
+
+    getBaseInfo() {
+        /**@type  {{name: string, sources: number, avgControl: number}[]} */
+        let result = []
+
+        for(let baseOpKey of this._baseOpsMap) {
+            let baseOp = baseOpKey[1];
+            let baseInfo = {name:baseOp.name,
+                            sources: baseOp.base.find(FIND_SOURCES).length,
+                            avgControl: baseOp.avgControl
+                        }
+            result.push(baseInfo);
+        }
+        return result;
+    }
     
 
     //add's an operation to the basename/optype to operation map.
@@ -327,7 +342,11 @@ module.exports = class ShardOp extends ChildOp {
     _strategy(){
         // check if we need to colonize
         let directive = c.DIRECTIVE_NONE;
-        if (Game.cpu.bucket >= c.MAX_BUCKET && this._maxShardBases && this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE
+        if (Game.cpu.bucket >= c.MAX_BUCKET && this._maxShardBases) {
+            if (this._maxShardBases == this._baseOpsMap.size + 1) directive = c.DIRECTIVE_COLONIZE_2SOURCE // colonize rooms with 2 sources
+            else if (this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE         // colonize any room
+        }
+            
         for (let baseOpKey of this._baseOpsMap) baseOpKey[1].setDirective(directive);
 
         // check if we need to request a colonizer
