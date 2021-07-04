@@ -37,7 +37,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
     _strategy() {
         let nCreep = 0;
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
-            nCreep = 1;
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
                 if (this._colRoomName) {
@@ -45,6 +44,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                     Memory.colonizations.lastColRoom = this._colRoomName;
                 }
             }
+            if (this._colRoomName) nCreep = 1;
         }
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
     }

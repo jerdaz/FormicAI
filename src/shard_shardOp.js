@@ -167,14 +167,15 @@ module.exports = class ShardOp extends ChildOp {
     }
 
     getBaseInfo() {
-        /**@type  {{name: string, sources: number, avgControl: number}[]} */
+        /**@type  {BaseInformation[]} */
         let result = []
 
         for(let baseOpKey of this._baseOpsMap) {
             let baseOp = baseOpKey[1];
             let baseInfo = {name:baseOp.name,
+                            level: baseOp.level,
                             sources: baseOp.base.find(FIND_SOURCES).length,
-                            avgControl: baseOp.avgControl
+                            progress: baseOp.base.controller.progress
                         }
             result.push(baseInfo);
         }
@@ -193,6 +194,16 @@ module.exports = class ShardOp extends ChildOp {
         if (x[baseName] == undefined) x[baseName] = [];
         if (x[baseName][opType] == undefined) x[baseName][opType] = [];
         x[baseName][opType][opInstance] = shardChildOp;
+    }
+
+    //unclaim a room
+    /**
+     * 
+     * @param {string} baseName 
+     */
+    unclaimBase(baseName) {
+        let base = this.getBase(baseName);
+        base.controller.unclaim();
     }
 
     initTick(){
@@ -360,7 +371,7 @@ module.exports = class ShardOp extends ChildOp {
             for (let baseOpKey of this._baseOpsMap) bases.push(this.getBase(baseOpKey[0]))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
             
-            for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
+            for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) this.unclaimBase(bases[i].name)
         }
     }
 

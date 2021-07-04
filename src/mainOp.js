@@ -7,7 +7,7 @@ let ShardOp = require('./shard_shardOp');
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
-/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: {name: string, sources: number, avgControl: number}[]}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[]}[]}} ShardMem */
 
 module.exports = class MainOp extends Operation {
     constructor() {
@@ -125,9 +125,52 @@ module.exports = class MainOp extends Operation {
         if (totalBases == 0) totalBases = myBasesCount;
         if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
-        if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
-            interShardMem.shards[this._shardNum].baseCount = myBasesCount;
-            this._writeInterShardMem(interShardMem);
+
+        //update intershard memeory
+        interShardMem.shards[this._shardNum].baseCount = myBasesCount;
+        interShardMem.shards[this._shardNum].bases = this._shardOp.getBaseInfo();
+        this._writeInterShardMem(interShardMem);
+        
+
+        // if we are at maximum bases, find the lowest level single source room and abandon it
+        U.l(interShardMem)
+        if (myBasesCount > 1 && totalBases == Game.gcl.level) {
+            let shard = 0;
+            let room = '';
+            let lowestLevel = 100;
+            let lowestProgress = 0;
+            for (let i = 0; i< interShardMem.shards.length;i++ ) {
+                let shardInfo = interShardMem.shards[i];
+                U.l(shardInfo)
+                let baseInfos = shardInfo.bases;
+                for (let baseInfo of baseInfos) {
+                    // first check if we find a base lower then 2. we don't want to abondon any base if we have one.
+                    if (baseInfo.level < 2 || lowestLevel < 2) {
+                        lowestLevel = 1;
+                        break;
+                    }
+                    // check if the base is single source and lower developed then we found
+                    if (baseInfo.sources == 1 &&
+                        (baseInfo.level < lowestLevel || (baseInfo.level == lowestLevel && baseInfo.progress < lowestProgress)) ) 
+                    {   
+                        U.l('selecting room: ' + room)
+                        shard = i;
+                        room = baseInfo.name;
+                        lowestLevel = baseInfo.level;
+                        lowestProgress = baseInfo.progress;
+                    }
+                }
+                if (lowestLevel < 2) break;
+            }
+
+            //unclaim the lowest found base if we haven't found any <lvl2 base
+            if (lowestLevel >= 2
+                && shard == this._shardNum 
+                && room) 
+            {
+                U.l('Abandoning single source base: ' + room)
+                this._shardOp.unclaimBase(room)
+            }
         }
     }
 
