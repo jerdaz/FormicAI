@@ -90,7 +90,7 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
-    MAX_BUCKET : 10000 - 5000 - 300,
+    MAX_BUCKET : 10000,
 
     INVADER_USERNAME : 'Invader',
 
