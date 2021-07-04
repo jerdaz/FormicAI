@@ -199,7 +199,9 @@ module.exports = class MapOp extends ChildOp {
 
     _tactics() {
         this._updateRoadMatrices();
-
+    }
+  
+   _command() {
         for(let roomName in Game.rooms) {
             if (this._roomInfo[roomName] == undefined) {
                 this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0}
