@@ -81,7 +81,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && roomInfo.hasController == true
                 && roomInfo.level == 0
                 && roomInfo.sourceCount >= minSources
-                && Memory.colonizations[roomName] < Game.time - COLONIZE_RETRY_TIME
+                && Memory.colonizations[roomName] || 0 < Game.time - COLONIZE_RETRY_TIME
                 && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
                ) {
                     let path = Game.map.findRoute(this._baseName, roomName);
@@ -95,6 +95,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (b.sources > a.sources) return 1; // if B has more sources, sort it first
             return a.distance-b.distance; // else sort distance ascending
         })
+        U.l('selecting colroom:')
+        U.l(colRooms);
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
     }
