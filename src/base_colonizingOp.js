@@ -24,8 +24,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
         this._colRoomName = null // room to colonize
         this._colStart = 0 // colonization start time
         if (!Memory.colonizations) Memory.colonizations = {};
-        let lastColRoom = Memory.colonizations.lastColRoom
-        if (lastColRoom && Memory.colonizations[lastColRoom] >= Game.time - ROOM_CLAIM_TIMEOUT) this._colRoomName = lastColRoom;
     }
     
     get type() {return c.OPERATION_COLONIZING}
@@ -36,13 +34,16 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _strategy() {
         let nCreep = 0;
+        // give up colonization after timeout
+        if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+            Memory.colonizations[this._colRoomName] = Game.time;
+            this._colRoomName = null;
+        }
+
+        //check for new colonization room
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
-                if (this._colRoomName) {
-                    Memory.colonizations[this._colRoomName] = Game.time;
-                    Memory.colonizations.lastColRoom = this._colRoomName;
-                }
             }
             if (this._colRoomName) nCreep = 1;
         }
@@ -81,7 +82,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && roomInfo.hasController == true
                 && roomInfo.level == 0
                 && roomInfo.sourceCount >= minSources
-                && Memory.colonizations[roomName] || 0 < Game.time - COLONIZE_RETRY_TIME
+                && (Memory.colonizations[roomName] || 0) < Game.time - COLONIZE_RETRY_TIME
                 && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
                ) {
                     let path = Game.map.findRoute(this._baseName, roomName);
@@ -95,7 +96,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (b.sources > a.sources) return 1; // if B has more sources, sort it first
             return a.distance-b.distance; // else sort distance ascending
         })
-        U.l('selecting colroom:')
+        U.l('selecting colroom for: ' +this._baseName)
         U.l(colRooms);
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
