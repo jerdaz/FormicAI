@@ -695,7 +695,7 @@ module.exports = class CreepOp extends ChildOp {
 
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName) {
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
                 if (roomInfo && roomInfo.hostileOwner) {
                     for (let x =0; x<50;x++) {
