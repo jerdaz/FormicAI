@@ -131,7 +131,8 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _tactics() {
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
-            this._shardOp.requestBuilder(this.name);
+            let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
+            if (hostileCreeps.length == 0) this._shardOp.requestBuilder(this.name);
         }
     }
 
@@ -153,7 +154,7 @@ module.exports = class BaseOp extends ShardChildOp{
     _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
         // start harvesting when there is a storage.
-        if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
+        if (this.storage && this.storage.isActive()) this._phase=c.BASE_PHASE_HARVESTER
         else return;
         // stored energy phase if thre is energy in the store -or- harvesters are busy filling the store.
         if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;
