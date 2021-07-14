@@ -131,7 +131,7 @@ module.exports = class MainOp extends Operation {
 
 
         if (totalBases == 0) totalBases = myBasesCount;
-        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
+        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
 
         
