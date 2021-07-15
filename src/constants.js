@@ -1,6 +1,6 @@
 
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully Autonomous - Custom Codebase',
+    MY_SIGN: '🐜🐜 Jerdaz 🐜🐜',
     CREEP_EMOTES: false,
     GENERATE_PIXELS: false, //enable generating pixels. Causes cpu timeout errors
     COMMAND_NONE: 0,
@@ -69,6 +69,7 @@ module.exports = {
     DIRECTIVE_NONE: 0,
     DIRECTIVE_COLONIZE: 1,
     DIRECTIVE_COLONIZE_2SOURCE: 2,
+    DIRECTIVE_FORTIFY: 3,
 
     SUPPORT_INTERVAL: 1000,
     STRATEGY_INTERVAL: 100,

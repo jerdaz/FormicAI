@@ -89,7 +89,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
     /**@param {number} directive */
     setDirective(directive) {
-        this._directive = directive;
+        if (this._directive != c.DIRECTIVE_FORTIFY) this._directive = directive;
     }
 
     /**@param {string} roomName */
@@ -106,6 +106,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
     activateSafemode() {
         this._base.controller.activateSafeMode();
+        this._directive = c.DIRECTIVE_FORTIFY;
     }
 
     /**
@@ -149,6 +150,11 @@ module.exports = class BaseOp extends ShardChildOp{
             this.base.memory.unclaimTimer = 0;
         }
         else if (this.spawns.length>0 && this.towers.length>0) this.base.memory.unclaimTimer = 0;
+
+        //check for nukes
+        let nukes = this.base.find(FIND_NUKES);
+        if (nukes.length > 0 && level >= 5) this._directive = c.DIRECTIVE_FORTIFY;
+        else if (this._directive == c.DIRECTIVE_FORTIFY && nukes.length == 0 && !this.base.controller.safeMode) this._directive = c.DIRECTIVE_NONE;
     }
 
     _setPhase() {

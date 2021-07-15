@@ -56,7 +56,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
         this._baseOp.transportOp.updateLinks();
         let base = this.baseOp.base;
 
-        //update maximum wall height
+        //update current maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
         let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
         let minHeight = 0;
@@ -69,7 +69,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
         }
         let roomLevel = 1;
         if (this._baseOp) roomLevel = this._baseOp.level
-        this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
+        this._maxWallHeight = minHeight*1.1;
+        if (this._baseOp.directive != c.DIRECTIVE_FORTIFY) this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
         if (this._maxWallHeight <= RAMPART_DECAY_AMOUNT * 2) this._maxWallHeight = RAMPART_DECAY_AMOUNT * 2 + 1;            
 
 
