@@ -10,6 +10,8 @@ module.exports = class ScoutOp extends BaseChildOp {
     constructor(baseOp) {
         super(baseOp);
         /**@type {{[creepName:string]: string}} */
+        this._nextRoomName = {};
+        /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
         this._lastSpawn = 0; //Game.time + Math.random() * SCOUT_INTERVAL;
     }
@@ -18,6 +20,16 @@ module.exports = class ScoutOp extends BaseChildOp {
 
     _firstRun() {
         this._strategy();
+    }
+
+    _support(){
+        //clean up old cache of dead creeps
+        for (let creepName in this._nextRoomName) {
+            if (!this._creepOps[creepName]) {
+                delete this._nextRoomName[creepName];
+                delete this._lastRoomName[creepName];
+            }
+        }
     }
 
     _strategy() {
@@ -31,11 +43,12 @@ module.exports = class ScoutOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             this._lastSpawn = Game.time;
             this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},0);
+            let nextRoomName = this._nextRoomName[creepName];
             let lastRoomName = this._lastRoomName[creepName];
             let creepOp = this._creepOps[creepName]
             creepOp.notifyWhenAttacked = false;
             let room = creepOp.room;
-            if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
+            if (room.name == nextRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                 /**@type {string | undefined} */
                 let destRoomName
                 let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
@@ -57,6 +70,7 @@ module.exports = class ScoutOp extends BaseChildOp {
                 else destRoomName = lastRoomName
 
                 if (destRoomName) {
+                    this._nextRoomName[creepName] = destRoomName;
                     creepOp.instructMoveTo(destRoomName)
                     this._lastRoomName[creepName] = room.name;
                 }

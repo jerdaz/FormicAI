@@ -362,7 +362,9 @@ module.exports = class CreepOp extends ChildOp {
                     switch (this._state) {
                         case c.STATE_DROPENERGY:
                             destObj = this._findEnergySink();
-                            break;
+                            if (!destObj) {
+                                this._state = c.STATE_FILLING;
+                            } else break;
                         case c.STATE_FILLING:
                             destObj = this._findFillTarget();
                             break;
