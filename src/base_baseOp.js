@@ -106,7 +106,6 @@ module.exports = class BaseOp extends ShardChildOp{
 
     activateSafemode() {
         this._base.controller.activateSafeMode();
-        this._directive = c.DIRECTIVE_FORTIFY;
     }
 
     /**
@@ -151,9 +150,10 @@ module.exports = class BaseOp extends ShardChildOp{
         }
         else if (this.spawns.length>0 && this.towers.length>0) this.base.memory.unclaimTimer = 0;
 
-        //check for nukes
+        //check for nukes & safe mode for fortifications
         let nukes = this.base.find(FIND_NUKES);
         if (nukes.length > 0 && level >= 5) this._directive = c.DIRECTIVE_FORTIFY;
+        if (this.base.controller.safeMode && level >=3) this._directive = c.DIRECTIVE_FORTIFY;
         else if (this._directive == c.DIRECTIVE_FORTIFY && nukes.length == 0 && !this.base.controller.safeMode) this._directive = c.DIRECTIVE_NONE;
     }
 
