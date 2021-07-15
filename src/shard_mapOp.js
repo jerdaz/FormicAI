@@ -236,7 +236,7 @@ module.exports = class MapOp extends ChildOp {
                 this._roomInfo[roomName].level = 0;
                 this._roomInfo[roomName].safeMode = undefined;
             }
-            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
+            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
         }
     }
 }
