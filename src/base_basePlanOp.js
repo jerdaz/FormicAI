@@ -339,18 +339,14 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let minerals = pos.findInRange(FIND_MINERALS,2);
         if (minerals.length > 0 ) return false;
         if (pos.inRangeTo(base.controller.pos,2)) return false;
-        let walkable = false;
-        for(let i=-1; i<=1; i++) {
-            for (let j=-1; j<=1; j++) {
-                let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
-                if (U.isWalkable(pos2)) {
-                    walkable = true;
-                    break;
-                }
-            }
-        }
-        if (!walkable) return false;
-
+        
+        // check to see if all edges are walkable
+        if (   !U.isWalkable(new RoomPosition(pos.x+1, pos.y,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x-1, pos.y,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x, pos.y+1,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x, pos.y-1,base.name))
+        ) return false;
+        
         return true;
     }
 
