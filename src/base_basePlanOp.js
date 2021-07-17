@@ -65,7 +65,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
             _.remove(structures,{structureType:STRUCTURE_ROAD});
             if (structures.length <=1) continue;
-            if (rampart.hits > minHeight) minHeight = rampart.hits
+            if (rampart.hits < minHeight) minHeight = rampart.hits
         }
         let roomLevel = 1;
         if (this._baseOp) roomLevel = this._baseOp.level
