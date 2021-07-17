@@ -119,11 +119,20 @@ module.exports = class BaseOp extends ShardChildOp{
     /** remove a subroom from the base
      * @param {string} roomName
     */
-   removeRoom(roomName) {
+    removeRoom(roomName) {
        for (let roomOp of this.roomOps) {
            if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
        }
-   }
+    }
+
+    //unclaim this base
+    //clean up structures
+    unclaim(){
+        let base = this.base;
+        for(let structure of base.find(FIND_MY_STRUCTURES)) structure.destroy()
+        base.controller.unclaim();
+        this.base.memory.unclaimTimer = 0;
+    }
 
     _firstRun() {
         this._strategy();
@@ -145,8 +154,7 @@ module.exports = class BaseOp extends ShardChildOp{
         // reset
         if (this.spawns.length == 0 && (this.base.memory.unclaimTimer||0) == 0 ) this.base.memory.unclaimTimer = Game.time;
         else if (this.spawns.length == 0 && Game.time - (this.base.memory.unclaimTimer||0) > UNCLAIM_TIME) {
-            this.base.controller.unclaim();
-            this.base.memory.unclaimTimer = 0;
+            this.unclaim();
         }
         else if (this.spawns.length>0 && this.towers.length>0) this.base.memory.unclaimTimer = 0;
 

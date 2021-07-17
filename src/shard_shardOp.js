@@ -202,8 +202,8 @@ module.exports = class ShardOp extends ChildOp {
      * @param {string} baseName 
      */
     unclaimBase(baseName) {
-        let base = this.getBase(baseName);
-        base.controller.unclaim();
+        let baseOp = this.getBaseOp(baseName);
+        baseOp.unclaim();
     }
 
     initTick(){

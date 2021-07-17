@@ -114,27 +114,39 @@ module.exports = class TransportOp extends BaseChildOp {
     // }    
 
     _command(){
-        let controllerLink = this._controllerLink;
         let baseLink = this._baseLink;
-        let targetLink = controllerLink;
-        if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 200) targetLink = this._baseLink;
-        if (baseLink && targetLink) {
-            for(let sourceLink of this._sourceLinks) {
-                if (sourceLink == controllerLink && sourceLink.store.energy > sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 * 6 ) {
-                    sourceLink.transferEnergy(baseLink, sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 * 3); //transfer 3/8 capacity
+        let controllerLink = this._controllerLink;
+        if (baseLink) {
+            let controllerLinkIsSourceLink = false;
+            let targetLink = controllerLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 200) targetLink = this._baseLink;
+            if (baseLink && targetLink) {
+                for(let sourceLink of this._sourceLinks) {
+                    controllerLinkIsSourceLink = true;
+                    if (sourceLink == controllerLink) {
+                        if ( sourceLink.store.energy > LINK_CAPACITY / 8 * 6 ) {
+                        sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                        }
+                    }
+                    else if (LINK_CAPACITY / 8 <= sourceLink.store.energy) {
+                        sourceLink.transferEnergy(targetLink);
+                    }
                 }
-                else if (sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 <= sourceLink.store.energy) {
-                    sourceLink.transferEnergy(targetLink);
+            }
+
+            // transfer energy from baselink to controller link if possible
+            if (baseLink && controllerLink) {
+                if (!controllerLinkIsSourceLink
+                    && controllerLink.store.energy <= baseLink.store.energy ) 
+                {
+                    baseLink.transferEnergy(controllerLink);
+                } else if (controllerLinkIsSourceLink
+                            && controllerLink.store.energy < LINK_CAPACITY / 8 * 2) 
+                {
+                    baseLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
                 }
             }
         }
-
-        // transfer energy from baselink to controller link if possible
-        if (baseLink && controllerLink
-            && controllerLink.store.energy <= baseLink.store.energy )
-        {
-            baseLink.transferEnergy(controllerLink);
-        }    
 
 
         let creepOp = _.sample(this._creepOps);
