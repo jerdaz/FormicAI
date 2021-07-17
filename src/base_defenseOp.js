@@ -22,7 +22,9 @@ module.exports = class TowerOp extends BaseChildOp {
         }});
         for (let tower of towers) {
             if (hostiles.length > 0) {
-                let hostile = tower.pos.findClosestByRange(hostiles);
+                let healHostiles = _.filter(hostiles,o => {return o.getActiveBodyparts(HEAL) > 0})
+                let hostile = tower.pos.findClosestByRange(healHostiles);
+                if (!hostile) hostile = tower.pos.findClosestByRange(healHostiles);
                 if (!hostile) throw Error();
                 let pos = hostile.pos
                 if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);

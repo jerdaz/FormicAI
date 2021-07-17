@@ -712,12 +712,16 @@ module.exports = class CreepOp extends ChildOp {
             if (evade && room) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
                 for (let creep of hostileCreeps) {
-                    let flee_range = 5;
+                    let flee_range = 0;
                     if (creep.owner.username == 'Source Keeper') flee_range = 4;
-                    let pos = creep.pos;
-                    for (let x = Math.max(pos.x - flee_range, 0); x <= Math.min(pos.x + flee_range, c.MAX_ROOM_SIZE-1); x++ ){
-                        for (let y = Math.max(pos.y - flee_range, 0); y <= Math.min(pos.y + flee_range, c.MAX_ROOM_SIZE-1); y++) {
-                            costMatrix.set(x,y,255);
+                    else if (creep.getActiveBodyparts(RANGED_ATTACK) >0) flee_range = 7
+                    else if (creep.getActiveBodyparts(ATTACK) >0 ) flee_range = 4
+                    if (flee_range>0) {
+                        let pos = creep.pos;
+                        for (let x = Math.max(pos.x - flee_range, 0); x <= Math.min(pos.x + flee_range, c.MAX_ROOM_SIZE-1); x++ ){
+                            for (let y = Math.max(pos.y - flee_range, 0); y <= Math.min(pos.y + flee_range, c.MAX_ROOM_SIZE-1); y++) {
+                                costMatrix.set(x,y,255);
+                            }
                         }
                     }
                 }
