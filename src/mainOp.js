@@ -22,6 +22,7 @@ module.exports = class MainOp extends Operation {
                 case 'bank':
                 case 'colonizations':
                 case 'lastConstructionSiteCleanTick':
+                case 'roomInfo:':
                     break;
                 default:
                     delete Memory[memObj];

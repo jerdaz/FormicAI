@@ -248,15 +248,13 @@ module.exports = class MapOp extends ChildOp {
                     if (hostile.owner.username == c.INVADER_USERNAME) {
                         this._roomInfo[roomName].invasion = true;
                         this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
-                        break;
                     } else if (hostile.owner.username != 'Source Keeper') {
-                        for (let bodyPart of hostile.body) {
-                            if (bodyPart.type == ATTACK || bodyPart.type == RANGED_ATTACK) hostileFound = true;
-                            if (hostileFound) break;
-                        }
-                        if (hostileFound) break;
+                        if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0) hostileFound = true;
                     }
-                    if (hostileFound) this._roomInfo[roomName].lastSeenHostile = Game.time;
+                    if (hostileFound) {
+                        this._roomInfo[roomName].lastSeenHostile = Game.time;
+                        break;
+                    }
                 }
             } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;
