@@ -709,7 +709,7 @@ module.exports = class CreepOp extends ChildOp {
                 }
             }
             let room = Game.rooms[roomName];
-            if (evade && room) {
+            if (evade && room && !(room.controller && room.controller.my && room.controller.safeMode)) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
                 for (let creep of hostileCreeps) {
                     let flee_range = 0;
