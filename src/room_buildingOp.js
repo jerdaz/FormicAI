@@ -35,6 +35,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let energy = this.baseOp.storage?this.baseOp.storage.store.energy:0;
             let controller = this.baseOp.base.controller;
             let energyReserve = c.ENERGY_RESERVE * Math.max(  controller.level - 3, 1)/5 
+            if (this.baseOp.directive == c.DIRECTIVE_FORTIFY) energyReserve = energyReserve / 3;
 
             if (this.isMainRoom) {
                 creepCount = Math.floor((energy - energyReserve) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
@@ -79,7 +80,8 @@ module.exports = class BuildingOp extends RoomChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
-            if (creepOp.instruction == c.COMMAND_NONE && room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            if (creepOp.instruction == c.COMMAND_NONE && creep.pos.roomName != room.name) creepOp.instructMoveTo(room.name);
+            else if (creepOp.instruction == c.COMMAND_NONE && room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
             else if (!this._buildWork) creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
             else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && constructionSites.length>0) { //stop upgrading if there are construction sites
                 creepOp.instructBuild()

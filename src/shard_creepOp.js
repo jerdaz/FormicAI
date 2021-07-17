@@ -362,7 +362,9 @@ module.exports = class CreepOp extends ChildOp {
                     switch (this._state) {
                         case c.STATE_DROPENERGY:
                             destObj = this._findEnergySink();
-                            break;
+                            if (!destObj) {
+                                this._state = c.STATE_FILLING;
+                            } else break;
                         case c.STATE_FILLING:
                             destObj = this._findFillTarget();
                             break;
@@ -448,13 +450,13 @@ module.exports = class CreepOp extends ChildOp {
                 let hostile = creep.pos.findClosestByPath(hostiles)
                 let attackResult = -100;
                 let rangedAttackResult = -100
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType != STRUCTURE_CONTROLLER}})
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_WALL}})
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER }})
+                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
                 if (hostile) {
                     let pos = creep.pos
                     if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
                     else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
-                    U.l('attacking creep: ' + hostile.pos + ' in room ' + hostile.pos.roomName)
                     attackResult = creep.attack(hostile);
                     rangedAttackResult = creep.rangedAttack(hostile);
                 } else {
@@ -696,7 +698,7 @@ module.exports = class CreepOp extends ChildOp {
 
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
-            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName) {
+            if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
                 if (roomInfo && roomInfo.hostileOwner) {
                     for (let x =0; x<50;x++) {

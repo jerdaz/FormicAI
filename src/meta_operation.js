@@ -47,8 +47,11 @@ module.exports = class Operation {
     run() {
         //last resort cpu overflow prevention.
         let cpuStart = Game.cpu.getUsed();
-        if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
-        if (Game.cpu.bucket < cpuStart + Game.cpu.limit) throw Error('Out of CPU');
+        // if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
+        // if (Game.cpu.bucket < cpuStart + Game.cpu.limit) {
+        //     U.l('Warning out of CPU in operation ' + this.name);
+        //     return;
+        // }
         if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
         if (this._bFirstRun) {
@@ -103,8 +106,10 @@ module.exports = class Operation {
         if (recursive) {
             let parent = childOp
             for (let childOps of parent.childOps) {
-                for (let childOp of childOps) {
-                    parent.removeChildOp(childOp, recursive)
+                if (childOps) {
+                    for (let childOp of childOps) {
+                        if (childOp) parent.removeChildOp(childOp, recursive)
+                    }
                 }
             }
         }

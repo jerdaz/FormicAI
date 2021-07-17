@@ -89,7 +89,7 @@ module.exports = class BaseOp extends ShardChildOp{
 
     /**@param {number} directive */
     setDirective(directive) {
-        this._directive = directive;
+        if (this._directive != c.DIRECTIVE_FORTIFY) this._directive = directive;
     }
 
     /**@param {string} roomName */
@@ -119,19 +119,29 @@ module.exports = class BaseOp extends ShardChildOp{
     /** remove a subroom from the base
      * @param {string} roomName
     */
-   removeRoom(roomName) {
+    removeRoom(roomName) {
        for (let roomOp of this.roomOps) {
            if (roomOp.roomName == roomName ) this.removeChildOp(roomOp, true);
        }
-   }
+    }
+
+    //unclaim this base
+    //clean up structures
+    unclaim(){
+        let base = this.base;
+        for(let structure of base.find(FIND_MY_STRUCTURES)) structure.destroy()
+        base.controller.unclaim();
+        this.base.memory.unclaimTimer = 0;
+    }
 
     _firstRun() {
         this._strategy();
     }
 
     _tactics() {
-        if (this.spawns.length == 0) {
-            this._shardOp.requestBuilder(this.name);
+        if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
+            let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
+            if (hostileCreeps.length == 0) this._shardOp.requestBuilder(this.name);
         }
     }
 
@@ -144,16 +154,21 @@ module.exports = class BaseOp extends ShardChildOp{
         // reset
         if (this.spawns.length == 0 && (this.base.memory.unclaimTimer||0) == 0 ) this.base.memory.unclaimTimer = Game.time;
         else if (this.spawns.length == 0 && Game.time - (this.base.memory.unclaimTimer||0) > UNCLAIM_TIME) {
-            this.base.controller.unclaim();
-            this.base.memory.unclaimTimer = 0;
+            this.unclaim();
         }
         else if (this.spawns.length>0 && this.towers.length>0) this.base.memory.unclaimTimer = 0;
+
+        //check for nukes & safe mode for fortifications
+        let nukes = this.base.find(FIND_NUKES);
+        if (nukes.length > 0 && level >= 5) this._directive = c.DIRECTIVE_FORTIFY; //fortifying for nukes is useful after level 5 (not enough rampart hits before that)
+        if (this.base.controller.safeMode && level >=3) this._directive = c.DIRECTIVE_FORTIFY; //first get to level 3 for a cannon before fortifying
+        else if (this._directive == c.DIRECTIVE_FORTIFY && nukes.length == 0 && !this.base.controller.safeMode) this._directive = c.DIRECTIVE_NONE;
     }
 
     _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
         // start harvesting when there is a storage.
-        if (this.storage && this.storage.isActive) this._phase=c.BASE_PHASE_HARVESTER
+        if (this.storage && this.storage.isActive()) this._phase=c.BASE_PHASE_HARVESTER
         else return;
         // stored energy phase if thre is energy in the store -or- harvesters are busy filling the store.
         if( this.storage.store.energy > 0) this._phase = c.BASE_PHASE_STORED_ENERGY;

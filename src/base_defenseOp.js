@@ -24,7 +24,8 @@ module.exports = class TowerOp extends BaseChildOp {
             if (hostiles.length > 0) {
                 let hostile = tower.pos.findClosestByRange(hostiles);
                 if (!hostile) throw Error();
-                if (hostile.owner.username == c.INVADER_USERNAME || tower.pos.getRangeTo(hostile.pos) <= 5) tower.attack(hostile);
+                let pos = hostile.pos
+                if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
                 continue;
             }
             if (creepsHit.length>0) {
@@ -61,7 +62,7 @@ module.exports = class TowerOp extends BaseChildOp {
         
                     }
                 }
-                else if (event.event == EVENT_OBJECT_DESTROYED ) activateSafeMode = true;
+                else if (event.event == EVENT_OBJECT_DESTROYED && event.data.type != 'creep') activateSafeMode = true;
                 if (activateSafeMode) {
                     this.baseOp.activateSafemode();
                     break;

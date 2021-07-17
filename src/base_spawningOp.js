@@ -61,12 +61,12 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_HARVESTING] = 50;
             this._spawnPrio[c.OPERATION_TRANSPORT] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
-            this._spawnPrio[c.OPERATION_UPGRADING] = 2;
+            this._spawnPrio[c.OPERATION_UPGRADING] = 40;
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
             this._spawnPrio[c.OPERATION_RESERVATION] = 30;
-            this._spawnPrio[c.OPERATION_SHARDDEFENSE] = 60;
+            this._spawnPrio[c.OPERATION_SHARDDEFENSE] = 20;
             this._spawnPrio[c.OPERATION_ATTACK] = 1;
         }
     }
@@ -85,8 +85,12 @@ module.exports = class SpawningOp extends BaseChildOp {
             let base = this._baseOp.base;
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
+                && base.energyCapacityAvailable >= BODYPART_COST[CLAIM] + BODYPART_COST[MOVE]
                 && this._baseOp.fillingOp.getCreepCountForSpawning() >= 1
-                )  this._prioritySpawn();
+                )  {
+                    this._log('priorityspawn')
+                    this._prioritySpawn();
+                }
             else {
                 let spawnList = this._getSpawnList();
                 this._log(spawnList);
@@ -173,7 +177,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             if (shardChildOp) nCreeps = shardChildOp.getCreepCountForSpawning();
             this._log({lastIdle: shardChildOp.lastIdle, idleCount: shardChildOp.idleCount, spawnrequesttype: shardChildOp.type, template:spawnRequest.template, currentCount:nCreeps, requestCcount:spawnRequest.count })
             if (nCreeps > 0 && shardChildOp.lastIdle > Game.time - MAX_OPERATION_IDLE_TIME) continue; //don't spawn if it has idle creeps
-            if (U.getCreepCost(spawnRequest.template.body) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
+            if (U.getCreepCost(_.slice(spawnRequest.template.body,0, Math.min(spawnRequest.template.body.length, spawnRequest.template.maxLength?spawnRequest.template.maxLength:50))) > this._baseOp.base.energyCapacityAvailable) continue; // don't spawn
             if (spawnRequest.count > nCreeps) {
                 let opType = shardChildOp.type;
                 let opInstance = shardChildOp.instance;

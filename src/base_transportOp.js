@@ -33,7 +33,7 @@ module.exports = class TransportOp extends BaseChildOp {
         let newControllerLinkIds = [];
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
-            else if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
+            if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
         }
         this._sourceLinkIds = newSourceLinkIds;
         let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
@@ -114,28 +114,39 @@ module.exports = class TransportOp extends BaseChildOp {
     // }    
 
     _command(){
-        let controllerLink = this._controllerLink;
         let baseLink = this._baseLink;
-        let targetLink = controllerLink;
-        if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 200) targetLink = this._baseLink;
-        if (baseLink && targetLink) {
-            for(let sourceLink of this._sourceLinks) {
-                //if source and controller share link, keep a larger reserve in the link for the upgrader
-                if (sourceLink == targetLink && targetLink == controllerLink && sourceLink.store.energy > sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 * 5 ) {
-                    sourceLink.transferEnergy(baseLink, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME * 10);
+        let controllerLink = this._controllerLink;
+        if (baseLink) {
+            let controllerLinkIsSourceLink = false;
+            let targetLink = controllerLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 200) targetLink = this._baseLink;
+            if (baseLink && targetLink) {
+                for(let sourceLink of this._sourceLinks) {
+                    controllerLinkIsSourceLink = true;
+                    if (sourceLink == controllerLink) {
+                        if ( sourceLink.store.energy > LINK_CAPACITY / 8 * 6 ) {
+                        sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                        }
+                    }
+                    else if (LINK_CAPACITY / 8 <= sourceLink.store.energy) {
+                        sourceLink.transferEnergy(targetLink);
+                    }
                 }
-                else if (sourceLink.store.getCapacity(RESOURCE_ENERGY) / 8 <= sourceLink.store.energy) {
-                    sourceLink.transferEnergy(targetLink);
+            }
+
+            // transfer energy from baselink to controller link if possible
+            if (baseLink && controllerLink) {
+                if (!controllerLinkIsSourceLink
+                    && controllerLink.store.energy <= baseLink.store.energy ) 
+                {
+                    baseLink.transferEnergy(controllerLink);
+                } else if (controllerLinkIsSourceLink
+                            && controllerLink.store.energy < LINK_CAPACITY / 8 * 2) 
+                {
+                    baseLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
                 }
             }
         }
-
-        // transfer energy from baselink to controller link if possible
-        if (baseLink && controllerLink
-            && controllerLink.store.energy <= baseLink.store.energy )
-        {
-            baseLink.transferEnergy(controllerLink);
-        }    
 
 
         let creepOp = _.sample(this._creepOps);

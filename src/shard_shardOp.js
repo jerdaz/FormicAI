@@ -7,9 +7,12 @@ const BankOp = require('./shard_bankOp')
 const ColonizingOp = require('./shard_colonizingOp');
 const ShardSpawningOp = require('./shard_spawningOp');
 const ShardDefenseOp = require('./shard_defenseOp')
-const ShardChildOp = require('./shard_childOp')
+const ShardChildOp = require('./shard_childOp');
+const { stubString } = require('lodash');
+const { OPERATION_SHARDCOLONIZING } = require('./constants');
 
 const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
+
 
 module.exports = class ShardOp extends ChildOp {
     /**@param {MainOp} main */
@@ -44,7 +47,6 @@ module.exports = class ShardOp extends ChildOp {
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = ''
         if (Game.spawns[Object.keys(Game.spawns)[0]]) this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username
-        this._maxBucket = Game.cpu.bucket // The maximum bucket size seen since previous pixel generation (used in _run())
         this._pixelGeneratedLastTurn = false // has a pixel been generated last turn (used in run())
     }
 
@@ -163,6 +165,22 @@ module.exports = class ShardOp extends ChildOp {
         if (!result) return null;
         return result;
     }
+
+    getBaseInfo() {
+        /**@type  {BaseInformation[]} */
+        let result = []
+
+        for(let baseOpKey of this._baseOpsMap) {
+            let baseOp = baseOpKey[1];
+            let baseInfo = {name:baseOp.name,
+                            level: baseOp.level,
+                            sources: baseOp.base.find(FIND_SOURCES).length,
+                            progress: baseOp.base.controller.progress
+                        }
+            result.push(baseInfo);
+        }
+        return result;
+    }
     
 
     //add's an operation to the basename/optype to operation map.
@@ -176,6 +194,16 @@ module.exports = class ShardOp extends ChildOp {
         if (x[baseName] == undefined) x[baseName] = [];
         if (x[baseName][opType] == undefined) x[baseName][opType] = [];
         x[baseName][opType][opInstance] = shardChildOp;
+    }
+
+    //unclaim a room
+    /**
+     * 
+     * @param {string} baseName 
+     */
+    unclaimBase(baseName) {
+        let baseOp = this.getBaseOp(baseName);
+        baseOp.unclaim();
     }
 
     initTick(){
@@ -223,10 +251,14 @@ module.exports = class ShardOp extends ChildOp {
                 let subOp = this._OperationIdByRoomByOpType[roomName][opType][opInstance]
                 if (subOp) subOp.initCreep(creep) 
             }
+            else if (creep.hits >0 && opType == OPERATION_SHARDCOLONIZING) {
+                // creep is a shard colonizer, have shard colonizer handle it.
+                this._teamShardColonizing.initCreep(creep);
+            }
             else delete Memory.creeps[creepName];
         }
 
-
+        this._teamShardColonizing.initTick();
         super.initTick()
     }
 
@@ -235,6 +267,8 @@ module.exports = class ShardOp extends ChildOp {
         super.run();
 
         // now run all nonstandard child operations
+        //run colonizing operation;
+        this._teamShardColonizing.run();
 
         // run the base operations in order of priority
         // if bucket is low, low priority bases are skipped 
@@ -243,9 +277,8 @@ module.exports = class ShardOp extends ChildOp {
         // when cpu is plentiful, bucket goes up, until a pixel is generated, both are reset and they go up again
         // all bases keep running unless the buckets decreases.
 
-        this._maxBucket = Math.max(Game.cpu.bucket, this._maxBucket)
-
-        let maxCPU = this._maxBucket;
+        
+        let maxCPU = c.MAX_BUCKET;
         let maxBasesToRun = this._baseOpsMap.size
         if (!this._pixelGeneratedLastTurn) {
             let  cpuReserve = maxCPU / 20;
@@ -264,8 +297,6 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
 
-        //run colonizing operation;
-        this._teamShardColonizing.run();
 
         //generate pixels & reset maxBucket if successful
         this._pixelGeneratedLastTurn = false;
@@ -322,12 +353,16 @@ module.exports = class ShardOp extends ChildOp {
     _strategy(){
         // check if we need to colonize
         let directive = c.DIRECTIVE_NONE;
-        if (Game.cpu.bucket >= c.MAX_BUCKET && this._maxShardBases && this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE
+        if (Game.cpu.bucket >= c.MAX_BUCKET && this._maxShardBases) {
+            if (this._maxShardBases == this._baseOpsMap.size + 1) directive = c.DIRECTIVE_COLONIZE_2SOURCE // colonize rooms with 2 sources
+            else if (this._maxShardBases > this._baseOpsMap.size) directive = c.DIRECTIVE_COLONIZE         // colonize any room
+        }
+            
         for (let baseOpKey of this._baseOpsMap) baseOpKey[1].setDirective(directive);
 
         // check if we need to request a colonizer
-        if (_.isEmpty(this._baseOpsMap)) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
-        else if (_.isEmpty(Game.spawns) && _.size(Game.creeps) < 10) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
+        if (this._baseOpsMap.size == 0) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
+        else if (_.size(Game.creeps) < 1) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
         else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
         //check if we need to unclaim bases
@@ -336,7 +371,7 @@ module.exports = class ShardOp extends ChildOp {
             for (let baseOpKey of this._baseOpsMap) bases.push(this.getBase(baseOpKey[0]))
             bases.sort ((a,b) => {return a.controller.level - b.controller.level});
             
-            for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) bases[i].controller.unclaim();
+            for (let i = this._baseOpsMap.size - this._maxShardBases; i > 0 ; i--) this.unclaimBase(bases[i].name)
         }
     }
 

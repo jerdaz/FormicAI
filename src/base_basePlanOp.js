@@ -56,20 +56,22 @@ module.exports = class BasePlanOp extends BaseChildOp{
         this._baseOp.transportOp.updateLinks();
         let base = this.baseOp.base;
 
-        //update maximum wall height
+        //update current maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
         let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
-        let minHeight = 0;
+        /**@type {number} */
+        let minHeight = RAMPART_HITS_MAX[8];
         for (let rampart of ramparts) {
             //only repair ramparts protecting structures
             let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
             _.remove(structures,{structureType:STRUCTURE_ROAD});
             if (structures.length <=1) continue;
-            if (rampart.hits > minHeight) minHeight = rampart.hits
+            if (rampart.hits < minHeight) minHeight = rampart.hits
         }
         let roomLevel = 1;
         if (this._baseOp) roomLevel = this._baseOp.level
-        this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
+        this._maxWallHeight = minHeight*1.1;
+        if (this._baseOp.directive != c.DIRECTIVE_FORTIFY) this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
         if (this._maxWallHeight <= RAMPART_DECAY_AMOUNT * 2) this._maxWallHeight = RAMPART_DECAY_AMOUNT * 2 + 1;            
 
 
@@ -338,18 +340,14 @@ module.exports = class BasePlanOp extends BaseChildOp{
         let minerals = pos.findInRange(FIND_MINERALS,2);
         if (minerals.length > 0 ) return false;
         if (pos.inRangeTo(base.controller.pos,2)) return false;
-        let walkable = false;
-        for(let i=-1; i<=1; i++) {
-            for (let j=-1; j<=1; j++) {
-                let pos2 = new RoomPosition(pos.x+i, pos.y+j, base.name)
-                if (U.isWalkable(pos2)) {
-                    walkable = true;
-                    break;
-                }
-            }
-        }
-        if (!walkable) return false;
-
+        
+        // check to see if all edges are walkable
+        if (   !U.isWalkable(new RoomPosition(pos.x+1, pos.y,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x-1, pos.y,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x, pos.y+1,base.name))
+            || !U.isWalkable(new RoomPosition(pos.x, pos.y-1,base.name))
+        ) return false;
+        
         return true;
     }
 
@@ -441,6 +439,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS+1})
             }
         }
+        
         let roomCallBack = function(/**@type {string}*/roomName) {
             if (roomName != base.name) return false;
             let costs = new PathFinder.CostMatrix;
@@ -452,7 +451,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
             }
             return costs;
         }
-        let fleePath = PathFinder.search(centerPos,walls,{flee:true/*, roomCallback: roomCallBack, swampCost:1*/})
+        let fleePath = PathFinder.search(centerPos,walls,{flee:true, roomCallback: roomCallBack, swampCost:1})
         if (fleePath.path.length>0) {
             let path = fleePath.path;
             centerPos = path[path.length-1]

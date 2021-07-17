@@ -2,7 +2,7 @@ const U = require('./util');
 const c = require('./constants');
 const ShardChildOp = require('./shard_childOp');
 
-module.exports = class ColonizingOp extends ShardChildOp {
+module.exports = class ShardColonizingOp extends ShardChildOp {
     /**
      * @param {ShardOp}  shardOp
      * @param {Operation}  parent
@@ -13,7 +13,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
         this._lastRoomName = {};
     }
     
-    get type() {return c.OPERATION_COLONIZING}
+    get type() {return c.OPERATION_SHARDCOLONIZING}
 
     _tactics() {
         // if running under a base give spawn requests.
@@ -50,11 +50,15 @@ module.exports = class ColonizingOp extends ShardChildOp {
                     if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
                     else targetRoom = this._map.findClosestBaseByPath(room.name,1, false, c.TICKS_HOUR);
                     if (!targetRoom) continue;
-                    if (room.name!= targetRoom) creepOp.instructMoveTo(new RoomPosition(25,25, targetRoom));
-                    else {
-                        let source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
-                        if (source && dest) creepOp.instructTransfer(source, dest);
+                    let targetBaseOp = this.shardOp.getBaseOp(targetRoom);
+                    if (targetBaseOp) {
+                        creepOp.newParent(targetBaseOp.buildingOp);
                     }
+                    // if (room.name!= targetRoom) creepOp.instructMoveTo(new RoomPosition(25,25, targetRoom));
+                    // else {
+                    //     let source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE)
+                    //     if (source && dest) creepOp.instructTransfer(source, dest);
+                    // }
                 } else {
                     // creep is a claimer
                     let lastRoomName = this._lastRoomName[creep.name];
@@ -64,14 +68,14 @@ module.exports = class ColonizingOp extends ShardChildOp {
                     else if (room.name != lastRoomName || creepOp.instruction != c.COMMAND_MOVETO) {
                         /**@type {string | undefined} */
                         let destRoomName
-                        /**@type {Structure[]}*/
-                        let portals = [];
-                        if (lastRoomName) portals = creep.room.find(FIND_STRUCTURES, {filter: (o) => { return o.structureType == STRUCTURE_PORTAL && !(o.destination instanceof RoomPosition) }});
-                        if (portals.length>0) {
-                            let portal = _.sample(portals)
-                            if (portal) creepOp.instructMoveTo(portal.pos)
-                            this._lastRoomName[creep.name] = room.name;
-                        } else {
+                        // /**@type {Structure[]}*/
+                        // let portals = [];
+                        // if (lastRoomName) portals = creep.room.find(FIND_STRUCTURES, {filter: (o) => { return o.structureType == STRUCTURE_PORTAL && !(o.destination instanceof RoomPosition) }});
+                        // if (portals.length>0) {
+                        //     let portal = _.sample(portals)
+                        //     if (portal) creepOp.instructMoveTo(portal.pos)
+                        //     this._lastRoomName[creep.name] = room.name;
+                        // } else {
                             let exits = /**@type {{[index:string]:string}} */(this._map.describeExits(room.name))
                             let roomNames = [];
                             for (let exit in exits) if (exits[exit] != lastRoomName && Game.map.isRoomAvailable(exits[exit])) roomNames.push(exits[exit]);
@@ -79,8 +83,13 @@ module.exports = class ColonizingOp extends ShardChildOp {
                                     let scoutInfoA = this._map.getRoomInfo(a);
                                     let scoutInfoB = this._map.getRoomInfo(b);
                                     if (scoutInfoA && scoutInfoB) return scoutInfoB.lastSeen - scoutInfoA.lastSeen + Math.random() - 0.5;
+                                    if (!scoutInfoB && scoutInfoA) return -1;
+                                    if (scoutInfoB && !scoutInfoA) return 1;
                                     return 0;
                                 })
+                            U.l(creep.name)
+                            U.l(creep.pos)
+                                U.l(roomNames);
                             if (roomNames.length > 0) destRoomName = roomNames.pop();
                             else destRoomName = lastRoomName
                             if (destRoomName) {
@@ -88,7 +97,7 @@ module.exports = class ColonizingOp extends ShardChildOp {
                                 if (dest) creepOp.instructMoveTo(dest)
                                 this._lastRoomName[creep.name] = room.name;
                             }
-                        }
+                        // }
                     }
                 }
             }

@@ -30,7 +30,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         /**@type {Source | null} */
         let source = Game.getObjectById(this._sourceId);
         if (!source) return //room is not visible
-        let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_LINK}});
+        let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: o => {return o.structureType == STRUCTURE_LINK && o.isActive() == true}});
         
         if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
@@ -62,7 +62,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
                     return matrix;
 
                 } 
-                let result = PathFinder.search(source.pos, {pos:source.pos, range:2},{roomCallback: roomCallback, flee:true} )
+                let result = PathFinder.search(source.pos, [{pos:source.pos, range:2}, {pos:this.baseOp.centerPos, range:3}],{roomCallback: roomCallback, flee:true} )
                 let pos = result.path[1];
                 if (pos) {
                     let structures = pos.lookFor(LOOK_STRUCTURES)
@@ -94,7 +94,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
             if (creepOp.instruction == c.COMMAND_NONE) {
                 if (source) {
                     let link = source.pos.findInRange(FIND_MY_STRUCTURES,2,{filter: {structureType: STRUCTURE_LINK}})[0];
-                    if (link && this.baseOp.transportOp.baseLink) creepOp.instructTransfer(source, link);
+                    if (link && link.isActive() && this.baseOp.transportOp.baseLink) creepOp.instructTransfer(source, link);
                     else creepOp.instructHarvest(source)
                 }
                 else creepOp.instructMoveTo(this.roomName)

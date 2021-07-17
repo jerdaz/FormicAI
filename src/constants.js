@@ -1,6 +1,6 @@
 
 module.exports = {
-    MY_SIGN: '🐜🐜 FormicAI 🐜🐜 - Fully autonomous open source bot https://github.com/jerdaz/FormicAI',
+    MY_SIGN: '🐜🐜 Jerdaz 🐜🐜',
     CREEP_EMOTES: false,
     GENERATE_PIXELS: false, //enable generating pixels. Causes cpu timeout errors
     COMMAND_NONE: 0,
@@ -68,6 +68,8 @@ module.exports = {
 
     DIRECTIVE_NONE: 0,
     DIRECTIVE_COLONIZE: 1,
+    DIRECTIVE_COLONIZE_2SOURCE: 2,
+    DIRECTIVE_FORTIFY: 3,
 
     SUPPORT_INTERVAL: 1000,
     STRATEGY_INTERVAL: 100,
@@ -89,7 +91,7 @@ module.exports = {
     SHARDREQUEST_BUILDER: 2,
 
     MAX_ROOM_SIZE : 50,
-    MAX_BUCKET : 10000 - 5000 - 300,
+    MAX_BUCKET : 10000,
 
     INVADER_USERNAME : 'Invader',
 
