@@ -138,6 +138,11 @@ module.exports = class BaseOp extends ShardChildOp{
         this._strategy();
     }
 
+    _support() {
+        // remember this room has been colonized
+        Memory.colonizations[this.name] = Game.time;
+    }
+
     _tactics() {
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
             let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);

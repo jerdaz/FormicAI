@@ -86,6 +86,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
                 && base.energyCapacityAvailable >= BODYPART_COST[CLAIM] + BODYPART_COST[MOVE]
+                && this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY
                 && this._baseOp.fillingOp.getCreepCountForSpawning() >= 1
                 )  {
                     this._log('priorityspawn')

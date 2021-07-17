@@ -680,7 +680,7 @@ module.exports = class CreepOp extends ChildOp {
                 let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
                     if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
                         let roomInfo = mapOp.getRoomInfo(toRoomName)
-                        if (roomInfo && roomInfo.hostileOwner) return Infinity
+                        if (roomInfo && roomInfo.activeTowers >=1 ) return Infinity
                     }
                     return 0;
                 }
@@ -700,7 +700,7 @@ module.exports = class CreepOp extends ChildOp {
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
             if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
-                if (roomInfo && roomInfo.hostileOwner) {
+                if (roomInfo && roomInfo.lastSeen == roomInfo.lastSeenHostile) {
                     for (let x =0; x<50;x++) {
                         for (let y = 0; y<50; y++){
                             costMatrix.set(x,y,255);
@@ -711,11 +711,12 @@ module.exports = class CreepOp extends ChildOp {
             let room = Game.rooms[roomName];
             if (evade && room) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
-                const FLEE_RANGE = 4;
                 for (let creep of hostileCreeps) {
+                    let flee_range = 5;
+                    if (creep.owner.username == 'Source Keeper') flee_range = 4;
                     let pos = creep.pos;
-                    for (let x = Math.max(pos.x - FLEE_RANGE, 0); x <= Math.min(pos.x + FLEE_RANGE, c.MAX_ROOM_SIZE-1); x++ ){
-                        for (let y = Math.max(pos.y - FLEE_RANGE, 0); y <= Math.min(pos.y + FLEE_RANGE, c.MAX_ROOM_SIZE-1); y++) {
+                    for (let x = Math.max(pos.x - flee_range, 0); x <= Math.min(pos.x + flee_range, c.MAX_ROOM_SIZE-1); x++ ){
+                        for (let y = Math.max(pos.y - flee_range, 0); y <= Math.min(pos.y + flee_range, c.MAX_ROOM_SIZE-1); y++) {
                             costMatrix.set(x,y,255);
                         }
                     }

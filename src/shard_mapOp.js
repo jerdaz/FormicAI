@@ -37,7 +37,7 @@ module.exports = class MapOp extends ChildOp {
         /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
 
-
+        //retrieve roominfo from memory
         /**@type {RoomInfo} */
         this._roomInfo = Memory.roomInfo;
         /**@type {BreadCrumbs} */
@@ -46,6 +46,11 @@ module.exports = class MapOp extends ChildOp {
         /**@type {{[roomA:string]: {[roomB:string]: {path: RoomPath,
                                                      time: number }}}} */
         this._routeCache = {}
+    }
+
+    // save roomInfo into memory
+    initTick() {
+        Memory.roomInfo = this._roomInfo;
     }
 
     get type() {return c.OPERATION_MAP}
@@ -171,7 +176,9 @@ module.exports = class MapOp extends ChildOp {
         } else {
             let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
                 {   let roomInfo = this.getRoomInfo(roomName);
-                    if(roomInfo && roomInfo.hostileOwner) return Infinity; }
+                    //if(roomInfo && roomInfo.hostileOwner) return Infinity; 
+                    if (roomInfo && (roomInfo.lastSeen == roomInfo.lastSeenHostile || roomInfo.activeTowers >= 1)) return Infinity;
+                }
                 })
             if (result2 == -2) result = [];
             else result = result2;
@@ -236,17 +243,26 @@ module.exports = class MapOp extends ChildOp {
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) {
-                this._roomInfo[roomName].lastSeenHostile = Game.time;
+                let hostileFound = false;
                 for (let hostile of hostiles) {
                     if (hostile.owner.username == c.INVADER_USERNAME) {
                         this._roomInfo[roomName].invasion = true;
                         this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
                         break;
+                    } else if (hostile.owner.username != 'Source Keeper') {
+                        for (let bodyPart of hostile.body) {
+                            if (bodyPart.type == ATTACK || bodyPart.type == RANGED_ATTACK) hostileFound = true;
+                            if (hostileFound) break;
+                        }
+                        if (hostileFound) break;
                     }
+                    if (hostileFound) this._roomInfo[roomName].lastSeenHostile = Game.time;
                 }
             } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;
-            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null );
+            this._roomInfo[roomName].hostileOwner = room.controller != undefined && (   (room.controller.reservation && room.controller.reservation.username != this._parent.userName) 
+                                                                                     || (!room.controller.my && (room.controller.owner != null ))
+                                                                                    );
             this._roomInfo[roomName].sourceCount = room.find(FIND_SOURCES).length;
             if (room.controller) {
                 this._roomInfo[roomName].hasController = true;
