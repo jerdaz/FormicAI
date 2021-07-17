@@ -625,10 +625,10 @@ module.exports = class CreepOp extends ChildOp {
                 let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
-                let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
-                if (!roomInfo) return false;
-                this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
-                if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
+                if (!terrainArray) return false;
+                this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
+                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
                 this._log('canrepair');
                 return true;
             }});

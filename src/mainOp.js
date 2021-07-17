@@ -34,6 +34,7 @@ module.exports = class MainOp extends Operation {
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
         if (Memory.rooms == undefined) Memory.rooms = {};
+        if (Memory.roomInfo == undefined) Memory.roomInfo = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);

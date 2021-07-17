@@ -97,9 +97,9 @@ module.exports = class RoomOp extends BaseChildOp {
         //draw room visualisations
         if(this._visualiseRoomInfo) {
             let roomVisual = new RoomVisual(this.roomName);
-            let roomInfo = this._map.getRoomInfo(this.roomName);
-            if (roomInfo) {
-                let terrainArray = roomInfo.terrainArray;
+            let breadCrumbs = this._map.getBreadCrumbs(this.roomName);
+            if (breadCrumbs) {
+                let terrainArray = breadCrumbs;
                 if (terrainArray) {
                     for (let x =0; x < c.MAX_ROOM_SIZE; x++) {
                         for (let y = 0; y< c.MAX_ROOM_SIZE; y++) {

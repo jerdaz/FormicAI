@@ -21,10 +21,9 @@ module.exports = class RoadOp extends RoomChildOp {
         //determine road locations
         if (!this._roomOp.room) return;
         
-        let roomInfo = this._map.getRoomInfo(this._roomName);
-        if (!roomInfo) return;
+        let fatigueCost = this._map.getBreadCrumbs(this.roomName);
+        if (!fatigueCost) return;
         if (this._baseOp.level < 2 ) return;
-        let fatigueCost = roomInfo.terrainArray;
         /**@type {{x:number, y:number, cost:number}[]} */
         let roadSites = []
         for (let x =0; x<50; x++) {
