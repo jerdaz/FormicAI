@@ -202,7 +202,7 @@ module.exports = class MapOp extends ChildOp {
 
     _updateRoadMatrices() {
         //subtract road cost from road opportunity cost matrixes
-        for (let roomName in this._roomInfo) {
+        for (let roomName in this._breadCrumbs) {
             let terrainArray = this._breadCrumbs[roomName];
             let roomTerrain = Game.map.getRoomTerrain(roomName);
             for (let x=0;x<50;x++) {
@@ -271,7 +271,7 @@ module.exports = class MapOp extends ChildOp {
                 this._roomInfo[roomName].level = 0;
                 this._roomInfo[roomName].safeMode = undefined;
             }
-            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
+            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
         }
     }
 }
