@@ -40,7 +40,8 @@ module.exports = class TowerOp extends BaseChildOp {
                 if (!hostile) hostile = tower.pos.findClosestByRange(hostiles);
                 if (!hostile) throw Error();
                 let pos = hostile.pos
-                if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
+                //if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
+                tower.attack(hostile);
                 continue;
             }
             if (creepsHit.length>0) {
