@@ -12,7 +12,7 @@ module.exports = class TowerOp extends BaseChildOp {
         if (_.filter(this._baseOp.towers, o => {return o.isActive()}) && this._baseOp.base.find(FIND_HOSTILE_CREEPS).length>0) {
             nCreep = 1;
         }
-        this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,RANGED_ATTACK] }, nCreep)
+        this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,ATTACK] }, nCreep)
 
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
