@@ -175,7 +175,8 @@ module.exports = class ShardOp extends ChildOp {
             let baseInfo = {name:baseOp.name,
                             level: baseOp.level,
                             sources: baseOp.base.find(FIND_SOURCES).length,
-                            progress: baseOp.base.controller.progress
+                            progress: baseOp.base.controller.progress,
+                            hasSpawn: (baseOp.spawns.length>0)
                         }
             result.push(baseInfo);
         }

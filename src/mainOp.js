@@ -145,14 +145,15 @@ module.exports = class MainOp extends Operation {
             let room = '';
             let lowestLevel = 100;
             let lowestProgress = 0;
+            let foundNoSpawnBase = false;
             for (let i = 0; i< interShardMem.shards.length;i++ ) {
                 let shardInfo = interShardMem.shards[i];
                 U.l(shardInfo)
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
-                    // first check if we find a base lower then 3. we don't want to abondon any base if we have one.
-                    if (baseInfo.level < 3 || lowestLevel < 3) {
-                        lowestLevel = 1;
+                    // first check if we find a base without spawn. we don't want to abondon any base if we have one.
+                    if (!baseInfo.hasSpawn ) {
+                        foundNoSpawnBase = true;
                         break;
                     }
                     // check if the base is single source and lower developed then we found
@@ -166,11 +167,11 @@ module.exports = class MainOp extends Operation {
                         lowestProgress = baseInfo.progress;
                     }
                 }
-                if (lowestLevel < 3) break;
+                if (foundNoSpawnBase) break;
             }
 
-            //unclaim the lowest found base if we haven't found any <lvl 3 base
-            if (lowestLevel >= 3
+            //unclaim the lowest found base if we haven't found base without spawn
+            if (!foundNoSpawnBase
                 && shard == this._shardNum 
                 && room) 
             {

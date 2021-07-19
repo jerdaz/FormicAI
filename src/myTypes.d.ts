@@ -30,7 +30,7 @@ declare var _ = import('lodash');
 declare interface Instruction {command: number};
 declare interface CreepOpInstruction extends Instruction {source: RoomObject, dest: RoomObject};
 declare type CreepTemplate = {body: BodyPartConstant[], minLength?: number, maxLength?: number};
-declare type BaseInformation = {name: string, level: number, progress: number, sources: number};
+declare type BaseInformation = {name: string, level: number, progress: number, sources: number, hasSpawn: boolean};
 interface Memory {[name: string]: any}
 interface Debug {DebugType}
 interface MainOp {MainOp}
