@@ -32,7 +32,6 @@ module.exports = class RoomOp extends BaseChildOp {
         else this._distance = distance + this._distanceOffset;
 
 
-        this._harvestingOpCreated = false;
         this._verbose = false;
     }
 
@@ -59,7 +58,7 @@ module.exports = class RoomOp extends BaseChildOp {
     }
 
     _strategy() {
-        if (   this._harvestingOpCreated 
+        if (   this.harvestingOps.length>0 
             && this.room 
             && this.room.controller 
             && ( (this.room.controller.level > 0 && !this.room.controller.my)
@@ -68,7 +67,6 @@ module.exports = class RoomOp extends BaseChildOp {
             for (let harvestingOp of this._childOps[c.OPERATION_HARVESTING]) {
                 this.removeChildOp(harvestingOp)
             }
-            this._harvestingOpCreated = false;
         }
     }
     
@@ -78,7 +76,7 @@ module.exports = class RoomOp extends BaseChildOp {
         if (this.room) this.room.roomOp = this;
 
 
-        if (  !this._harvestingOpCreated 
+        if (  this.harvestingOps.length == 0 
                 && this.room 
                 && this.room.controller 
                 && (this.room.controller.level == 0  || this.room.controller.my)
@@ -89,7 +87,6 @@ module.exports = class RoomOp extends BaseChildOp {
                 let harvestingOp = new HarvestingOp(this, source.id, i++)
                 this.addChildOp(harvestingOp);
             }    
-            this._harvestingOpCreated = true;
         }
     }
 
