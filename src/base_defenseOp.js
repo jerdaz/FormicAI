@@ -5,7 +5,20 @@ const BaseChildOp = require('./base_childOp');
 const MAX_HITS_REPAIR_PER_LEVEL = 10000 // maximum hits per level repaired by towers
 
 module.exports = class TowerOp extends BaseChildOp {
-    get type() { return c.OPERATION_TOWER; }
+    get type() { return c.OPERATION_DEFENSE; }
+
+    _tactics() {
+        let nCreep = 0
+        if (_.filter(this._baseOp.towers, o => {return o.isActive()}) && this._baseOp.base.find(FIND_HOSTILE_CREEPS).length>0) {
+            nCreep = 1;
+        }
+        this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,RANGED_ATTACK] }, nCreep)
+
+        for (let creepName in this._creepOps) {
+            let creepOp = this._creepOps[creepName];
+            creepOp.instructAttack(this._baseName);
+        }
+    }
 
     _command() {
         let hostiles = this._baseOp.base.find(FIND_HOSTILE_CREEPS);
