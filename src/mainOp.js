@@ -150,8 +150,8 @@ module.exports = class MainOp extends Operation {
                 U.l(shardInfo)
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
-                    // first check if we find a base lower then 2. we don't want to abondon any base if we have one.
-                    if (baseInfo.level < 2 || lowestLevel < 2) {
+                    // first check if we find a base lower then 3. we don't want to abondon any base if we have one.
+                    if (baseInfo.level < 3 || lowestLevel < 3) {
                         lowestLevel = 1;
                         break;
                     }
@@ -166,11 +166,11 @@ module.exports = class MainOp extends Operation {
                         lowestProgress = baseInfo.progress;
                     }
                 }
-                if (lowestLevel < 2) break;
+                if (lowestLevel < 3) break;
             }
 
-            //unclaim the lowest found base if we haven't found any <lvl2 base
-            if (lowestLevel >= 2
+            //unclaim the lowest found base if we haven't found any <lvl 3 base
+            if (lowestLevel >= 3
                 && shard == this._shardNum 
                 && room) 
             {
