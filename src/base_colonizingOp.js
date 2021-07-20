@@ -47,6 +47,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
+                this._colStart = Game.time;
             }
             if (this._colRoomName) nCreep = 1;
         }
