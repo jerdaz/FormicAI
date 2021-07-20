@@ -160,7 +160,6 @@ module.exports = class MainOp extends Operation {
                     if (baseInfo.sources == 1 &&
                         (baseInfo.level < lowestLevel || (baseInfo.level == lowestLevel && baseInfo.progress < lowestProgress)) ) 
                     {   
-                        U.l('selecting room: ' + room)
                         shard = i;
                         room = baseInfo.name;
                         lowestLevel = baseInfo.level;
