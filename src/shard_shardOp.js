@@ -234,7 +234,12 @@ module.exports = class ShardOp extends ChildOp {
                 baseOp.initTick();
             }
         }
-        if (updateMap) this._map.updateBaseDistances(this._baseOpsMap);
+        if (updateMap) {
+            this._map.updateBaseDistances(this._baseOpsMap);
+             //allocate rooms for remote mining
+            this._allocateSubRooms();
+        }
+
 
 
         //assign new creep objects to childshardops.
