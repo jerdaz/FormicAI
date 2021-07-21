@@ -77,7 +77,7 @@ module.exports = class MapOp extends ChildOp {
      * @param {boolean} hasSpawn
      * @param {number | undefined} lastSeenHostile
      * @returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = 0) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME) {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {
                 let base = this._parent.getBase(baseDist.roomName);
@@ -177,7 +177,7 @@ module.exports = class MapOp extends ChildOp {
             let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
                 {   let roomInfo = this.getRoomInfo(roomName);
                     //if(roomInfo && roomInfo.hostileOwner) return Infinity; 
-                    if (roomInfo && (roomInfo.lastSeen == roomInfo.lastSeenHostile || roomInfo.activeTowers >= 1)) return Infinity;
+                    if (roomInfo && (roomInfo.lastSeen  + CREEP_LIFE_TIME >= Game.time  || roomInfo.activeTowers >= 1)) return Infinity;
                 }
                 })
             if (result2 == -2) result = [];

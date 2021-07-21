@@ -700,7 +700,7 @@ module.exports = class CreepOp extends ChildOp {
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
             if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
-                if (roomInfo && (roomInfo.lastSeen == roomInfo.lastSeenHostile || roomInfo.activeTowers >= 1)) {
+                if (roomInfo && (roomInfo.lastSeenHostile + CREEP_LIFE_TIME >= Game.time || roomInfo.activeTowers >= 1)) {
                     for (let x =0; x<50;x++) {
                         for (let y = 0; y<50; y++){
                             costMatrix.set(x,y,255);
