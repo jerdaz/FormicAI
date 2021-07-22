@@ -177,7 +177,7 @@ module.exports = class MapOp extends ChildOp {
             let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
                 {   let roomInfo = this.getRoomInfo(roomName);
                     //if(roomInfo && roomInfo.hostileOwner) return Infinity; 
-                    if (roomInfo && (roomInfo.lastSeen  + CREEP_LIFE_TIME >= Game.time  || roomInfo.activeTowers >= 1)) return Infinity;
+                    if (roomInfo && (roomInfo.lastSeenHostile  + CREEP_LIFE_TIME >= Game.time  || roomInfo.activeTowers >= 1)) return Infinity;
                 }
                 })
             if (result2 == -2) result = [];
