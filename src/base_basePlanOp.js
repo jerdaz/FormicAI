@@ -123,8 +123,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     if (   (!linkOp.baseLink || linkOp.baseLink.id != structure.id)
                         && (!linkOp.controllerLink || linkOp.controllerLink.id != structure.id)
                         && !_.includes(linkOp.sourceLinks, structure)) {
-                            U.l({destroylink:structure.pos})//structure.destroy();
+                            structure.destroy();
                         }
+                    if (structure.pos.findInRange(FIND_SOURCES,1)) structure.destroy();
                     break;
                 case STRUCTURE_WALL:
                     structure.destroy();
