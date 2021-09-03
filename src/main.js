@@ -9,7 +9,11 @@ let debug = new DebugType;
 let mainOp = new MainOp;
 
 module.exports.loop = function() {
-
+    // @ts-ignore
+    Game.mainOp = mainOp;
+    // @ts-ignore
+    Game.shardOp = mainOp._shardOp;
+    
     mainOp.initTick();
 
     mainOp.run();

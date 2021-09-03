@@ -34,6 +34,9 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
     _strategy() {
         let nCreep = 0;
+        // stop colonizing when no longer necessary
+        if (this.baseOp.directive != c.DIRECTIVE_COLONIZE && this.baseOp.directive != c.DIRECTIVE_COLONIZE_2SOURCE) this._colRoomName = null;
+
         // give up colonization after timeout
         if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
             Memory.colonizations[this._colRoomName] = Game.time;
@@ -44,6 +47,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
+                this._colStart = Game.time;
             }
             if (this._colRoomName) nCreep = 1;
         }
@@ -85,7 +89,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && (Memory.colonizations[roomName] || 0) < Game.time - COLONIZE_RETRY_TIME
                 && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
                ) {
-                    let path = Game.map.findRoute(this._baseName, roomName);
+                    let path = this._map.findRoute(this._baseName, roomName);
                     if (!(path instanceof Array)) continue;
                     let colRoom = {name: roomName, distance: path.length, sources: roomInfo.sourceCount}
                     colRooms.push(colRoom);

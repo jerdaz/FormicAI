@@ -133,7 +133,7 @@ module.exports = class ShardOp extends ChildOp {
 
     /**@param {String} roomName */
     requestBuilder(roomName){
-        let donorRoom = this._map.findClosestBaseByPath(roomName, 3 , true);
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true);
         if (!donorRoom) return;
         let baseOp = this._baseOpsMap.get(donorRoom);
         if (!baseOp) throw Error('donorroom not in basemap');
@@ -175,7 +175,8 @@ module.exports = class ShardOp extends ChildOp {
             let baseInfo = {name:baseOp.name,
                             level: baseOp.level,
                             sources: baseOp.base.find(FIND_SOURCES).length,
-                            progress: baseOp.base.controller.progress
+                            progress: baseOp.base.controller.progress,
+                            hasSpawn: (baseOp.spawns.length>0)
                         }
             result.push(baseInfo);
         }
@@ -233,7 +234,12 @@ module.exports = class ShardOp extends ChildOp {
                 baseOp.initTick();
             }
         }
-        if (updateMap) this._map.updateBaseDistances(this._baseOpsMap);
+        if (updateMap) {
+            this._map.updateBaseDistances(this._baseOpsMap);
+             //allocate rooms for remote mining
+            this._allocateSubRooms();
+        }
+
 
 
         //assign new creep objects to childshardops.

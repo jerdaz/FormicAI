@@ -625,10 +625,10 @@ module.exports = class CreepOp extends ChildOp {
                 let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR;
                 if (!needRepair) return false;
                 this._log({roadrepair: o.pos})
-                let roomInfo = this._mapOp.getRoomInfo(creep.room.name);
-                if (!roomInfo) return false;
-                this._log({roadrepair: o.pos, terrain:roomInfo.terrainArray[o.pos.x][o.pos.y] })
-                if (roomInfo.terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
+                if (!terrainArray) return false;
+                this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
+                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
                 this._log('canrepair');
                 return true;
             }});
@@ -680,7 +680,7 @@ module.exports = class CreepOp extends ChildOp {
                 let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
                     if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
                         let roomInfo = mapOp.getRoomInfo(toRoomName)
-                        if (roomInfo && roomInfo.hostileOwner) return Infinity
+                        if (roomInfo && roomInfo.activeTowers >=1 ) return Infinity
                     }
                     return 0;
                 }
@@ -700,7 +700,7 @@ module.exports = class CreepOp extends ChildOp {
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
             if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
-                if (roomInfo && roomInfo.hostileOwner) {
+                if (roomInfo && (roomInfo.lastSeenHostile + CREEP_LIFE_TIME >= Game.time || roomInfo.activeTowers >= 1)) {
                     for (let x =0; x<50;x++) {
                         for (let y = 0; y<50; y++){
                             costMatrix.set(x,y,255);
@@ -709,14 +709,19 @@ module.exports = class CreepOp extends ChildOp {
                 }
             }
             let room = Game.rooms[roomName];
-            if (evade && room) {
+            if (evade && room && !(room.controller && room.controller.my && room.controller.safeMode)) {
                 let hostileCreeps = room.find(FIND_HOSTILE_CREEPS);
-                const FLEE_RANGE = 4;
                 for (let creep of hostileCreeps) {
-                    let pos = creep.pos;
-                    for (let x = Math.max(pos.x - FLEE_RANGE, 0); x <= Math.min(pos.x + FLEE_RANGE, c.MAX_ROOM_SIZE-1); x++ ){
-                        for (let y = Math.max(pos.y - FLEE_RANGE, 0); y <= Math.min(pos.y + FLEE_RANGE, c.MAX_ROOM_SIZE-1); y++) {
-                            costMatrix.set(x,y,255);
+                    let flee_range = 0;
+                    if (creep.owner.username == 'Source Keeper') flee_range = 4;
+                    else if (creep.getActiveBodyparts(RANGED_ATTACK) >0) flee_range = 7
+                    else if (creep.getActiveBodyparts(ATTACK) >0 ) flee_range = 4
+                    if (flee_range>0) {
+                        let pos = creep.pos;
+                        for (let x = Math.max(pos.x - flee_range, 0); x <= Math.min(pos.x + flee_range, c.MAX_ROOM_SIZE-1); x++ ){
+                            for (let y = Math.max(pos.y - flee_range, 0); y <= Math.min(pos.y + flee_range, c.MAX_ROOM_SIZE-1); y++) {
+                                costMatrix.set(x,y,255);
+                            }
                         }
                     }
                 }

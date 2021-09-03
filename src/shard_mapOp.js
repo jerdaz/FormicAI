@@ -3,7 +3,6 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
 /** @typedef {{[roomName:string]: {
- *      terrainArray:{fatigueCost:Number}[][], 
  *      lastSeenHostile:number, 
  *      lastSeen:number, 
  *      hostileOwner:boolean,
@@ -15,6 +14,12 @@ const ChildOp = require('./meta_childOp');
  *      sourceCount: number,
  *      level: number
  *   }}} RoomInfo*/
+
+
+/** @typedef {{[roomName:string]: 
+ *      {fatigueCost:Number}[][]
+ *   }} BreadCrumbs*/
+
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
 /** @typedef {Array<{
@@ -31,18 +36,33 @@ module.exports = class MapOp extends ChildOp {
         this._parent = shardOp;
         /**@type {{[index:string]: BaseDist[]}} */
         this._baseDist;
+
+        //retrieve roominfo from memory
         /**@type {RoomInfo} */
-        this._roomInfo = {};
+        this._roomInfo = Memory.roomInfo;
+        /**@type {BreadCrumbs} */
+        this._breadCrumbs = {};
 
         /**@type {{[roomA:string]: {[roomB:string]: {path: RoomPath,
                                                      time: number }}}} */
         this._routeCache = {}
     }
 
+    // save roomInfo into memory
+    initTick() {
+        Memory.roomInfo = this._roomInfo;
+    }
+
     get type() {return c.OPERATION_MAP}
     
     get knownRooms() {
         return this._roomInfo;
+    }
+
+    /**@param {String} roomName */
+    getBreadCrumbs(roomName) {
+        let result = this._breadCrumbs[roomName]
+        return result;
     }
 
     /**@param {String} roomName */
@@ -57,7 +77,7 @@ module.exports = class MapOp extends ChildOp {
      * @param {boolean} hasSpawn
      * @param {number | undefined} lastSeenHostile
      * @returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = 0) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME) {
         if (this._baseDist[roomName]) {
             for (let baseDist of this._baseDist[roomName]) {
                 let base = this._parent.getBase(baseDist.roomName);
@@ -156,7 +176,9 @@ module.exports = class MapOp extends ChildOp {
         } else {
             let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
                 {   let roomInfo = this.getRoomInfo(roomName);
-                    if(roomInfo && roomInfo.hostileOwner) return Infinity; }
+                    //if(roomInfo && roomInfo.hostileOwner) return Infinity; 
+                    if (roomInfo && (roomInfo.lastSeenHostile  + CREEP_LIFE_TIME >= Game.time  || roomInfo.activeTowers >= 1)) return Infinity;
+                }
                 })
             if (result2 == -2) result = [];
             else result = result2;
@@ -172,16 +194,16 @@ module.exports = class MapOp extends ChildOp {
      * @param {Number} cost
      */
     registerFatigue(pos, cost) {
-        let roomInfo = this.getRoomInfo(pos.roomName);
-        if (!roomInfo) return;
-        roomInfo.terrainArray[pos.x][pos.y].fatigueCost += cost;
+        let breadCrumbs = this._breadCrumbs[pos.roomName];
+        if (!breadCrumbs) return;
+        breadCrumbs[pos.x][pos.y].fatigueCost += cost;
     }
 
 
     _updateRoadMatrices() {
         //subtract road cost from road opportunity cost matrixes
-        for (let roomName in this._roomInfo) {
-            let roomInfo = this._roomInfo[roomName];
+        for (let roomName in this._breadCrumbs) {
+            let terrainArray = this._breadCrumbs[roomName];
             let roomTerrain = Game.map.getRoomTerrain(roomName);
             for (let x=0;x<50;x++) {
                 for (let y=0;y<50;y++) {
@@ -190,8 +212,8 @@ module.exports = class MapOp extends ChildOp {
                     if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
                     if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
                     let decayFactor = 1;
-                    if (roomInfo.terrainArray[x][y].fatigueCost > 0 ) decayFactor = 0.99
-                    roomInfo.terrainArray[x][y].fatigueCost = Math.max(-1 * MIN_ROAD_FATIGUE_COST, roomInfo.terrainArray[x][y].fatigueCost * decayFactor - repairCost);
+                    if (terrainArray[x][y].fatigueCost > 0 ) decayFactor = 0.99
+                    terrainArray[x][y].fatigueCost = Math.max(-1 * MIN_ROAD_FATIGUE_COST, terrainArray[x][y].fatigueCost * decayFactor - repairCost);
                 }
             }
         }
@@ -203,29 +225,42 @@ module.exports = class MapOp extends ChildOp {
   
    _command() {
         for(let roomName in Game.rooms) {
+            // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {terrainArray: [], lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0}
+                this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0}
+            }
+            if (this._breadCrumbs[roomName] == undefined) {
+                this._breadCrumbs[roomName] = []
+                let terrainArray = this._breadCrumbs[roomName]
                 for (let x=0; x<c.MAX_ROOM_SIZE;x++) {
-                    this._roomInfo[roomName].terrainArray[x] = [];
+                    terrainArray[x] = [];
                     for (let y=0; y<c.MAX_ROOM_SIZE;y++) {
-                        this._roomInfo[roomName].terrainArray[x][y] = {fatigueCost : -1*  MIN_ROAD_FATIGUE_COST};
+                        terrainArray[x][y] = {fatigueCost : -1 *  MIN_ROAD_FATIGUE_COST};
                     }
                 }
             }
+
             let room = Game.rooms[roomName];
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) {
-                this._roomInfo[roomName].lastSeenHostile = Game.time;
+                let hostileFound = false;
                 for (let hostile of hostiles) {
                     if (hostile.owner.username == c.INVADER_USERNAME) {
                         this._roomInfo[roomName].invasion = true;
                         this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
+                    } else if (hostile.owner.username != 'Source Keeper') {
+                        if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0) hostileFound = true;
+                    }
+                    if (hostileFound) {
+                        this._roomInfo[roomName].lastSeenHostile = Game.time;
                         break;
                     }
                 }
             } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;
-            this._roomInfo[roomName].hostileOwner = room.controller != undefined && !room.controller.my && (room.controller.owner != null );
+            this._roomInfo[roomName].hostileOwner = room.controller != undefined && (   (room.controller.reservation && room.controller.reservation.username != this._parent.userName) 
+                                                                                     || (!room.controller.my && (room.controller.owner != null ))
+                                                                                    );
             this._roomInfo[roomName].sourceCount = room.find(FIND_SOURCES).length;
             if (room.controller) {
                 this._roomInfo[roomName].hasController = true;
@@ -236,7 +271,7 @@ module.exports = class MapOp extends ChildOp {
                 this._roomInfo[roomName].level = 0;
                 this._roomInfo[roomName].safeMode = undefined;
             }
-            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
+            this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
         }
     }
 }

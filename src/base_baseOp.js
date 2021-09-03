@@ -138,10 +138,16 @@ module.exports = class BaseOp extends ShardChildOp{
         this._strategy();
     }
 
+    _support() {
+        // remember this room has been colonized
+        Memory.colonizations[this.name] = Game.time;
+    }
+
     _tactics() {
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
             let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
-            if (hostileCreeps.length == 0) this._shardOp.requestBuilder(this.name);
+            hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 || o.getActiveBodyparts(WORK) > 0})
+            if (hostileCreeps.length == 0 || this._base.controller.safeMode) this._shardOp.requestBuilder(this.name);
         }
     }
 
@@ -161,7 +167,7 @@ module.exports = class BaseOp extends ShardChildOp{
         //check for nukes & safe mode for fortifications
         let nukes = this.base.find(FIND_NUKES);
         if (nukes.length > 0 && level >= 5) this._directive = c.DIRECTIVE_FORTIFY; //fortifying for nukes is useful after level 5 (not enough rampart hits before that)
-        if (this.base.controller.safeMode && level >=3) this._directive = c.DIRECTIVE_FORTIFY; //first get to level 3 for a cannon before fortifying
+        if (this.base.controller.safeMode && level >=4) this._directive = c.DIRECTIVE_FORTIFY; //first get to level 4 for a cannon+storage before fortifying
         else if (this._directive == c.DIRECTIVE_FORTIFY && nukes.length == 0 && !this.base.controller.safeMode) this._directive = c.DIRECTIVE_NONE;
     }
 

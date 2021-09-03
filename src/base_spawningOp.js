@@ -62,6 +62,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_TRANSPORT] = 40;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 40;
+            this._spawnPrio[c.OPERATION_DEFENSE] = 100
             this._spawnPrio[c.OPERATION_COLONIZING] = 75;
             this._spawnPrio[c.OPERATION_MINING] = 4;
             this._spawnPrio[c.OPERATION_SCOUTING] = 1;
@@ -86,6 +87,7 @@ module.exports = class SpawningOp extends BaseChildOp {
             if ((this._builderRequest || this._shardColBuilder || this._shardColonizer)
                 && base.controller.ticksToDowngrade >= CONTROLLER_DOWNGRADE[base.controller.level]/2
                 && base.energyCapacityAvailable >= BODYPART_COST[CLAIM] + BODYPART_COST[MOVE]
+                && this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY
                 && this._baseOp.fillingOp.getCreepCountForSpawning() >= 1
                 )  {
                     this._log('priorityspawn')

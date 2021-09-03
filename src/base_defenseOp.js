@@ -5,7 +5,20 @@ const BaseChildOp = require('./base_childOp');
 const MAX_HITS_REPAIR_PER_LEVEL = 10000 // maximum hits per level repaired by towers
 
 module.exports = class TowerOp extends BaseChildOp {
-    get type() { return c.OPERATION_TOWER; }
+    get type() { return c.OPERATION_DEFENSE; }
+
+    _tactics() {
+        let nCreep = 0
+        if (_.filter(this._baseOp.towers, o => {return o.isActive()}).length==0 && this._baseOp.base.find(FIND_HOSTILE_CREEPS).length>0) {
+            nCreep = 1;
+        }
+        this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,ATTACK] ,maxLength:2}, nCreep)
+
+        for (let creepName in this._creepOps) {
+            let creepOp = this._creepOps[creepName];
+            creepOp.instructAttack(this._baseName);
+        }
+    }
 
     _command() {
         let hostiles = this._baseOp.base.find(FIND_HOSTILE_CREEPS);
@@ -22,10 +35,13 @@ module.exports = class TowerOp extends BaseChildOp {
         }});
         for (let tower of towers) {
             if (hostiles.length > 0) {
-                let hostile = tower.pos.findClosestByRange(hostiles);
+                let healHostiles = _.filter(hostiles,o => {return o.getActiveBodyparts(HEAL) > 0})
+                let hostile = tower.pos.findClosestByRange(healHostiles);
+                if (!hostile) hostile = tower.pos.findClosestByRange(hostiles);
                 if (!hostile) throw Error();
                 let pos = hostile.pos
-                if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
+                //if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
+                tower.attack(hostile);
                 continue;
             }
             if (creepsHit.length>0) {
@@ -42,6 +58,12 @@ module.exports = class TowerOp extends BaseChildOp {
         }
 
         if (hostiles.length>0 && hostiles[0].owner.username != c.INVADER_USERNAME) {
+            // activate safe mode when there are hostile without a tower.
+            if (_.filter(this._baseOp.myStructures[STRUCTURE_TOWER], o => {return o.isActive()}).length == 0) {
+                if (_.filter(hostiles, o => {return o.getActiveBodyparts(ATTACK) > 0|| o.getActiveBodyparts(RANGED_ATTACK) > 0})) {
+                    this.baseOp.activateSafemode();
+                }
+            }
             for (let event of this.baseOp.events) {
                 let activateSafeMode = false;
                 if (event.event == EVENT_ATTACK_CONTROLLER) activateSafeMode = true;

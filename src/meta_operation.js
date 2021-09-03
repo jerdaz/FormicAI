@@ -106,7 +106,7 @@ module.exports = class Operation {
         if (recursive) {
             let parent = childOp
             for (let childOps of parent.childOps) {
-                if (childOps) {
+                if (childOps.length>0) {
                     for (let childOp of childOps) {
                         if (childOp) parent.removeChildOp(childOp, recursive)
                     }

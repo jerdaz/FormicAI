@@ -31,6 +31,7 @@ module.exports = class AttackOp extends RoomChildOp {
         // check for attack level 1
         if (scoutInfo.hostileOwner
             && !scoutInfo.safeMode
+            && scoutInfo.level >= 1
             && scoutInfo.activeTowers <= 0
             && (lastAttackTicks < MAX_ATTACK_LENGTH || lastAttackTicks > ATTACK_RETRY_TIME)
             ) 

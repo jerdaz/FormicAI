@@ -22,6 +22,7 @@ module.exports = class MainOp extends Operation {
                 case 'bank':
                 case 'colonizations':
                 case 'lastConstructionSiteCleanTick':
+                case 'roomInfo':
                     break;
                 default:
                     delete Memory[memObj];
@@ -34,6 +35,7 @@ module.exports = class MainOp extends Operation {
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
         if (Memory.rooms == undefined) Memory.rooms = {};
+        if (Memory.roomInfo == undefined) Memory.roomInfo = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -143,32 +145,32 @@ module.exports = class MainOp extends Operation {
             let room = '';
             let lowestLevel = 100;
             let lowestProgress = 0;
+            let foundNoSpawnBase = false;
             for (let i = 0; i< interShardMem.shards.length;i++ ) {
                 let shardInfo = interShardMem.shards[i];
                 U.l(shardInfo)
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
-                    // first check if we find a base lower then 2. we don't want to abondon any base if we have one.
-                    if (baseInfo.level < 2 || lowestLevel < 2) {
-                        lowestLevel = 1;
+                    // first check if we find a base without spawn. we don't want to abondon any base if we have one.
+                    if (!baseInfo.hasSpawn ) {
+                        foundNoSpawnBase = true;
                         break;
                     }
                     // check if the base is single source and lower developed then we found
                     if (baseInfo.sources == 1 &&
                         (baseInfo.level < lowestLevel || (baseInfo.level == lowestLevel && baseInfo.progress < lowestProgress)) ) 
                     {   
-                        U.l('selecting room: ' + room)
                         shard = i;
                         room = baseInfo.name;
                         lowestLevel = baseInfo.level;
                         lowestProgress = baseInfo.progress;
                     }
                 }
-                if (lowestLevel < 2) break;
+                if (foundNoSpawnBase) break;
             }
 
-            //unclaim the lowest found base if we haven't found any <lvl2 base
-            if (lowestLevel >= 2
+            //unclaim the lowest found base if we haven't found base without spawn
+            if (!foundNoSpawnBase
                 && shard == this._shardNum 
                 && room) 
             {
