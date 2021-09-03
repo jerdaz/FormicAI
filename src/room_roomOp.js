@@ -63,7 +63,7 @@ module.exports = class RoomOp extends BaseChildOp {
             && this.room 
             && this.room.controller 
             && ( (this.room.controller.level > 0 && !this.room.controller.my)
-                || (!this.room.controller.reservation)
+                || (!this.room.controller.reservatio && !this.room.controller.my)
                 || (this.room.controller.reservation && (this.room.controller.reservation.username != this._shardOp.userName) ))
            ) {
             for (let harvestingOp of this._childOps[c.OPERATION_HARVESTING]) {
@@ -73,7 +73,7 @@ module.exports = class RoomOp extends BaseChildOp {
             && this.room 
             && this.room.controller 
             && (this.room.controller.level == 0  || this.room.controller.my)
-            && (this.room.controller.reservation && this.room.controller.reservation.username == this._shardOp.userName) 
+            && (this.room.controller.my || (this.room.controller.reservation && this.room.controller.reservation.username == this._shardOp.userName) )
            ) {
         let i = 0;
         for (let source of this.room.find(FIND_SOURCES)) {
