@@ -44,7 +44,7 @@ module.exports = class ShardColonizingOp extends ShardChildOp {
                 if (lastPart.type == WORK) { 
                     // creep is a colonizing builder
                     /**@type {Structure | ConstructionSite | null}  */
-                    let dest = creep.pos.findClosestByPath(FIND_CONSTRUCTION_SITES);
+                    let dest = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES);
                     if (dest == undefined && room.controller && room.controller.my) dest = room.controller;
                     let targetRoom ;
                     if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
