@@ -55,6 +55,7 @@ module.exports = class RoomOp extends BaseChildOp {
 
     _firstRun() {
         this._tactics();
+        this._strategy();
     }
 
     _strategy() {
@@ -62,12 +63,24 @@ module.exports = class RoomOp extends BaseChildOp {
             && this.room 
             && this.room.controller 
             && ( (this.room.controller.level > 0 && !this.room.controller.my)
+                || (!this.room.controller.reservation)
                 || (this.room.controller.reservation && (this.room.controller.reservation.username != this._shardOp.userName) ))
            ) {
             for (let harvestingOp of this._childOps[c.OPERATION_HARVESTING]) {
                 this.removeChildOp(harvestingOp)
             }
-        }
+        } else if (  this.harvestingOps.length == 0 
+            && this.room 
+            && this.room.controller 
+            && (this.room.controller.level == 0  || this.room.controller.my)
+            && (this.room.controller.reservation && this.room.controller.reservation.username == this._shardOp.userName) 
+           ) {
+        let i = 0;
+        for (let source of this.room.find(FIND_SOURCES)) {
+            let harvestingOp = new HarvestingOp(this, source.id, i++)
+            this.addChildOp(harvestingOp);
+        }    
+    }
     }
     
     _tactics() {
@@ -76,18 +89,7 @@ module.exports = class RoomOp extends BaseChildOp {
         if (this.room) this.room.roomOp = this;
 
 
-        if (  this.harvestingOps.length == 0 
-                && this.room 
-                && this.room.controller 
-                && (this.room.controller.level == 0  || this.room.controller.my)
-                && (!this.room.controller.reservation || (this.room.controller.reservation.username == this._shardOp.userName) )
-               ) {
-            let i = 0;
-            for (let source of this.room.find(FIND_SOURCES)) {
-                let harvestingOp = new HarvestingOp(this, source.id, i++)
-                this.addChildOp(harvestingOp);
-            }    
-        }
+
     }
 
     _command() {

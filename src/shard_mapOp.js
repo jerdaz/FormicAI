@@ -13,6 +13,7 @@ const ChildOp = require('./meta_childOp');
  *      activeTowers: number,
  *      sourceCount: number,
  *      level: number
+ *      hasRamparts: boolean
  *   }}} RoomInfo*/
 
 
@@ -227,7 +228,7 @@ module.exports = class MapOp extends ChildOp {
         for(let roomName in Game.rooms) {
             // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0}
+                this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
             }
             if (this._breadCrumbs[roomName] == undefined) {
                 this._breadCrumbs[roomName] = []
@@ -272,6 +273,7 @@ module.exports = class MapOp extends ChildOp {
                 this._roomInfo[roomName].safeMode = undefined;
             }
             this._roomInfo[roomName].activeTowers = _.size (room.find(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_TOWER && o.isActive() && o.store.getUsedCapacity(RESOURCE_ENERGY) >= TOWER_ENERGY_COST}}))
+            this._roomInfo[roomName].hasRamparts = room.find(FIND_HOSTILE_STRUCTURES).find(structure => structure.structureType == STRUCTURE_RAMPART) != null
         }
     }
 }

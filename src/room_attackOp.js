@@ -29,6 +29,16 @@ module.exports = class AttackOp extends RoomChildOp {
         }
         
         // check for attack level 1
+        // no defense, but there are still ramparts
+        if (scoutInfo.hasRamparts
+            && !scoutInfo.safeMode
+            && scoutInfo.activeTowers <=0) {
+                attackLevel = 1;
+
+        }
+
+        // check for attack level 2
+        // no defense but still owned
         if (scoutInfo.hostileOwner
             && !scoutInfo.safeMode
             && scoutInfo.level >= 1
@@ -36,16 +46,28 @@ module.exports = class AttackOp extends RoomChildOp {
             && (lastAttackTicks < MAX_ATTACK_LENGTH || lastAttackTicks > ATTACK_RETRY_TIME)
             ) 
         {
-            attackLevel = 1 ;
+            attackLevel = 2 ;
             if (!Memory.rooms[this.roomName].attackStartTime || lastAttackTicks > ATTACK_RETRY_TIME) Memory.rooms[this.roomName].attackStartTime = Game.time;
         }
 
         // spawn attackers
         let creepCount = 0;
-        let body = [MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,HEAL]
-        if (attackLevel == 1) creepCount = 1;
+        /**@type {BodyPartConstant[]} */
+        let body = [];
+        let minLength = 3;
+        switch (attackLevel) {
+            case 1:
+                creepCount = 1;
+                body = [MOVE, WORK, WORK]
+                break;
+            case 2:
+                body = [MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,HEAL]
+                creepCount = 1;
+                minLength = 6
+                break;
+        }
         
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: 6}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: minLength}, creepCount)
 
     }
 

@@ -450,7 +450,8 @@ module.exports = class CreepOp extends ChildOp {
                 let hostile = creep.pos.findClosestByPath(hostiles)
                 let attackResult = -100;
                 let rangedAttackResult = -100
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
+                let dismantleResult = -100
+                if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
                 if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER }})
                 if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
                 if (hostile) {
@@ -459,6 +460,7 @@ module.exports = class CreepOp extends ChildOp {
                     else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
                     attackResult = creep.attack(hostile);
                     rangedAttackResult = creep.rangedAttack(hostile);
+                    if (hostile instanceof Structure) dismantleResult = creep.dismantle(hostile)
                 } else {
                     let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
                     if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
