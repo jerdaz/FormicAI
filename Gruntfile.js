@@ -24,6 +24,7 @@ module.exports = function(grunt) {
           http: true
         };
         password = config.sp2_password;
+        email = email.replace('@', "+sp2@");
         break;
       case 'cogd':
           server = {
@@ -48,7 +49,7 @@ module.exports = function(grunt) {
       }
 
   grunt.loadNpmTasks('grunt-screeps');
-  grunt.loadNpmTasks('grunt-file-append')
+  //grunt.loadNpmTasks('grunt-file-append')
 
   var currentdate = new Date();
 

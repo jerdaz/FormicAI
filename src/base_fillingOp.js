@@ -16,10 +16,10 @@ module.exports = class FillingOp extends BaseChildOp {
     }
     
     _strategy() {
-        let template = {body:[MOVE,WORK,CARRY]}
+        let template = {body:[MOVE,WORK,CARRY], maxLength: 5*3}
         let creepCount = 10;
         if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER ) creepCount = 1;
-        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY]}
+        if (this.baseOp.phase >= c.BASE_PHASE_STORED_ENERGY) template = {body:[MOVE,CARRY,CARRY], maxLength:50}
         this._baseOp.spawningOp.ltRequestSpawn(this, template, creepCount)
     }
 
@@ -40,6 +40,13 @@ module.exports = class FillingOp extends BaseChildOp {
                 else creepOp.instructFill();
             }
         }
+    }
+
+    _command() {
+        // check to see if we nee
+        let base = this._baseOp.base;
+        if (base.energyAvailable < base.energyCapacityAvailable && this.lastIdle >= Game.time -1) this._tactics();
+
     }
 }
 

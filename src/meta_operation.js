@@ -47,42 +47,45 @@ module.exports = class Operation {
     run() {
         //last resort cpu overflow prevention.
         let cpuStart = Game.cpu.getUsed();
-        if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
-        if (Game.cpu.bucket < cpuStart + Game.cpu.limit) throw Error('Out of CPU');
+        // if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
+        // if (Game.cpu.bucket < cpuStart + Game.cpu.limit) {
+        //     U.l('Warning out of CPU in operation ' + this.name);
+        //     return;
+        // }
         if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
         if (this._bFirstRun) {
             try {
                 this._firstRun();
                 this._bFirstRun = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err, this.name)};
         }
 
         if (this._runStrategy || Game.time % c.STRATEGY_INTERVAL == this._tickOffset % c.STRATEGY_INTERVAL) {
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err, this.name)};
         }
         if (this._runTactics || Game.time % c.TACTICS_INTERVAL == this._tickOffset % c.TACTICS_INTERVAL) {
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err, this.name)};
         }
         try {
             this._command();
-        } catch(err) {this._debug.logError(err)};
+        } catch(err) {Debug.logError(err, this.name)};
         for (let childOps of this._childOps) if(childOps) for (let childOp of childOps) {
             try {
                 childOp.run();
-            } catch(err) {this._debug.logError(err)}
+            } catch(err) {Debug.logError(err, this.name)}
         }
         if (this._runSupport || Game.time % c.SUPPORT_INTERVAL == this._tickOffset) {
             try {
                 this._support();
                 if (this._runSupport) this._runSupport = false;
-            } catch(err) {this._debug.logError(err)};
+            } catch(err) {Debug.logError(err, this.name)};
         }
         if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
             Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));
@@ -95,9 +98,21 @@ module.exports = class Operation {
         this._childOps[childOp.type].push(childOp);
     }
 
-    /**@param {ChildOp} childOp */
-    removeChildOp(childOp) {
+    /**@param {ChildOp} childOp 
+     * @param {boolean} [recursive]
+    */
+    removeChildOp(childOp, recursive) {
         this._childOps[childOp.type] = _.pull(this._childOps[childOp.type], childOp)
+        if (recursive) {
+            let parent = childOp
+            for (let childOps of parent.childOps) {
+                if (childOps.length>0) {
+                    for (let childOp of childOps) {
+                        if (childOp) parent.removeChildOp(childOp, recursive)
+                    }
+                }
+            }
+        }
     }
 
     _firstRun() {}

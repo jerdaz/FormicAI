@@ -3,21 +3,26 @@ let c = require('./constants');
 let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
 
+
 // @ts-ignore
 if (!global.InterShardMemory) global.InterShardMemory = null;
 
-/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[]}[]}} ShardMem */
 
-module.exports = class Main extends Operation {
+module.exports = class MainOp extends Operation {
     constructor() {
         super();
         U.l('INIT MAIN');
+
+
         for (let memObj in Memory) {
             switch (memObj) {
+                case 'rooms' :
                 case 'maxCPU':
                 case 'bank':
                 case 'colonizations':
                 case 'lastConstructionSiteCleanTick':
+                case 'roomInfo':
                     break;
                 default:
                     delete Memory[memObj];
@@ -25,11 +30,12 @@ module.exports = class Main extends Operation {
             }
         }
         Memory.creeps = {};
-        Memory.rooms = {};
         Memory.flags = {};
         Memory.spawns = {};
         Memory.powerCreeps = {};
         if (Memory.bank == undefined) Memory.bank = {};
+        if (Memory.rooms == undefined) Memory.rooms = {};
+        if (Memory.roomInfo == undefined) Memory.roomInfo = {};
         
         if (InterShardMemory) InterShardMemory.setLocal("");
         this._shardOp = new ShardOp(this);
@@ -53,6 +59,7 @@ module.exports = class Main extends Operation {
     }
 
     get type() { return c.OPERATION_MAIN; }
+
 
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
     /**@param {number} shardRequest */
@@ -99,33 +106,78 @@ module.exports = class Main extends Operation {
         // // let maxShardBases = Math.floor(Game.gcl.level / totalCPU * shardLimits[Game.shard.name]) | 0
         // // this._shardOp.setDirectiveMaxBases(maxShardBases[Game.shard.name])
 
-        // check for shard requests
-        let myBasesCount = this._shardOp.baseCount;
+        // read and process the intershard memory of other shards
+        let myBasesCount = this._shardOp.baseCount; //this is the total number of bases on this shard.
         let interShardMem = this._loadInterShardMem();
-        let totalBases = 0;
+
+
+        //update intershard memeory
+        interShardMem.shards[this._shardNum].baseCount = myBasesCount;
+        interShardMem.shards[this._shardNum].bases = this._shardOp.getBaseInfo();
+        this._writeInterShardMem(interShardMem);
+
+
+        let totalBases = 0; // this will contain the total number of cross shard bases
         for (let i=0; i < interShardMem.shards.length; i++) {
             if (interShardMem.shards[i] && interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
+            // if the shard is a neighbour, check for colonization requests and help colonizing the shard.
             if (i + 1 == this._shardNum || i - 1 == this._shardNum) {
                 let shardRequest = interShardMem.shards[i];
-                if (shardRequest && shardRequest.request == c.SHARDREQUEST_BUILDER) {
+                if (shardRequest && shardRequest.request != c.SHARDREQUEST_NONE) {
                     this._shardOp.requestShardColonization('shard' + i, shardRequest.request)
                     shardRequest.request = c.SHARDREQUEST_NONE;
                     this._writeInterShardMem(interShardMem);
-                    break;
                 }
             }
         }
-        if (totalBases == 0) totalBases = myBasesCount;
-        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + 1)
-        else this._shardOp.setDirectiveMaxBases(myBasesCount);
-        if (interShardMem.shards[this._shardNum].baseCount != myBasesCount) {
-            interShardMem.shards[this._shardNum].baseCount = myBasesCount;
-            this._writeInterShardMem(interShardMem);
-        }
-    }
 
-    _command() {
-        //if (Game.cpu.bucket >= c.MAX_BUCKET + PIXEL_CPU_COST) Game.cpu.generatePixel();
+
+        if (totalBases == 0) totalBases = myBasesCount;
+        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
+        else this._shardOp.setDirectiveMaxBases(myBasesCount);
+
+        
+
+        // if we are at maximum bases, find the lowest level single source room and abandon it
+        U.l(interShardMem)
+        if (myBasesCount > 1 && totalBases == Game.gcl.level) {
+            let shard = 0;
+            let room = '';
+            let lowestLevel = 100;
+            let lowestProgress = 0;
+            let foundNoSpawnBase = false;
+            for (let i = 0; i< interShardMem.shards.length;i++ ) {
+                let shardInfo = interShardMem.shards[i];
+                U.l(shardInfo)
+                let baseInfos = shardInfo.bases;
+                for (let baseInfo of baseInfos) {
+                    // first check if we find a base without spawn. we don't want to abondon any base if we have one.
+                    if (!baseInfo.hasSpawn ) {
+                        foundNoSpawnBase = true;
+                        break;
+                    }
+                    // check if the base is single source and lower developed then we found
+                    if (baseInfo.sources == 1 &&
+                        (baseInfo.level < lowestLevel || (baseInfo.level == lowestLevel && baseInfo.progress < lowestProgress)) ) 
+                    {   
+                        shard = i;
+                        room = baseInfo.name;
+                        lowestLevel = baseInfo.level;
+                        lowestProgress = baseInfo.progress;
+                    }
+                }
+                if (foundNoSpawnBase) break;
+            }
+
+            //unclaim the lowest found base if we haven't found base without spawn
+            if (!foundNoSpawnBase
+                && shard == this._shardNum 
+                && room) 
+            {
+                U.l('Abandoning single source base: ' + room)
+                this._shardOp.unclaimBase(room)
+            }
+        }
     }
 
     /**@param {ShardMem} shardMem */
@@ -150,8 +202,8 @@ module.exports = class Main extends Operation {
         for (let shard of this._shards) {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
-                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount};
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: this._shardOp.baseCount};
+                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo()};
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[]};
             }
         }
         return interShardMem;
