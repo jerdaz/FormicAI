@@ -20,14 +20,14 @@ module.exports = class BuildingOp extends RoomChildOp {
     _strategy() {
         let creepCount = 0;
         let maxLength = 45;
-        let room = this._roomOp.room;
-        if (!room) return;
-        let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let constructionSites = _.filter(Game.constructionSites, (site => site.pos.roomName == this._roomName) )
         let repairSites = this._repairSites(true)
 
         let buildWork = false;
         if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
         
+        let roomInfo = this._map.getRoomInfo(this._roomName)
+        if (roomInfo && roomInfo.lastSeenHostile >= Game.time - 1500) creepCount = 0 // don't spawn builders if we've recently seen hostiles
         if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
             creepCount = 0;
         }
