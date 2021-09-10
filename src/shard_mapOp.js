@@ -6,6 +6,7 @@ const ChildOp = require('./meta_childOp');
  *      lastSeenHostile:number, 
  *      lastSeen:number, 
  *      hostileOwner:boolean,
+ *      reservation:number,
  *      invasion:boolean,
  *      invasionEnd:number,
  *      hasController: boolean,
@@ -228,7 +229,7 @@ module.exports = class MapOp extends ChildOp {
         for(let roomName in Game.rooms) {
             // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
+                this._roomInfo[roomName] = {lastSeenHostile:0, lastSeen:0, hostileOwner:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
             }
             if (this._breadCrumbs[roomName] == undefined) {
                 this._breadCrumbs[roomName] = []
@@ -267,6 +268,7 @@ module.exports = class MapOp extends ChildOp {
                 this._roomInfo[roomName].hasController = true;
                 this._roomInfo[roomName].level = room.controller.level
                 this._roomInfo[roomName].safeMode = room.controller.safeMode
+                this._roomInfo[roomName].reservation = room.controller.reservation?room.controller.reservation.ticksToEnd:0;
             } else {
                 this._roomInfo[roomName].hasController= false;
                 this._roomInfo[roomName].level = 0;
