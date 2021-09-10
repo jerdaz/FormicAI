@@ -32,7 +32,8 @@ module.exports = class AttackOp extends RoomChildOp {
         // no defense, but there are still ramparts
         if (scoutInfo.hasRamparts
             && !scoutInfo.safeMode
-            && scoutInfo.activeTowers <=0) {
+            && scoutInfo.activeTowers <=0
+            && scoutInfo.lastSeenHostile < Game.time - 1500) {
                 attackLevel = 1;
 
         }
