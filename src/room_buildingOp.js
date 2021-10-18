@@ -34,7 +34,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             )) {
                 creepCount = 0 // don't spawn builders if we've recently seen hostiles
             }
-        else if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
+        else if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK && roomInfo && roomInfo.level < 8) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
             creepCount = 0;
         }
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together when not in controller link phase. always spawn at least 1
