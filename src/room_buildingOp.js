@@ -87,7 +87,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
             if (creep.pos.roomName != room.name) creepOp.instructMoveTo(room.name);
-            else if (room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            else if (room.name == this._baseOp.name && !this._buildWork && this._baseOp.base.controller.level < 8) creepOp.instructUpgradeController(this._baseOp.name);
             else if (room.controller && room.controller.my && room.controller.level <= 1) creepOp.instructUpgradeController(room.name);
             else if (!this._buildWork && this._baseOp.name != this._roomOp.name) {
                 creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
@@ -97,6 +97,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 creepOp.instructBuild()
             }
             else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork
+            else if (creepOp.instruction == c.COMMAND_NONE) creepOp.instructRecycle();
         }
     }
 
