@@ -20,15 +20,21 @@ module.exports = class BuildingOp extends RoomChildOp {
     _strategy() {
         let creepCount = 0;
         let maxLength = 45;
-        let room = this._roomOp.room;
-        if (!room) return;
-        let constructionSites = room.find(FIND_MY_CONSTRUCTION_SITES)
+        let constructionSites = _.filter(Game.constructionSites, (site => site.pos.roomName == this._roomName) )
         let repairSites = this._repairSites(true)
 
         let buildWork = false;
         if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
         
-        if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
+        let roomInfo = this._map.getRoomInfo(this._roomName)
+        if (roomInfo && (
+            roomInfo.lastSeenHostile >= Game.time - 1500
+            || roomInfo.activeTowers >= 1
+            || roomInfo.invasion == true
+            )) {
+                creepCount = 0 // don't spawn builders if we've recently seen hostiles
+            }
+        else if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
             creepCount = 0;
         }
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together when not in controller link phase. always spawn at least 1
@@ -83,7 +89,10 @@ module.exports = class BuildingOp extends RoomChildOp {
             if (creep.pos.roomName != room.name) creepOp.instructMoveTo(room.name);
             else if (room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
             else if (room.controller && room.controller.my && room.controller.level <= 1) creepOp.instructUpgradeController(room.name);
-            else if (!this._buildWork && this._baseOp.name != this._roomOp.name) creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
+            else if (!this._buildWork && this._baseOp.name != this._roomOp.name) {
+                creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
+                this._strategy(); // update number of requested creeps;            }
+            }
             else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && constructionSites.length>0) { //stop upgrading if there are construction sites
                 creepOp.instructBuild()
             }

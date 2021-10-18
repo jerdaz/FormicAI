@@ -58,11 +58,18 @@ module.exports = class HarvestingOp extends RoomChildOp {
                         matrix.set(1,i,255);
                         matrix.set(c.MAX_ROOM_SIZE-1,i,255);
                         matrix.set(c.MAX_ROOM_SIZE-2,i,255);
+                        
+                        
                     }
                     return matrix;
 
                 } 
-                let result = PathFinder.search(source.pos, [{pos:source.pos, range:2}, {pos:this.baseOp.centerPos, range:3}],{roomCallback: roomCallback, flee:true} )
+                let sources = base.find(FIND_SOURCES);
+                /**@type {{pos:RoomPosition, range:number}[]} */
+                let fleeTargets = []
+                for (let source of sources) fleeTargets.push ({pos:source.pos, range:2})
+                fleeTargets.push ({pos:this.baseOp.centerPos, range:3})
+                let result = PathFinder.search(source.pos, fleeTargets,{roomCallback: roomCallback, flee:true} )
                 let pos = result.path[1];
                 if (pos) {
                     let structures = pos.lookFor(LOOK_STRUCTURES)

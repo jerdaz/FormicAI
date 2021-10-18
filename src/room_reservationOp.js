@@ -15,18 +15,19 @@ module.exports = class ReservationOp extends RoomChildOp {
     }
 
     _strategy() {
-        if (!this.isMainRoom && this._roomOp.room) {
-            let controller = this._roomOp.room.controller;
-            if (controller && controller.level == 0) {
+        if (!this.isMainRoom ) {
+            let roomInfo = this._map.getRoomInfo(this._roomOp.roomName)
+            if (roomInfo) {
                 let creepCount = 0;
-                if (!controller.reservation) creepCount = 1;
-                else if (controller.reservation.username == this._shardOp.userName 
-                    && controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX - CREEP_CLAIM_LIFE_TIME) {
+                if (roomInfo.level > 1 || roomInfo.activeTowers > 0  ) creepCount = 0
+                else if (roomInfo.reservation==0) creepCount = 1;
+                else if (!roomInfo.hostileOwner
+                    && roomInfo.reservation < CONTROLLER_RESERVE_MAX - CREEP_CLAIM_LIFE_TIME) {
                         creepCount = 1;
                 }
                 this._baseOp.spawningOp.ltRequestSpawn(this,{body:[MOVE,MOVE,CLAIM,CLAIM], maxLength:4, minLength:4}, creepCount)
             }
-        }
+        } 
     }
 
     _tactics() {
