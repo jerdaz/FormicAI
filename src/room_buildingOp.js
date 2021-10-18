@@ -111,7 +111,15 @@ module.exports = class BuildingOp extends RoomChildOp {
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
             }
+            if (o.structureType == STRUCTURE_ROAD) {
+                if (!room) throw Error()
+                let terrainArray = this._map.getBreadCrumbs(room.name);
+                if (!terrainArray) return false;
+                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+            }
+               
             return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
+
         }}
         )       
         return result; 
