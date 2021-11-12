@@ -187,7 +187,8 @@ module.exports = class BaseOp extends ShardChildOp{
             }
             if (this._phase < c.BASE_PHASE_STORED_ENERGY) return;
         }
-        ;
+        
+        this.transportOp.updateLinks(); // updatelinks. In first tick baseOp runs before transportop, links will not be up to date.
         if (this.transportOp.baseLink) this._phase = c.BASE_PHASE_SOURCE_LINKS;
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;

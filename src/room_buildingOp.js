@@ -34,7 +34,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             )) {
                 creepCount = 0 // don't spawn builders if we've recently seen hostiles
             }
-        else if (!buildWork && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading
+        else if (!buildWork && (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK || (roomInfo && roomInfo.level == 8))) { // no need for builders if no build work . if not in controller link phase, we do need builders for upgrading. at lvl 8 we never use builders for upgrading
             creepCount = 0;
         }
         else if (this.baseOp.storage && this.baseOp.storage.isActive) { //spawn for upgrading & building together when not in controller link phase. always spawn at least 1
@@ -87,7 +87,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             let creep = Game.creeps[creepName];
             if (!creep) throw Error();
             if (creep.pos.roomName != room.name) creepOp.instructMoveTo(room.name);
-            else if (room.name == this._baseOp.name && !this._buildWork) creepOp.instructUpgradeController(this._baseOp.name);
+            else if (room.name == this._baseOp.name && !this._buildWork && this._baseOp.base.controller.level < 8) creepOp.instructUpgradeController(this._baseOp.name);
             else if (room.controller && room.controller.my && room.controller.level <= 1) creepOp.instructUpgradeController(room.name);
             else if (!this._buildWork && this._baseOp.name != this._roomOp.name) {
                 creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
@@ -97,6 +97,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 creepOp.instructBuild()
             }
             else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork
+            else if (creepOp.instruction == c.COMMAND_NONE) creepOp.instructRecycle();
         }
     }
 
@@ -105,13 +106,21 @@ module.exports = class BuildingOp extends RoomChildOp {
         let room = this._roomOp.room;
         if (!room) return [];
         let level = this._baseOp.base.controller.level
-        let result = room.find(FIND_MY_STRUCTURES, {filter: o => {
+        let result = room.find(FIND_STRUCTURES, {filter: o => {
             if (o.structureType == STRUCTURE_RAMPART && !o.pos.isEqualTo(this._baseOp.centerPos)) {
                 let structures = o.pos.lookFor(LOOK_STRUCTURES);
                 _.remove(structures,{structureType:STRUCTURE_ROAD});
                 if (structures.length <=1) return false;
             }
+            if (o.structureType == STRUCTURE_ROAD) {
+                if (!room) throw Error()
+                let terrainArray = this._map.getBreadCrumbs(room.name);
+                if (!terrainArray) return false;
+                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+            }
+               
             return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
+
         }}
         )       
         return result; 

@@ -1,7 +1,8 @@
 const U = require('./util');
 const c = require('./constants');
 const ChildOp = require('./meta_childOp');
-const Version = require('./version')
+const Version = require('./version');
+const { throttle } = require('lodash');
 
 
 let version = new Version;
@@ -214,6 +215,11 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = RESOURCE_ENERGY;
     }
 
+    instructRecycle() {
+        this._instruct = c.COMMAND_RECYCLE;
+        this._destId = '';
+    }
+
 
 
 
@@ -296,6 +302,9 @@ module.exports = class CreepOp extends ChildOp {
                 if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
                 else this._state = c.STATE_ATTACKING;
                 if (creep.hits< creep.hitsMax) creep.heal(creep);
+                break;
+            case c.COMMAND_RECYCLE:
+                this._state = c.STATE_RECYCLING
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
@@ -467,6 +476,26 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
+            case c.STATE_RECYCLING:
+                if (!this._baseOp) {
+                    this._state = c.COMMAND_NONE;
+                    break;
+                }
+                if (creep.room.name != this._baseOp.name) {
+                    this._moveTo(new RoomPosition(25,25,this._baseOp.name), {range:20})
+                } else {
+                    if (!destObj) {
+                        destObj = creep.pos.findClosestByPath(this._baseOp.spawns);
+                        if (!destObj) { 
+                            this._state = c.COMMAND_NONE;
+                            break;
+                        }
+                    }
+                    this._moveTo(destObj.pos);
+                    if (destObj instanceof StructureSpawn) destObj.recycleCreep(creep);
+                }
+                break;
+                
             case c.STATE_NONE:
                 //flee from sources and spawns and construction sites
                 /**@type {RoomObject[]} */
