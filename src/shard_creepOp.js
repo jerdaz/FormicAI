@@ -150,10 +150,21 @@ module.exports = class CreepOp extends ChildOp {
      * @param {Source | Structure | Mineral} source
      * @param {Structure | ConstructionSite} dest 
      * @param {ResourceConstant | undefined} [resourceType] */
-    instructTransfer(source, dest, resourceType) {
+     instructTransfer(source, dest, resourceType) {
         this._sourceId = source.id;
         this._destId = dest.id;
         this._instruct = c.COMMAND_TRANSFER;
+        this._resourceType = resourceType||RESOURCE_ENERGY;
+    }
+
+    /**
+     * @param {Source | Structure | Mineral} source
+     * @param {Structure | ConstructionSite} dest 
+     * @param {ResourceConstant | undefined} [resourceType] */
+     instructUpgradeDirect(source, dest, resourceType) {
+        this._sourceId = source.id;
+        this._destId = dest.id;
+        this._instruct = c.COMMAND_UPGRADE_DIRECT;
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
@@ -265,10 +276,13 @@ module.exports = class CreepOp extends ChildOp {
     _inputResource(mutations) {
         let creep = this._creep;
         let source = /**@type {StructureLink}*/(this.source);
-        creep.withdraw(source, RESOURCE_ENERGY);
-        let amount = Math.min(creep.store.getFreeCapacity(), source.store.getUsedCapacity(RESOURCE_ENERGY);
-        mutations[source.id] = -amount;
-        mutations[creep.id] = amount;
+        let amount = 0;
+        let result = creep.withdraw(source, RESOURCE_ENERGY);
+        if (result == OK) {
+            amount = Math.min(creep.store.getFreeCapacity(), source.store.getUsedCapacity(RESOURCE_ENERGY) + mutations[source.id]|0);
+            mutations[source.id] = -amount;
+            mutations[creep.id] = amount;
+        }
         if (creep.store.getFreeCapacity() - amount <= 0) this._STATE = c.STATE_OUTPUT
     }
 
@@ -276,14 +290,24 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {{[index:string]:number}} mutations */
     _outputResource(mutations) {
         let creep = this._creep;
-        creep.upgradeController(/**@type {StructureController}*/(this.dest))
-        let amount = 
+        let targetController = /**@type {StructureController}*/(this.dest)
+        let amount = 0;
+        let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
+        if (targetController.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
+        let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + mutations[creep.id]|0
+
+        let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+        if (result == OK) {
+            amount = Math.min(creepAmount, maxEnergyPerTick)
+            mutations[creep.id] = mutations[creep.id]|0 - amount;
+        }
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) - amount < maxEnergyPerTick) this._STATE = c.STATE_INPUT;
     }  
 
 
     _command() {
         // check if command uses old or new style
-        if (this._instruct == c.COMMAND_UPGRADE) {
+        if (this._instruct == c.COMMAND_UPGRADE_DIRECT) {
             this._processTurn()
             return;
         }
@@ -328,18 +352,18 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
                 break;
-            // case c.COMMAND_UPGRADE:
-            //     if (creep.store.getUsedCapacity()  == 0) {
-            //         if (this._state != c.STATE_FINDENERGY) {
-            //             this._sourceId = '';
-            //             this._state = c.STATE_FINDENERGY;
-            //         }
-            //     }
-            //     else if (creep.store.getFreeCapacity() == 0) {
-            //         this._state = c.STATE_DELIVERING;
-            //     }
-            //     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
-            //     break;
+            case c.COMMAND_UPGRADE:
+                if (creep.store.getUsedCapacity()  == 0) {
+                    if (this._state != c.STATE_FINDENERGY) {
+                        this._sourceId = '';
+                        this._state = c.STATE_FINDENERGY;
+                    }
+                }
+                else if (creep.store.getFreeCapacity() == 0) {
+                    this._state = c.STATE_DELIVERING;
+                }
+                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
+                break;
             case c.COMMAND_ATTACK:
                 if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
                 else this._state = c.STATE_ATTACKING;
