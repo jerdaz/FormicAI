@@ -264,11 +264,12 @@ module.exports = class CreepOp extends ChildOp {
         let mutations = {}
         if (!this._state) this._state = c.STATE_INPUT;
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
-        
+        if (this._creep.room.name =='E1N69') U.l({state:this._state})
         if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
-        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos);
-        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos)
+
+        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:1});
+        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:3})
     }
 
     //input the resources for the task
@@ -283,7 +284,7 @@ module.exports = class CreepOp extends ChildOp {
             mutations[source.id] = -amount;
             mutations[creep.id] = amount;
         }
-        if (creep.store.getFreeCapacity() - amount <= 0) this._STATE = c.STATE_OUTPUT
+        if (creep.store.getFreeCapacity() - amount <= 0) this._state = c.STATE_OUTPUT
     }
 
     //output the resources for the task
@@ -297,11 +298,12 @@ module.exports = class CreepOp extends ChildOp {
         let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + mutations[creep.id]|0
 
         let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+        if (creep.room.name =='E1N69') U.l({amount:amount, res:result, creepAmount:creepAmount, maxEnergyPerTick:maxEnergyPerTick})
         if (result == OK) {
             amount = Math.min(creepAmount, maxEnergyPerTick)
             mutations[creep.id] = mutations[creep.id]|0 - amount;
         }
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) - amount < maxEnergyPerTick) this._STATE = c.STATE_INPUT;
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) - amount < maxEnergyPerTick) this._state = c.STATE_INPUT;
     }  
 
 
