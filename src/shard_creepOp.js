@@ -240,6 +240,7 @@ module.exports = class CreepOp extends ChildOp {
                 break;
         }      
 
+        //disable attack notification
         if (this._notifyWhenAttacked != this._notifyWhenAttackedIntent && !this._creep.spawning) {
             let result = this._creep.notifyWhenAttacked(this._notifyWhenAttacked)
             if (result == OK) this._notifyWhenAttackedIntent = this._notifyWhenAttacked;

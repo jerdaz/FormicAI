@@ -58,34 +58,34 @@ module.exports = class Operation {
             try {
                 this._firstRun();
                 this._bFirstRun = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)};
         }
 
         if (this._runStrategy || Game.time % c.STRATEGY_INTERVAL == this._tickOffset % c.STRATEGY_INTERVAL) {
             try {
                 this._strategy();
                 if (this._runStrategy) this._runStrategy = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)};
         }
         if (this._runTactics || Game.time % c.TACTICS_INTERVAL == this._tickOffset % c.TACTICS_INTERVAL) {
             try {
                 this._tactics();
                 if (this._runTactics) this._runTactics = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)};
         }
         try {
             this._command();
-        } catch(err) {Debug.logError(err, this.name)};
+        } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)};
         for (let childOps of this._childOps) if(childOps) for (let childOp of childOps) {
             try {
                 childOp.run();
-            } catch(err) {Debug.logError(err, this.name)}
+            } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)}
         }
         if (this._runSupport || Game.time % c.SUPPORT_INTERVAL == this._tickOffset) {
             try {
                 this._support();
                 if (this._runSupport) this._runSupport = false;
-            } catch(err) {Debug.logError(err, this.name)};
+            } catch(err) {Debug.logError(/**@type {Error}*/ (err), this.name)};
         }
         if (Game.cpu.getUsed() - cpuStart > MAX_OPERATION_CPU) {
             Game.notify(JSON.stringify({CPUWARNING: this.name, OPERATIONTYPE: this.constructor.name, cpuStart: cpuStart, cpuUsed: Game.cpu.getUsed() - cpuStart}));
@@ -106,7 +106,7 @@ module.exports = class Operation {
         if (recursive) {
             let parent = childOp
             for (let childOps of parent.childOps) {
-                if (childOps.length>0) {
+                if (childOps && childOps.length>0) {
                     for (let childOp of childOps) {
                         if (childOp) parent.removeChildOp(childOp, recursive)
                     }
