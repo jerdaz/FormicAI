@@ -255,6 +255,7 @@ module.exports = class CreepOp extends ChildOp {
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
         
         if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
+        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
         if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos);
         else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos)
     }
