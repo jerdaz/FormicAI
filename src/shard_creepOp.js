@@ -283,7 +283,7 @@ module.exports = class CreepOp extends ChildOp {
             mutations[source.id] = -amount;
             mutations[creep.id] = amount;
         }
-        if (creep.store.getFreeCapacity() - amount <= 0) this._state = c.STATE_OUTPUT
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - amount <= 0) this._state = c.STATE_OUTPUT
     }
 
     //output the resources for the task
