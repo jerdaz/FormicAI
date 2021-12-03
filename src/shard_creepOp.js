@@ -50,7 +50,7 @@ module.exports = class CreepOp extends ChildOp {
         this._moveFlags = 0;
     }
     get type() {return c.OPERATION_CREEP}
-    get source() {return Game.getObjectById(this._sourceId)}
+    get source() {return U.getRoomObject(this._sourceId)}
     get dest() {
         return U.getRoomObject(this._destId);
     }
@@ -245,8 +245,49 @@ module.exports = class CreepOp extends ChildOp {
             if (result == OK) this._notifyWhenAttackedIntent = this._notifyWhenAttacked;
         }
     }
-    
+
+    // process the turn
+    // first input energy, then output energy, then move to target (source or destination)
+    _processTurn() {
+        /**@type {{[index:string]:number}} */
+        let mutations = {}
+        if (!this._state) this._state = c.STATE_INPUT;
+        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
+        
+        if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
+        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos);
+        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos)
+    }
+
+    //input the resources for the task
+    /**@param {{[index:string]:number}} mutations */
+    _inputResource(mutations) {
+        let creep = this._creep;
+        let source = /**@type {StructureLink}*/(this.source);
+        creep.withdraw(source, RESOURCE_ENERGY);
+        let amount = Math.min(creep.store.getFreeCapacity(), source.store.getUsedCapacity(RESOURCE_ENERGY);
+        mutations[source.id] = -amount;
+        mutations[creep.id] = amount;
+        if (creep.store.getFreeCapacity() - amount <= 0) this._STATE = c.STATE_OUTPUT
+    }
+
+    //output the resources for the task
+    /**@param {{[index:string]:number}} mutations */
+    _outputResource(mutations) {
+        let creep = this._creep;
+        creep.upgradeController(/**@type {StructureController}*/(this.dest))
+        let amount = 
+    }  
+
+
     _command() {
+        // check if command uses old or new style
+        if (this._instruct == c.COMMAND_UPGRADE) {
+            this._processTurn()
+            return;
+        }
+
+        // continue with old style commands
         let creep = this._creep;
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
@@ -286,18 +327,18 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
                 break;
-            case c.COMMAND_UPGRADE:
-                if (creep.store.getUsedCapacity()  == 0) {
-                    if (this._state != c.STATE_FINDENERGY) {
-                        this._sourceId = '';
-                        this._state = c.STATE_FINDENERGY;
-                    }
-                }
-                else if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_DELIVERING;
-                }
-                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
-                break;
+            // case c.COMMAND_UPGRADE:
+            //     if (creep.store.getUsedCapacity()  == 0) {
+            //         if (this._state != c.STATE_FINDENERGY) {
+            //             this._sourceId = '';
+            //             this._state = c.STATE_FINDENERGY;
+            //         }
+            //     }
+            //     else if (creep.store.getFreeCapacity() == 0) {
+            //         this._state = c.STATE_DELIVERING;
+            //     }
+            //     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
+            //     break;
             case c.COMMAND_ATTACK:
                 if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
                 else this._state = c.STATE_ATTACKING;
@@ -309,6 +350,7 @@ module.exports = class CreepOp extends ChildOp {
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
                 break;
+
         }
 
         /**@type {RoomObjectEx | null} */
