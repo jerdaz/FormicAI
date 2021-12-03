@@ -264,7 +264,6 @@ module.exports = class CreepOp extends ChildOp {
         let mutations = {}
         if (!this._state) this._state = c.STATE_INPUT;
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
-        if (this._creep.room.name =='E1N69') U.l({state:this._state})
         if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
 
@@ -298,7 +297,6 @@ module.exports = class CreepOp extends ChildOp {
         let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + mutations[creep.id]|0
 
         let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
-        if (creep.room.name =='E1N69') U.l({amount:amount, res:result, creepAmount:creepAmount, maxEnergyPerTick:maxEnergyPerTick})
         if (result == OK) {
             amount = Math.min(creepAmount, maxEnergyPerTick)
             mutations[creep.id] = mutations[creep.id]|0 - amount;
