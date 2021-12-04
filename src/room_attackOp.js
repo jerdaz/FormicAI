@@ -70,7 +70,7 @@ module.exports = class AttackOp extends RoomChildOp {
                 body = [MOVE, WORK, WORK]
                 break;
             case 2:
-                body = [MOVE,MOVE,MOVE,RANGED_ATTACK,ATTACK,HEAL]
+                body = [MOVE,MOVE,MOVE,ATTACK,ATTACK,HEAL]
                 creepCount = 1;
                 minLength = 6
                 break;

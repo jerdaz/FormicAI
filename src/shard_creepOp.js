@@ -535,8 +535,8 @@ module.exports = class CreepOp extends ChildOp {
                     let pos = creep.pos
                     if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
                     else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
-                    attackResult = creep.attack(hostile);
                     rangedAttackResult = creep.rangedAttack(hostile);
+                    attackResult = creep.attack(hostile);
                     if (hostile instanceof Structure) dismantleResult = creep.dismantle(hostile)
                 } else {
                     let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
