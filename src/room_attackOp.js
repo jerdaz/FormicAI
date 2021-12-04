@@ -51,7 +51,7 @@ module.exports = class AttackOp extends RoomChildOp {
             ||
                 (
                     scoutInfo.my
-                    && scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen
+                    && (scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen)
                 )
             ) 
         {
