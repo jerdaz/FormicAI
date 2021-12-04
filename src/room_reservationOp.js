@@ -19,7 +19,7 @@ module.exports = class ReservationOp extends RoomChildOp {
             let roomInfo = this._map.getRoomInfo(this._roomOp.roomName)
             if (roomInfo) {
                 let creepCount = 0;
-                if (roomInfo.level > 1 || roomInfo.activeTowers > 0  ) creepCount = 0
+                if (roomInfo.level > 1 || roomInfo.activeTowers > 0 ||roomInfo.lastSeenHostile==roomInfo.lastSeen  ) creepCount = 0
                 else if (roomInfo.reservation==0) creepCount = 1;
                 else if (!roomInfo.hostileOwner
                     && roomInfo.reservation < CONTROLLER_RESERVE_MAX - CREEP_CLAIM_LIFE_TIME) {
