@@ -40,7 +40,7 @@ module.exports = class AttackOp extends RoomChildOp {
 
         // check for attack level 2
         // no defense but still owned
-        // or my own room under invasion / hostile
+        // or my own room under invasion 
         if (
                 (   scoutInfo.hostileOwner
                     && !scoutInfo.safeMode
