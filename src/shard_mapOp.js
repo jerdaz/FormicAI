@@ -252,7 +252,7 @@ module.exports = class MapOp extends ChildOp {
                         this._roomInfo[roomName].invasion = true;
                         this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
                     } else if (hostile.owner.username != 'Source Keeper') {
-                        if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0) hostileFound = true;
+                        if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0 || hostile.getActiveBodyparts(WORK)>0) hostileFound = true;
                     }
                     if (hostileFound) {
                         this._roomInfo[roomName].lastSeenHostile = Game.time;
