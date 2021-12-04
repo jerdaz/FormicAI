@@ -86,7 +86,7 @@ module.exports = class AttackOp extends RoomChildOp {
             let creep = creepOp.creep;
             let scoutInfo = this._map.getRoomInfo(this.roomName);
             if (scoutInfo &&
-                scoutInfo.lastSeenHostile < scoutInfo.lastSeen && 
+                scoutInfo.lastSeen - scoutInfo.lastSeenHostile > 1500 && 
                 scoutInfo.invasion == false &&
                 scoutInfo.hostileOwner == false
                 )
