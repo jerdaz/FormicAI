@@ -84,20 +84,17 @@ module.exports = class AttackOp extends RoomChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             let creep = creepOp.creep;
-            if (creepOp.instruction == c.COMMAND_NONE || creepOp.instruction == c.COMMAND_RECYCLE) {
-                let scoutInfo = this._map.getRoomInfo(this.roomName);
-
-                if (scoutInfo &&
-                    scoutInfo.lastSeenHostile < scoutInfo.lastSeen && 
-                    scoutInfo.invasion == false &&
-                    scoutInfo.hostileOwner == false
-                    )
-                    {
-                        creepOp.instructRecycle();
-                    }
-                else {
-                    creepOp.instructAttack(this.roomName);
+            let scoutInfo = this._map.getRoomInfo(this.roomName);
+            if (scoutInfo &&
+                scoutInfo.lastSeenHostile < scoutInfo.lastSeen && 
+                scoutInfo.invasion == false &&
+                scoutInfo.hostileOwner == false
+                )
+                {
+                    creepOp.instructRecycle();
                 }
+            else if (creepOp.instruction == c.COMMAND_NONE || creepOp.instruction == c.COMMAND_RECYCLE) {
+                creepOp.instructAttack(this.roomName);
             }
             /*
             if (creep.pos.roomName != this.roomName) creepOp.instructMoveTo(this.roomName);
