@@ -4,6 +4,7 @@ const RoomChildOp = require('./room_childOp');
 
 const MAX_ATTACK_LENGTH = 500000
 const ATTACK_RETRY_TIME = 5000000
+const GUARD_TIME = 1300
 
 module.exports = class AttackOp extends RoomChildOp {
     /**@param {RoomOp} roomOp
@@ -51,7 +52,7 @@ module.exports = class AttackOp extends RoomChildOp {
             ||
                 (
                     scoutInfo.my
-                    && (scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen)
+                    && (scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen || Game.time - scoutInfo.lastSeenHostile <= GUARD_TIME)
                 )
             ) 
         {

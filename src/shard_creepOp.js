@@ -544,7 +544,10 @@ module.exports = class CreepOp extends ChildOp {
                 } else {
                     let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
                     if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
-                }
+                    else {
+                        this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:15})
+                    }
+                } 
                 if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
             case c.STATE_RECYCLING:
