@@ -256,7 +256,8 @@ module.exports = class MapOp extends ChildOp {
                         if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0 || hostile.getActiveBodyparts(WORK)>0) hostileFound = true;
                     }
                     if (hostileFound) {
-                        if (this._roomInfo[roomName].lastSeenHostile < Game.time - 1) this._roomInfo[roomName].hostileSource = hostile.pos;
+                        // if there weren't hostiles the previous turn update the hostile source locations
+                        if (this._roomInfo[roomName].lastSeenHostile < this._roomInfo[roomName].lastSeen) this._roomInfo[roomName].hostileSource = hostile.pos;
                         this._roomInfo[roomName].lastSeenHostile = Game.time;
                         break;
                     }
