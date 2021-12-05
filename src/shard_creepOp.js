@@ -4,7 +4,6 @@ const ChildOp = require('./meta_childOp');
 const Version = require('./version');
 const { throttle } = require('lodash');
 
-
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
 const MAX_MOVE_OPS = 4000;
@@ -546,7 +545,7 @@ module.exports = class CreepOp extends ChildOp {
                     if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
                     else {
                         let scountInfo = this._mapOp.getRoomInfo(this._destRoomName);
-                        if (scountInfo) this._moveTo(scountInfo.hostileSource, {range:3})
+                        if (scountInfo && scountInfo.hostileSource) this._moveTo(new RoomPosition(scountInfo.hostileSource.x, scountInfo.hostileSource.y, this._destRoomName), {range:3})
                     }
                 } 
                 if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);

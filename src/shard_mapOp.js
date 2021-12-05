@@ -231,7 +231,7 @@ module.exports = class MapOp extends ChildOp {
         for(let roomName in Game.rooms) {
             // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {lastSeenHostile:0, hostileSource:new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
+                this._roomInfo[roomName] = {lastSeenHostile:0, hostileSource: new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
             }
             if (this._breadCrumbs[roomName] == undefined) {
                 this._breadCrumbs[roomName] = []
