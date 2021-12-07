@@ -30,7 +30,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             }
 
             //create link construction site if necessary.
-            let link = controller.pos.findInRange(FIND_MY_STRUCTURES,4,{filter: {structureType: STRUCTURE_LINK}})[0];
+            let link = controller.pos.findInRange(FIND_MY_STRUCTURES,3,{filter: {structureType: STRUCTURE_LINK}})[0];
             if (!link) {
                 let result = PathFinder.search(controller.pos, this.baseOp.centerPos)
                 let pos = result.path[1];
