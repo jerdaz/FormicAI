@@ -33,7 +33,7 @@ module.exports = class TransportOp extends BaseChildOp {
         let newControllerLinkIds = [];
         for (let link of links) {
             if (link.pos.findInRange(FIND_SOURCES,2).length > 0) newSourceLinkIds.push(link.id);
-            if (link.pos.findInRange(FIND_STRUCTURES, 4,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
+            if (link.pos.findInRange(FIND_STRUCTURES, 3,{filter: {structureType: STRUCTURE_CONTROLLER}}).length > 0) newControllerLinkIds.push(link.id);
         }
         this._sourceLinkIds = newSourceLinkIds;
         let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
