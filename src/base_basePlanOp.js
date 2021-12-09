@@ -385,16 +385,15 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (let spawn of baseOp.spawns) {
             let pos = spawn.pos
             let validSpot = true;
+            if (base.controller.pos.getRangeTo(pos) <=3) {
+                validSpot = false;
+            }
             for (let x=pos.x - CORE_OUTER_RADIUS;x<= pos.x + CORE_OUTER_RADIUS;x++) {
                 if (x<0 || x>= c.MAX_ROOM_SIZE) {
                     validSpot = false;
                     break;
                 }
                 for (let y=pos.y - 1 - CORE_OUTER_RADIUS ; y<= pos.y -1 + CORE_OUTER_RADIUS ;y++){
-                    if (base.controller.pos.getRangeTo(x, y) <=3) {
-                        validSpot = false;
-                        break;
-                    }
                     if (y<0 || y>=c.MAX_ROOM_SIZE || terrain.get(x,y) == TERRAIN_MASK_WALL) {
                         validSpot = false;
                         break;
