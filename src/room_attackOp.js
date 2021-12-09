@@ -70,19 +70,21 @@ module.exports = class AttackOp extends RoomChildOp {
         /**@type {BodyPartConstant[]} */
         let body = [];
         let minLength = 3;
+        let noSort=false;
         switch (attackLevel) {
             case 1:
                 creepCount = 1;
                 body = [MOVE, WORK, WORK]
                 break;
             case 2:
-                body = [MOVE,MOVE,MOVE,RANGED_ATTACK,RANGED_ATTACK,HEAL]
+                body = [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE]
                 creepCount = 1;
                 minLength = 6
+                noSort=true;
                 break;
         }
         
-        this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: minLength}, creepCount)
+        this._baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength: minLength, noSort: noSort}, creepCount)
 
     }
 

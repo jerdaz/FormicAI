@@ -226,12 +226,14 @@ module.exports = class SpawningOp extends BaseChildOp {
             i = i % body.length;
         }
         result.pop(); // de laatste er altijd uitgooien omdat die energie overschrijdt
-        result.sort((/**@type {string} */partA, /**@type {string} */ partB) => {
-            if (BODY_SORT[partA] < BODY_SORT[partB]) return -1;
-            if (BODY_SORT[partA] > BODY_SORT[partB]) return 1;
-            return 0;
-        });
-    
+        if (!template.noSort) {
+            result.sort((/**@type {string} */partA, /**@type {string} */ partB) => {
+                if (BODY_SORT[partA] < BODY_SORT[partB]) return -1;
+                if (BODY_SORT[partA] > BODY_SORT[partB]) return 1;
+                return 0;
+            });
+        }
+
         if (result.length>= minLength) return result;
         else return [];
     }
