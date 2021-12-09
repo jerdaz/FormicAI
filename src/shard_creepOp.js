@@ -503,6 +503,7 @@ module.exports = class CreepOp extends ChildOp {
                             if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
                         }
                         if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                        else if (result == OK) if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
                     }
                 } else {
                     this._moveTo(new RoomPosition(25,25, roomName));
