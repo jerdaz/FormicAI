@@ -199,6 +199,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 let pos = this._baseOp.centerPos;
                 if (pos) {
                     pos = new RoomPosition(pos.x, pos.y+1, pos.roomName)
+                    for (let structure of pos.lookFor(LOOK_STRUCTURES)) structure.destroy();
                     pos.createConstructionSite(STRUCTURE_SPAWN);
                 }
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
