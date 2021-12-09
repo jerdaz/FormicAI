@@ -31,12 +31,20 @@ module.exports = class RoomOp extends BaseChildOp {
         if (distance == 0) this._distance = 0;
         else this._distance = distance + this._distanceOffset;
 
+        this._roomInfo = this._map._roomInfo[roomName];
 
         this._verbose = false;
     }
 
     get roomName() {return this._roomName}
     get name() {return this._roomName}
+
+    //return wether or not the room is (expected to be) safe (not under attack)
+    get isSafe() { 
+        if (this._roomInfo) return this._roomInfo.lastSeen > this._roomInfo.lastSeenHostile && !this._roomInfo.invasion 
+        else return true;
+    }
+        
 
     get harvestingOps() {return /**@type {HarvestingOp[]} */ (this._childOps[c.OPERATION_HARVESTING]||[])}
 

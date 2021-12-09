@@ -32,7 +32,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         if (!source) return //room is not visible
         let links = source.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: o => {return o.structureType == STRUCTURE_LINK && o.isActive() == true}});
         
-        if (this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
+        if (!this._roomOp.isSafe || this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
