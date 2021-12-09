@@ -109,6 +109,13 @@ module.exports = class BasePlanOp extends BaseChildOp{
                         {
                            structure.destroy();
                         }
+
+                    // //check if the
+                    // else if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68' && structure.pos.getRangeTo(base.controller.pos) <= 3) {
+                    //     structure.destroy();
+                    //     this._centerPos == undefined;
+                    // }
+                    // if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68') U.l('survived?')
                     break;
                 case STRUCTURE_STORAGE:
                     if (!structure.pos.isEqualTo(this.baseCenter.x-1,this.baseCenter.y)) structure.destroy();
@@ -384,6 +391,10 @@ module.exports = class BasePlanOp extends BaseChildOp{
                     break;
                 }
                 for (let y=pos.y - 1 - CORE_OUTER_RADIUS ; y<= pos.y -1 + CORE_OUTER_RADIUS ;y++){
+                    if (base.controller.pos.getRangeTo(x, y) <=3) {
+                        validSpot = false;
+                        break;
+                    }
                     if (y<0 || y>=c.MAX_ROOM_SIZE || terrain.get(x,y) == TERRAIN_MASK_WALL) {
                         validSpot = false;
                         break;
@@ -440,6 +451,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS+1})
             }
         }
+        // also keep a bit of distance from controller / sources
+        walls.push({pos: base.controller.pos, range:CORE_OUTER_RADIUS+2})
+        for (let source of sources) walls.push({pos: source.pos, range:CORE_OUTER_RADIUS+2});
         
         let roomCallBack = function(/**@type {string}*/roomName) {
             if (roomName != base.name) return false;
