@@ -80,7 +80,7 @@ module.exports = class AttackOp extends RoomChildOp {
                 body = [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE]
                 creepCount = 1;
                 minLength = 6
-                noSort=true;
+                noSort=false;
                 break;
         }
         
