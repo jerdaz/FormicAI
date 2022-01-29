@@ -18,15 +18,20 @@ module.exports = class UpgradingOp extends BaseChildOp {
         let workerCount = 0;
         let body = [MOVE,CARRY,WORK,MOVE,WORK,WORK,WORK];
         let maxSize = MAX_CREEP_SIZE;
+        let minSize = 3;
 
-        //until controller link phase, buildingOp is responsible for upgrading
+        //until controller link phase, buildingOp is responsible for upgrading, only execute if phase is greater controller phase
         if (this.baseOp.storage && this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK) {
             let energy = this.baseOp.storage.store.energy;
             workerCount = Math.floor((energy - c.ENERGY_RESERVE / 8 *controller.level ) / (MAX_CREEP_SIZE / 3 * UPGRADE_CONTROLLER_POWER * CREEP_LIFE_TIME))
             if (workerCount < 0) workerCount = 0;
             if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
                 if (workerCount > 1) workerCount = 1;
-                maxSize = Math.ceil(CONTROLLER_MAX_UPGRADE_PER_TICK / 4 * 7 ) 
+                body = Array(CONTROLLER_MAX_UPGRADE_PER_TICK/UPGRADE_CONTROLLER_POWER).fill(WORK)
+                body.concat (Array(Math.ceil(body.length/2)).fill(MOVE));
+                body.push(CARRY);
+                maxSize = body.length;
+                minSize = body.length;
             }
 
             //create link construction site if necessary.
@@ -45,7 +50,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             workerCount = 1;
             maxSize = 3;
         }
-        this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize}, workerCount)
+        this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, maxLength: maxSize, minLength:minSize}, workerCount)
 
     }
 
