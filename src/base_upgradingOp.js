@@ -28,7 +28,7 @@ module.exports = class UpgradingOp extends BaseChildOp {
             if (this.baseOp.phase >= c.BASE_PHASE_EOL) {
                 if (workerCount > 1) workerCount = 1;
                 body = Array(CONTROLLER_MAX_UPGRADE_PER_TICK/UPGRADE_CONTROLLER_POWER).fill(WORK)
-                body.concat (Array(Math.ceil(body.length/2)).fill(MOVE));
+                body = body.concat (Array(Math.ceil(body.length/2)).fill(MOVE));
                 body.push(CARRY);
                 maxSize = body.length;
                 minSize = body.length;
