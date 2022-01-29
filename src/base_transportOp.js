@@ -119,7 +119,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink) {
             let controllerLinkIsSourceLink = false;
             let targetLink = controllerLink;
-            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY/3*2 ) targetLink = this._baseLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY/3 ) targetLink = this._baseLink;
             if (baseLink && targetLink) {
                 for(let sourceLink of this._sourceLinks) {
                     if (sourceLink == controllerLink) {
