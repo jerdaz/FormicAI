@@ -109,6 +109,13 @@ module.exports = class BasePlanOp extends BaseChildOp{
                         {
                            structure.destroy();
                         }
+
+                    // //check if the
+                    // else if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68' && structure.pos.getRangeTo(base.controller.pos) <= 3) {
+                    //     structure.destroy();
+                    //     this._centerPos == undefined;
+                    // }
+                    // if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68') U.l('survived?')
                     break;
                 case STRUCTURE_STORAGE:
                     if (!structure.pos.isEqualTo(this.baseCenter.x-1,this.baseCenter.y)) structure.destroy();
@@ -192,6 +199,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 let pos = this._baseOp.centerPos;
                 if (pos) {
                     pos = new RoomPosition(pos.x, pos.y+1, pos.roomName)
+                    for (let structure of pos.lookFor(LOOK_STRUCTURES)) structure.destroy();
                     pos.createConstructionSite(STRUCTURE_SPAWN);
                 }
                 else throw Error('WARNING: Cannot find building spot in room ' + room.name);
@@ -378,6 +386,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
         for (let spawn of baseOp.spawns) {
             let pos = spawn.pos
             let validSpot = true;
+            if (base.controller.pos.getRangeTo(pos) <=3) {
+                validSpot = false;
+            }
             for (let x=pos.x - CORE_OUTER_RADIUS;x<= pos.x + CORE_OUTER_RADIUS;x++) {
                 if (x<0 || x>= c.MAX_ROOM_SIZE) {
                     validSpot = false;
@@ -440,6 +451,9 @@ module.exports = class BasePlanOp extends BaseChildOp{
                 if (roomTerrain.get(x,y) == TERRAIN_MASK_WALL) walls.push({pos: new RoomPosition(x,y,base.name), range:CORE_OUTER_RADIUS+1})
             }
         }
+        // also keep a bit of distance from controller / sources
+        walls.push({pos: base.controller.pos, range:CORE_OUTER_RADIUS+2})
+        for (let source of sources) walls.push({pos: source.pos, range:CORE_OUTER_RADIUS+2});
         
         let roomCallBack = function(/**@type {string}*/roomName) {
             if (roomName != base.name) return false;

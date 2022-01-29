@@ -43,7 +43,7 @@ module.exports = class ShardOp extends ChildOp {
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
         this.addChildOp(new ShardSpawningOp(this));
-        this.addChildOp(new ShardDefenseOp(this))
+        //this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = ''
         if (Game.spawns[Object.keys(Game.spawns)[0]]) this._userName = Game.spawns[Object.keys(Game.spawns)[0]].owner.username

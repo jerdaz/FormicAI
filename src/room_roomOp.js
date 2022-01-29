@@ -7,6 +7,8 @@ const BuildingOp = require('./room_buildingOp');
 const ReservationOp = require('./room_reservationOp');
 const AttackOp = require('./room_attackOp');
 
+const HOSTILE_SAFE_TIME = 1000; // number of ticks a room must not be under attack to be considered 'safe'
+
 module.exports = class RoomOp extends BaseChildOp {
     /**@param {BaseOp} baseOp
      * @param {String} roomName
@@ -31,12 +33,23 @@ module.exports = class RoomOp extends BaseChildOp {
         if (distance == 0) this._distance = 0;
         else this._distance = distance + this._distanceOffset;
 
+        this._roomInfo = this._map._roomInfo[roomName];
 
         this._verbose = false;
     }
 
     get roomName() {return this._roomName}
     get name() {return this._roomName}
+
+    //return wether or not the room is (expected to be) safe (not under attack)
+    get isSafe() { 
+        if (this._roomInfo) {
+            if (this._roomInfo.invasion) return false;
+            if (this._roomInfo.lastSeen - this._roomInfo.lastSeenHostile < HOSTILE_SAFE_TIME) return false;
+        }
+        return true;
+    }
+        
 
     get harvestingOps() {return /**@type {HarvestingOp[]} */ (this._childOps[c.OPERATION_HARVESTING]||[])}
 

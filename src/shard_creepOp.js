@@ -4,7 +4,6 @@ const ChildOp = require('./meta_childOp');
 const Version = require('./version');
 const { throttle } = require('lodash');
 
-
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
 const MAX_MOVE_OPS = 4000;
@@ -50,7 +49,7 @@ module.exports = class CreepOp extends ChildOp {
         this._moveFlags = 0;
     }
     get type() {return c.OPERATION_CREEP}
-    get source() {return Game.getObjectById(this._sourceId)}
+    get source() {return U.getRoomObject(this._sourceId)}
     get dest() {
         return U.getRoomObject(this._destId);
     }
@@ -150,10 +149,21 @@ module.exports = class CreepOp extends ChildOp {
      * @param {Source | Structure | Mineral} source
      * @param {Structure | ConstructionSite} dest 
      * @param {ResourceConstant | undefined} [resourceType] */
-    instructTransfer(source, dest, resourceType) {
+     instructTransfer(source, dest, resourceType) {
         this._sourceId = source.id;
         this._destId = dest.id;
         this._instruct = c.COMMAND_TRANSFER;
+        this._resourceType = resourceType||RESOURCE_ENERGY;
+    }
+
+    /**
+     * @param {Source | Structure | Mineral} source
+     * @param {Structure | ConstructionSite} dest 
+     * @param {ResourceConstant | undefined} [resourceType] */
+     instructUpgradeDirect(source, dest, resourceType) {
+        this._sourceId = source.id;
+        this._destId = dest.id;
+        this._instruct = c.COMMAND_UPGRADE_DIRECT;
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
     
@@ -246,8 +256,63 @@ module.exports = class CreepOp extends ChildOp {
             if (result == OK) this._notifyWhenAttackedIntent = this._notifyWhenAttacked;
         }
     }
-    
+
+    // process the turn
+    // first input energy, then output energy, then move to target (source or destination)
+    _processTurn() {
+        /**@type {{[index:string]:number}} */
+        let mutations = {}
+        if (!this._state) this._state = c.STATE_INPUT;
+        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
+        if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
+        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
+
+        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:1});
+        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:3})
+    }
+
+    //input the resources for the task
+    /**@param {{[index:string]:number}} mutations */
+    _inputResource(mutations) {
+        let creep = this._creep;
+        let source = /**@type {StructureLink}*/(this.source);
+        let amount = 0;
+        let result = creep.withdraw(source, RESOURCE_ENERGY);
+        if (result == OK) {
+            amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
+            mutations[source.id] = (mutations[source.id]||0) -amount;
+            mutations[creep.id] = (mutations[creep.id]||0) + amount;
+        }
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT    
+    }
+
+    //output the resources for the task
+    /**@param {{[index:string]:number}} mutations */
+    _outputResource(mutations) {
+        let creep = this._creep;
+        let targetController = /**@type {StructureController}*/(this.dest)
+        let amount = 0;
+        let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
+        if (targetController.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
+        let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
+
+        let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+        if (result == OK) {
+            amount = Math.min(creepAmount, maxEnergyPerTick)
+            mutations[creep.id] = (mutations[creep.id]||0) - amount;
+        }
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
+    }  
+
+
     _command() {
+        // check if command uses old or new style
+        if (this._instruct == c.COMMAND_UPGRADE_DIRECT) {
+            this._processTurn()
+            return;
+        }
+
+        // continue with old style commands
         let creep = this._creep;
         switch (this._instruct) {
             case c.COMMAND_HARVEST:
@@ -310,6 +375,7 @@ module.exports = class CreepOp extends ChildOp {
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
                 break;
+
         }
 
         /**@type {RoomObjectEx | null} */
@@ -437,6 +503,7 @@ module.exports = class CreepOp extends ChildOp {
                             if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
                         }
                         if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                        else if (result == OK) if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
                     }
                 } else {
                     this._moveTo(new RoomPosition(25,25, roomName));
@@ -466,15 +533,22 @@ module.exports = class CreepOp extends ChildOp {
                 if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
                 if (hostile) {
                     let pos = creep.pos
+                    let range = hostile.pos.getRangeTo(pos)
                     if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
-                    else this._moveTo (hostile.pos, {range:1}, {noEvade: true})
+                    else if (range>1) this._moveTo (hostile.pos, {range:1}, {noEvade: true})
+                    //else this._moveTo(hostile.pos, {range:3}, {noEvade:true, flee:true})
+                    if (range == 1) rangedAttackResult = creep.rangedMassAttack();
+                    else rangedAttackResult = creep.rangedAttack(hostile);
                     attackResult = creep.attack(hostile);
-                    rangedAttackResult = creep.rangedAttack(hostile);
                     if (hostile instanceof Structure) dismantleResult = creep.dismantle(hostile)
                 } else {
                     let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
                     if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
-                }
+                    else {
+                        let scountInfo = this._mapOp.getRoomInfo(this._destRoomName);
+                        if (scountInfo && scountInfo.hostileSource) this._moveTo(new RoomPosition(scountInfo.hostileSource.x, scountInfo.hostileSource.y, this._destRoomName), {range:3})
+                    }
+                } 
                 if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
             case c.STATE_RECYCLING:
