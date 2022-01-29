@@ -8,7 +8,7 @@ const HARVESTER_SIZE_SMALL = 6*3
 module.exports = class HarvestingOp extends RoomChildOp {
     /** 
      * @param {RoomOp} roomOp
-     * @param {String} sourceId 
+     * @param {Id<Source>} sourceId 
      * @param {number} instance*/
     constructor (roomOp, sourceId, instance) {
         super(roomOp, instance);
