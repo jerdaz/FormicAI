@@ -275,9 +275,20 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {{[index:string]:number}} mutations */
     _inputResource(mutations) {
         let creep = this._creep;
-        let source = /**@type {StructureLink}*/(this.source);
+        let source = this.source;
         let amount = 0;
-        let result = creep.withdraw(source, RESOURCE_ENERGY);
+        /**@type {ScreepsReturnCode|null} */
+        let result = ERR_INVALID_TARGET;
+
+        switch (this._instruct) {
+            case c.COMMAND_UPGRADE_DIRECT:
+                result = creep.withdraw(/**@type {StructureLink} */ (source), RESOURCE_ENERGY);
+                break;
+            case c.COMMAND_HARVEST:
+                result = creep.harvest(/**@type {Source} */ (source));
+                break;
+        }
+        
         if (result == OK) {
             amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
             mutations[source.id] = (mutations[source.id]||0) -amount;
