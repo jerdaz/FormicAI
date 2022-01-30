@@ -252,17 +252,22 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {{[index:string]:number}} */
         let mutations = {}
         if (!this._state) this._state = c.STATE_INPUT;
-        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
-        if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
-        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
+        if (this._state == c.STATE_INPUT) this._inputResource(mutations);    // first input
+        if (this._state == c.STATE_OUTPUT) {
+            this._outputResource(mutations);  // then output
+            if (this._state == c.STATE_INPUT) this._inputResource(mutations);    // then input again
+        }
 
+        // then move to new target
         let moveRange = 1;
-        if (    this.dest instanceof StructureController
-             || this.dest instanceof ConstructionSite
-           ) moveRange = 3
   
         if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:moveRange});
-        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:moveRange})
+        else if (this._state == c.STATE_OUTPUT && this.dest) {
+            if (    this.dest instanceof StructureController
+                || this.dest instanceof ConstructionSite
+              ) moveRange = 3
+            this._moveTo(this.dest.pos, {range:moveRange})
+        }
     }
 
     //input the resources for the task
