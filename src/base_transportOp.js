@@ -128,7 +128,7 @@ module.exports = class TransportOp extends BaseChildOp {
                             sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
                         }
                     }
-                    else if (LINK_CAPACITY / 8 <= sourceLink.store.energy) {
+                    else if (sourceLink.store.energy >= LINK_CAPACITY / 2) {
                         sourceLink.transferEnergy(targetLink);
                     }
                 }
