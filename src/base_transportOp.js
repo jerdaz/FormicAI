@@ -119,7 +119,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink) {
             let controllerLinkIsSourceLink = false;
             let targetLink = controllerLink;
-            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY / 2 ) targetLink = this._baseLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY / 3 ) targetLink = this._baseLink;
             if (baseLink && targetLink) {
                 for(let sourceLink of this._sourceLinks) {
                     if (sourceLink == controllerLink) {
@@ -128,7 +128,7 @@ module.exports = class TransportOp extends BaseChildOp {
                             sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
                         }
                     }
-                    else if (sourceLink.store.energy >= LINK_CAPACITY / 2) {
+                    else if (sourceLink.store.energy >= LINK_CAPACITY / 3) {
                         sourceLink.transferEnergy(targetLink);
                     }
                 }
