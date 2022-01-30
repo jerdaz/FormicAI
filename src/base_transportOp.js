@@ -119,7 +119,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink) {
             let controllerLinkIsSourceLink = false;
             let targetLink = controllerLink;
-            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY/2 ) targetLink = this._baseLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY/3 ) targetLink = this._baseLink;
             if (baseLink && targetLink) {
                 for(let sourceLink of this._sourceLinks) {
                     if (sourceLink == controllerLink) {
@@ -137,11 +137,11 @@ module.exports = class TransportOp extends BaseChildOp {
             // transfer energy from baselink to controller link if possible
             if (baseLink && controllerLink) {
                 if (!controllerLinkIsSourceLink
-                    && controllerLink.store.energy <= baseLink.store.energy ) 
+                    && controllerLink.store.energy <= baseLink.store.energy && controllerLink.store.getUsedCapacity(RESOURCE_ENERGY) < CARRY_CAPACITY) 
                 {
                     baseLink.transferEnergy(controllerLink);
                 } else if (controllerLinkIsSourceLink
-                            && controllerLink.store.energy < LINK_CAPACITY / 8 * 2) 
+                            && controllerLink.store.energy < CARRY_CAPACITY) 
                 {
                     baseLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
                 }
@@ -174,7 +174,7 @@ module.exports = class TransportOp extends BaseChildOp {
             let sourceStructure = null;
             let creepCapacity = creepOp.creep.body.filter(o => o.type == 'carry').length * CARRY_CAPACITY;
             let linkEquilibrium = creepCapacity / 2; //baseLink equilibrium minimum
-            if (controllerLink) linkEquilibrium = Math.max(linkEquilibrium, controllerLink.store.getFreeCapacity(RESOURCE_ENERGY)); //if controller link needs energy equilibrium is equal to emptyness of controller link
+            if (controllerLink) linkEquilibrium = Math.max(linkEquilibrium, controllerLink.store.getFreeCapacity(RESOURCE_ENERGY)-LINK_CAPACITY/2); //if controller link needs energy equilibrium is equal to emptyness of controller link below half capacity
             if (baseLink) linkEquilibrium = Math.min (linkEquilibrium, baseLink.store.getCapacity(RESOURCE_ENERGY) - creepCapacity/2) // equilibrium can't be higher then capacity - half of transport creep capacity
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
