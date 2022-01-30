@@ -600,7 +600,7 @@ module.exports = class CreepOp extends ChildOp {
                     if (!creep.pos.isEqualTo(destObj.pos)) this._moveTo(destObj.pos);
                     else {         
                         let spawn = /**@type {StructureSpawn} */(destObj.pos.findInRange(FIND_MY_STRUCTURES,1,{filter: o=> o.structureType==STRUCTURE_SPAWN})[0])
-                        if (spawn) result = spawn.recycleCreep(creep);
+                        if (spawn) spawn.recycleCreep(creep);
                     }
                 }
                 break;
