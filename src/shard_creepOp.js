@@ -156,17 +156,6 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
 
-    /**
-     * @param {Source | Structure | Mineral} source
-     * @param {Structure | ConstructionSite} dest 
-     * @param {ResourceConstant | undefined} [resourceType] */
-     instructUpgradeDirect(source, dest, resourceType) {
-        this._sourceId = source.id;
-        this._destId = dest.id;
-        this._instruct = c.COMMAND_UPGRADE_DIRECT;
-        this._resourceType = resourceType||RESOURCE_ENERGY;
-    }
-    
     /**@param {RoomPosition | string} dest 
      * @param {number} [moveFlags]
     */
@@ -267,33 +256,42 @@ module.exports = class CreepOp extends ChildOp {
         if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);
 
-        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:1});
-        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:3})
+        let moveRange = 1;
+        if (    this.dest instanceof StructureController
+             || this.dest instanceof ConstructionSite
+           ) moveRange = 3
+  
+        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:moveRange});
+        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:moveRange})
     }
 
     //input the resources for the task
     /**@param {{[index:string]:number}} mutations */
     _inputResource(mutations) {
         let creep = this._creep;
-        let source = this.source;
         let amount = 0;
+        let source = this.source;
+        if (!source) throw Error('Source may not be null')
+        if (!source.id) throw Error ('Source must have an id')
         /**@type {ScreepsReturnCode|null} */
         let result = ERR_INVALID_TARGET;
 
-        switch (this._instruct) {
-            case c.COMMAND_UPGRADE_DIRECT:
-                result = creep.withdraw(/**@type {StructureLink} */ (source), RESOURCE_ENERGY);
-                break;
-            case c.COMMAND_HARVEST:
-                result = creep.harvest(/**@type {Source} */ (source));
-                break;
+        if (source instanceof StructureLink) {
+            result = creep.withdraw( (source), RESOURCE_ENERGY);
+            if (result == OK) {
+                amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
+            }
+        }
+        else if (source instanceof Source) {
+            result = creep.harvest(/**@type {Source} */ (source));
+            if (result == OK) {
+                amount = Math.min(source.energy, creep.getActiveBodyparts(WORK) * HARVEST_POWER)
+            }
         }
         
-        if (result == OK) {
-            amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
-            mutations[source.id] = (mutations[source.id]||0) -amount;
-            mutations[creep.id] = (mutations[creep.id]||0) + amount;
-        }
+        mutations[source.id] = (mutations[source.id]||0) -amount;
+        mutations[creep.id] = (mutations[creep.id]||0) + amount;
+
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT    
     }
 
@@ -301,24 +299,41 @@ module.exports = class CreepOp extends ChildOp {
     /**@param {{[index:string]:number}} mutations */
     _outputResource(mutations) {
         let creep = this._creep;
-        let targetController = /**@type {StructureController}*/(this.dest)
+        let target = this.dest
+        if (!target) throw Error ('target cannot be null')
+        if (!target.id) throw Error ('target id cannot be null')
         let amount = 0;
-        let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
-        if (targetController.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
-        let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
 
-        let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
-        if (result == OK) {
-            amount = Math.min(creepAmount, maxEnergyPerTick)
-            mutations[creep.id] = (mutations[creep.id]||0) - amount;
+        if (target instanceof StructureController) {
+            let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
+            if (target.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
+            let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
+
+            let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+            if (result == OK) {
+                amount = Math.min(creepAmount, maxEnergyPerTick)
+            }
         }
+        else if (target.store ) {
+            let store = target.store;
+            let result = creep.transfer(/**@type {Structure}*/ (target), RESOURCE_ENERGY)
+            if (result == OK) {
+                amount = Math.min(creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0), 
+                                  store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[target.id]||0 )
+                                 );
+            }
+        }
+
+        mutations[target.id] = (mutations[target.id]||0) + amount;
+        mutations[creep.id] = (mutations[creep.id]||0) - amount;
+
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
     }  
 
 
     _command() {
         // check if command uses old or new style
-        if (this._instruct == c.COMMAND_UPGRADE_DIRECT) {
+        if (this._instruct == c.COMMAND_TRANSFER) {
             this._processTurn()
             return;
         }
