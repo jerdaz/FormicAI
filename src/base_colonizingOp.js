@@ -100,8 +100,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (b.sources > a.sources) return 1; // if B has more sources, sort it first
             return a.distance-b.distance; // else sort distance ascending
         })
-        U.l('selecting colroom for: ' +this._baseName)
-        U.l(colRooms);
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;
     }

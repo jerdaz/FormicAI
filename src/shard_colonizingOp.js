@@ -87,9 +87,6 @@ module.exports = class ShardColonizingOp extends ShardChildOp {
                                     if (scoutInfoB && !scoutInfoA) return 1;
                                     return 0;
                                 })
-                            U.l(creep.name)
-                            U.l(creep.pos)
-                                U.l(roomNames);
                             if (roomNames.length > 0) destRoomName = roomNames.pop();
                             else destRoomName = lastRoomName
                             if (destRoomName) {

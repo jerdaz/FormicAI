@@ -110,12 +110,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
                            structure.destroy();
                         }
 
-                    // //check if the
-                    // else if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68' && structure.pos.getRangeTo(base.controller.pos) <= 3) {
-                    //     structure.destroy();
-                    //     this._centerPos == undefined;
-                    // }
-                    // if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68') U.l('survived?')
                     break;
                 case STRUCTURE_STORAGE:
                     if (!structure.pos.isEqualTo(this.baseCenter.x-1,this.baseCenter.y)) structure.destroy();
