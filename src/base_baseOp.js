@@ -86,7 +86,7 @@ module.exports = class BaseOp extends ShardChildOp{
         // add op to room for easy access in debug console
         this._base.baseOp = this;
         this._structures = {spawn:[], extension:[], rampart:[], link:[], storage:[], observer:[], powerBank:[], extractor:[], lab:[], terminal:[], nuker:[], factory:[]};
-        let structures = this._base.find(FIND_MY_STRUCTURES);
+        let structures = this._base.find(FIND_STRUCTURES);
         for (let structure of structures) {
             if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
             this._structures[structure.structureType].push(structure);
