@@ -99,8 +99,8 @@ module.exports = class BuildingOp extends RoomChildOp {
             }
             else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork
             else if (creepOp.instruction == c.COMMAND_NONE) {
+                this._baseOp.spawningOp.ltRequestSpawn(this, {body:[]}, 0) // disable spawning of new creeps
                 creepOp.instructRecycle();
-                creepOp._strategy(); //update state to prevent spawning new creep
             }
         }
     }
