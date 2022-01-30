@@ -21,7 +21,7 @@ const CORE_INNER_RADIUS = 1; // radius of the base core used for placing buildin
 /**@type {(BuildableStructureConstant|null)[][]} */
 const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
                           [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
-                          [STRUCTURE_TOWER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
+                          [STRUCTURE_CONTAINER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
 
     
 
