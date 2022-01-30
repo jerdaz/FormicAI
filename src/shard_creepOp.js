@@ -276,8 +276,8 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {ScreepsReturnCode|null} */
         let result = ERR_INVALID_TARGET;
 
-        if (source instanceof StructureLink) {
-            result = creep.withdraw( (source), RESOURCE_ENERGY);
+        if (source.store) {
+            result = creep.withdraw(/**@type {Structure}*/ (source), RESOURCE_ENERGY);
             if (result == OK) {
                 amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
             }
