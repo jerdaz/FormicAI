@@ -119,17 +119,18 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink) {
             let controllerLinkIsSourceLink = false;
             let targetLink = controllerLink;
-            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY / 3 ) targetLink = this._baseLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 300 ) targetLink = this._baseLink;
             if (baseLink && targetLink) {
                 for(let sourceLink of this._sourceLinks) {
                     if (sourceLink == controllerLink) {
                         controllerLinkIsSourceLink = true;
-                        if ( sourceLink.store.energy > LINK_CAPACITY / 8 * 6 ) {
-                            sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                        if ( sourceLink.store.energy > 600 ) {
+                            sourceLink.transferEnergy(baseLink, 300); //transfer 3/8 capacity
                         }
                     }
-                    else if (sourceLink.store.energy >= LINK_CAPACITY / 3) {
-                        sourceLink.transferEnergy(targetLink);
+                    else if (sourceLink.store.energy >= 300) {
+                        let amount = Math.floor(sourceLink.store.getUsedCapacity(RESOURCE_ENERGY) / 100) * 100 // transfer multiples of 100 for optimum efficiency.
+                        sourceLink.transferEnergy(targetLink, amount);
                     }
                 }
             }
@@ -143,7 +144,8 @@ module.exports = class TransportOp extends BaseChildOp {
                 } else if (controllerLinkIsSourceLink
                             && controllerLink.store.energy < CARRY_CAPACITY) 
                 {
-                    baseLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                    let amount = Math.min(Math.floor(baseLink.store.getUsedCapacity(RESOURCE_ENERGY) / 100) * 100, 300)
+                    baseLink.transferEnergy(baseLink, amount); 
                 }
             }
         }
