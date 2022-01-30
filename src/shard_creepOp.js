@@ -591,14 +591,17 @@ module.exports = class CreepOp extends ChildOp {
                     this._moveTo(new RoomPosition(25,25,this._baseOp.name), {range:20})
                 } else {
                     if (!destObj) {
-                        destObj = creep.pos.findClosestByPath(this._baseOp.spawns);
+                        destObj = this._baseOp.deathContainer||null;
                         if (!destObj) { 
                             this._state = c.COMMAND_NONE;
                             break;
                         }
                     }
-                    this._moveTo(destObj.pos);
-                    if (destObj instanceof StructureSpawn) destObj.recycleCreep(creep);
+                    if (creep.pos != destObj.pos) this._moveTo(destObj.pos);
+                    else {         
+                        let spawn = /**@type {StructureSpawn} */(destObj.pos.findInRange(FIND_MY_STRUCTURES,1,{filter: o=> o.structureType==STRUCTURE_SPAWN})[0])
+                        if (spawn) spawn.recycleCreep(creep);
+                    }
                 }
                 break;
                 

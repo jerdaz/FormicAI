@@ -155,6 +155,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (creepOp) {
             let storage = this._baseOp.storage;
             let terminal = this._baseOp.terminal;
+            let deathContainer = this._baseOp.deathContainer;
             let pos = creepOp.creep.pos;
             let structures = pos.findInRange(FIND_STRUCTURES,1)
             /**@type {StructureSpawn | null} */
@@ -180,6 +181,7 @@ module.exports = class TransportOp extends BaseChildOp {
             if (baseLink) linkEquilibrium = Math.min (linkEquilibrium, baseLink.store.getCapacity(RESOURCE_ENERGY) - creepCapacity/2) // equilibrium can't be higher then capacity - half of transport creep capacity
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
+            if (deathContainer && deathContainer.store.getUsedCapacity(RESOURCE_ENERGY) >= creepCapacity) sourceStructure = deathContainer;
             if (baseLink && baseLink.store.energy > linkEquilibrium + creepCapacity/2) sourceStructure = baseLink;
             if (sourceStructure) {
                 /**@type {Structure |null} */

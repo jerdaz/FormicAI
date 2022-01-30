@@ -19,9 +19,9 @@ const CORE_OUTER_RADIUS = 2; // radius of core with free space around it
 const CORE_INNER_RADIUS = 1; // radius of the base core used for placing buildings
 // BASE TEMPLATE IS UPSIDE DOWN, builds from down to up (first south row with spawn, finally terminal row north)
 /**@type {(BuildableStructureConstant|null)[][]} */
-const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
+const baseCoreTemplate = [[STRUCTURE_CONTAINER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
                           [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
-                          [STRUCTURE_CONTAINER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
+                          [STRUCTURE_TOWER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
 
     
 
