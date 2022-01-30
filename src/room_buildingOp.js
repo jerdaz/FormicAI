@@ -126,7 +126,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
 
         }}
-        )       
+        )      
         return result; 
     }
 }
