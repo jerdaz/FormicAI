@@ -29,6 +29,8 @@ module.exports = class FillingOp extends BaseChildOp {
         } else {
             fillerSize = 50;
         }        
+
+        this._baseOp.base.memory.fillerSize = fillerSize;
     }
 
     _strategy() {
