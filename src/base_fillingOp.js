@@ -22,8 +22,8 @@ module.exports = class FillingOp extends BaseChildOp {
         
 
         if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER ) {
-            if (this._avgFillstate <= 0.1 ) fillerSize++;
-            else if (this._avgFillstate >= 0.3) fillerSize--; 
+            if (this._avgFillstate < 0.2 ) fillerSize++;
+            else if (this._avgFillstate > 0.2) fillerSize--; 
             if (fillerSize > 50) fillerSize = 50;
             if (fillerSize < 2) fillerSize = 2;
         } else {
