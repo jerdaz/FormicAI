@@ -25,7 +25,6 @@ module.exports = class BuildingOp extends RoomChildOp {
 
         let buildWork = false;
         if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
-        if (repairSites.length > 0 && constructionSites.length == 0) maxLength = 6; // spawn small repair creep if only repairing.
         
         let roomInfo = this._map.getRoomInfo(this._roomName)
         if (roomInfo && (
