@@ -764,12 +764,15 @@ module.exports = class CreepOp extends ChildOp {
                 if (o.structureType != STRUCTURE_ROAD && o.structureType != STRUCTURE_CONTAINER) return false;
                 let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR;
                 if (!needRepair) return false;
-                this._log({roadrepair: o.pos})
-                let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
-                if (!terrainArray) return false;
-                this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
-                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
-                this._log('canrepair');
+
+                if (o.structureType == STRUCTURE_ROAD) {
+                    this._log({roadrepair: o.pos})
+                    let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
+                    if (!terrainArray) return false;
+                    this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
+                    if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                    this._log('canrepair');
+                }
                 return true;
             }});
             dest = creep.pos.findClosestByRange(roads);
