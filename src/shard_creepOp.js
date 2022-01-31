@@ -319,7 +319,7 @@ module.exports = class CreepOp extends ChildOp {
         // find the energy source
         let source = this.source;
         if (this._instruct == c.COMMAND_FILL) {
-            if (source && source.store && source.store.getFreeCapacity(RESOURCE_ENERGY) == 0) source = null;
+            if (source && source.store && source.store.getUsedCapacity(RESOURCE_ENERGY) == 0) source = null;
             if (source == null) source = this._findEnergySource();
             if (source && source.id) this._sourceId = source.id;
             else this.sourceId = '';

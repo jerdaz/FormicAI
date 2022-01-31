@@ -1,5 +1,4 @@
 const U = require('./util');
-const { stringify } = require('./util');
 
 module.exports = class Debug {
     constructor(){
