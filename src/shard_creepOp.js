@@ -24,6 +24,7 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
+        this._carryPartUsed=false;
         this._destPos = null;
         this._destRoomName = '';
         /**@type {ResourceConstant} */
@@ -251,6 +252,8 @@ module.exports = class CreepOp extends ChildOp {
     _processTurn() {
         /**@type {{[index:string]:number}} */
         let mutations = {}
+        let creep = this._creep;
+        this._carryPartUsed = false;
         if (!this._state) this._state = c.STATE_INPUT;
         if (this._state == c.STATE_INPUT) this._inputResource(mutations);    // first input
         if (this._state == c.STATE_OUTPUT) {
@@ -268,6 +271,18 @@ module.exports = class CreepOp extends ChildOp {
               ) moveRange = 3
             this._moveTo(this.dest.pos, {range:moveRange})
         }
+
+        //pick up nearby resources
+        if (creep.getActiveBodyparts(CARRY) > 0) {
+            let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
+            for (let resource of resources) {
+                creep.pickup(resource);
+            }
+            let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
+            for (let tombstone of tombstones) {
+                creep.withdraw(tombstone, RESOURCE_ENERGY);
+            }
+        }
     }
 
     //input the resources for the task
@@ -281,9 +296,10 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {ScreepsReturnCode|null} */
         let result = ERR_INVALID_TARGET;
 
-        if (source.store) {
+        if (source.store && !this._carryPartUsed) {
             result = creep.withdraw(/**@type {Structure}*/ (source), RESOURCE_ENERGY);
             if (result == OK) {
+                this._carryPartUsed=true;
                 amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
             }
         }
@@ -319,10 +335,11 @@ module.exports = class CreepOp extends ChildOp {
                 amount = Math.min(creepAmount, maxEnergyPerTick)
             }
         }
-        else if (target.store ) {
+        else if (target.store &&!this._carryPartUsed) {
             let store = target.store;
             let result = creep.transfer(/**@type {Structure}*/ (target), RESOURCE_ENERGY)
             if (result == OK) {
+                this._carryPartUsed=true;
                 amount = Math.min(creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0), 
                                   store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[target.id]||0 )
                                  );
