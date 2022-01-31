@@ -129,7 +129,8 @@ module.exports = class TransportOp extends BaseChildOp {
                         }
                     }
                     else if (sourceLink.store.energy >= 300) {
-                        let amount = Math.floor(sourceLink.store.getUsedCapacity(RESOURCE_ENERGY) / 100) * 100 // transfer multiples of 100 for optimum efficiency.
+                        let amount = Math.min( sourceLink.store.getUsedCapacity(RESOURCE_ENERGY), targetLink.store.getFreeCapacity(RESOURCE_ENERGY))
+                        amount = Math.floor(amount / 100) * 100 // transfer multiples of 100 for optimum efficiency.
                         sourceLink.transferEnergy(targetLink, amount);
                     }
                 }
