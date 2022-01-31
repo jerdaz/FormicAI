@@ -25,7 +25,7 @@ module.exports = class FillingOp extends BaseChildOp {
             if (this._avgFillstate <= 0.1 ) fillerSize++;
             else if (this._avgFillstate >= 0.3) fillerSize--; 
             if (fillerSize > 50) fillerSize = 50;
-            if (fillerSize < 3) fillerSize = 3;
+            if (fillerSize < 2) fillerSize = 2;
         } else {
             fillerSize = 50;
         }        
