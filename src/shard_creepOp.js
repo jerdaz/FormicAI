@@ -344,6 +344,12 @@ module.exports = class CreepOp extends ChildOp {
                 amount = Math.min(source.energy, creep.getActiveBodyparts(WORK) * HARVEST_POWER)
             }
         }
+        else if (source instanceof Resource) {
+            result = creep.pickup(source)
+            if (result == OK) {
+                amount = amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.amount + (mutations[source.id]||0));
+            }
+        }
         
         mutations[source.id] = (mutations[source.id]||0) -amount;
         mutations[creep.id] = (mutations[creep.id]||0) + amount;
