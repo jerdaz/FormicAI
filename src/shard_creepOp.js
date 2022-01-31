@@ -3,6 +3,7 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const Version = require('./version');
 const { throttle } = require('lodash');
+const { COMMAND_NONE } = require('./constants');
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
@@ -44,6 +45,7 @@ module.exports = class CreepOp extends ChildOp {
         this._hasWorkParts = null;
         this._shardOp = shardOp;
         this._idleTime = 0;
+        this._travelDone = creep.spawning?false:true;
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
         this._notifyWhenAttacked = true
@@ -253,23 +255,43 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {{[index:string]:number}} */
         let mutations = {}
         let creep = this._creep;
+        /**@type {ScreepsReturnCode} */
+        let result = OK;
         this._carryPartUsed = false;
         if (!this._state) this._state = c.STATE_INPUT;
-        if (this._state == c.STATE_INPUT) this._inputResource(mutations);    // first input
-        if (this._state == c.STATE_OUTPUT) {
-            this._outputResource(mutations);  // then output
-            if (this._state == c.STATE_INPUT) this._inputResource(mutations);    // then input again
+        if (this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // first input
+        if (this._instruct == c.COMMAND_NONE) return;
+        if (result == OK && this._state == c.STATE_OUTPUT) {
+            result = this._outputResource(mutations);  // then output
+            if (this._instruct == c.COMMAND_NONE) return;
+            if (result == OK && this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // then input again
+            if (this._instruct == c.COMMAND_NONE) return;
+            if ( this._state == c.STATE_OUTPUT) result = this._outputResource(mutations); // then output again
+            if (this._instruct == c.COMMAND_NONE) return;
         }
 
         // then move to new target
         let moveRange = 1;
-  
-        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:moveRange});
+        /**@type {RoomPosition|null} */
+        let moveTarget = null;;
+
+        if (this._state == c.STATE_INPUT && this.source) {
+            moveTarget = this.source.pos;
+        }
         else if (this._state == c.STATE_OUTPUT && this.dest) {
             if (    this.dest instanceof StructureController
                 || this.dest instanceof ConstructionSite
               ) moveRange = 3
-            this._moveTo(this.dest.pos, {range:moveRange})
+            moveTarget = this.dest.pos;
+        }
+        if (moveTarget) {
+            if (result == ERR_NOT_IN_RANGE) this._moveTo(moveTarget, {range:moveRange})
+            else if (!this._travelDone) {
+                if ( this._instruct == c.COMMAND_HARVEST || this._state == c.STATE_OUTPUT) {
+                    this._travelDone = true;
+                    this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0))
+                }
+            }
         }
 
         //pick up nearby resources
@@ -288,14 +310,27 @@ module.exports = class CreepOp extends ChildOp {
     //input the resources for the task
     /**@param {{[index:string]:number}} mutations */
     _inputResource(mutations) {
+        // init vars
         let creep = this._creep;
         let amount = 0;
-        let source = this.source;
-        if (!source) throw Error('Source may not be null')
-        if (!source.id) throw Error ('Source must have an id')
         /**@type {ScreepsReturnCode|null} */
         let result = ERR_INVALID_TARGET;
 
+        // find the energy source
+        let source = this.source;
+        if (this._instruct == c.COMMAND_FILL) {
+            if (source && source.store && source.store.getFreeCapacity(RESOURCE_ENERGY) == 0) source = null;
+            if (source == null) source = this._findEnergySource();
+            if (source && source.id) this._sourceId = source.id;
+            else this.sourceId = '';
+        }
+        if (!source) {
+            this._instruct=COMMAND_NONE;
+            return ERR_INVALID_TARGET;
+        }
+        if (!source.id) throw Error('source id cannot be null')
+
+        // retrieve energy from the source
         if (source.store && !this._carryPartUsed) {
             result = creep.withdraw(/**@type {Structure}*/ (source), RESOURCE_ENERGY);
             if (result == OK) {
@@ -313,15 +348,30 @@ module.exports = class CreepOp extends ChildOp {
         mutations[source.id] = (mutations[source.id]||0) -amount;
         mutations[creep.id] = (mutations[creep.id]||0) + amount;
 
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT    
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
+        
+        return result;
     }
 
     //output the resources for the task
     /**@param {{[index:string]:number}} mutations */
     _outputResource(mutations) {
         let creep = this._creep;
+        /**@type {ScreepsReturnCode} */
+        let result = ERR_NOT_IN_RANGE;
+        
+        //determine target
         let target = this.dest
-        if (!target) throw Error ('target cannot be null')
+        if (this._instruct == c.COMMAND_FILL) {
+            if (target && target.id && target.store && target.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[target.id]||0) <= TOWER_ENERGY_COST) target = null;
+            if (!target) target = this._findFillTarget(mutations);
+            if (target && target.id) this._destId = target.id;
+            else this._destId = '';
+        }
+        if (!target) {
+            this._instruct = c.COMMAND_NONE;
+            return ERR_INVALID_TARGET;
+        }
         if (!target.id) throw Error ('target id cannot be null')
         let amount = 0;
 
@@ -330,14 +380,14 @@ module.exports = class CreepOp extends ChildOp {
             if (target.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
             let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
 
-            let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+            result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
             if (result == OK) {
                 amount = Math.min(creepAmount, maxEnergyPerTick)
             }
         }
         else if (target.store &&!this._carryPartUsed) {
             let store = target.store;
-            let result = creep.transfer(/**@type {Structure}*/ (target), RESOURCE_ENERGY)
+            result = creep.transfer(/**@type {Structure}*/ (target), RESOURCE_ENERGY)
             if (result == OK) {
                 this._carryPartUsed=true;
                 amount = Math.min(creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0), 
@@ -350,12 +400,14 @@ module.exports = class CreepOp extends ChildOp {
         mutations[creep.id] = (mutations[creep.id]||0) - amount;
 
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
+
+        return result;
     }  
 
 
     _command() {
         // check if command uses old or new style
-        if (this._instruct == c.COMMAND_TRANSFER) {
+        if (this._instruct == c.COMMAND_TRANSFER || this._instruct == c.COMMAND_FILL) {
             this._processTurn()
             return;
         }
@@ -746,12 +798,17 @@ module.exports = class CreepOp extends ChildOp {
         return result;        
     }
 
-    _findFillTarget() {
+    /**@param {{[index:string]:number}} [p_mutations] */
+    _findFillTarget(p_mutations) {
+        /**@type {{[index:string]:number}} */
+        let mutations = {};
+        if (p_mutations) mutations = p_mutations
+
         let creep = this._creep;
         let dest = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
             let store = /**@type {any} */ (o).store;
             if (store == undefined) return false
-            return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
+            return  (store[RESOURCE_ENERGY] + (mutations[o.id]||0) < store.getCapacity(RESOURCE_ENERGY) )
                     && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB 
                         );
             }})
@@ -760,7 +817,7 @@ module.exports = class CreepOp extends ChildOp {
             dest = creep.room.find(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
                 let store = /**@type {any} */ (o).store;
                 if (store == undefined) return false
-                return o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION
+                return o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] + (mutations[o.id]||0) < c.MAX_TRANSACTION
             }})[0]
         }
         return dest;
