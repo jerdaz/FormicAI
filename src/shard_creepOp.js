@@ -295,16 +295,16 @@ module.exports = class CreepOp extends ChildOp {
         }
 
         //pick up nearby resources
-        if (creep.getActiveBodyparts(CARRY) > 0) {
-            let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
-            for (let resource of resources) {
-                creep.pickup(resource);
-            }
-            let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
-            for (let tombstone of tombstones) {
-                creep.withdraw(tombstone, RESOURCE_ENERGY);
-            }
-        }
+        // if (creep.getActiveBodyparts(CARRY) > 0) {
+        //     let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
+        //     for (let resource of resources) {
+        //         creep.pickup(resource);
+        //     }
+        //     let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
+        //     for (let tombstone of tombstones) {
+        //         creep.withdraw(tombstone, RESOURCE_ENERGY);
+        //     }
+        // }
     }
 
     //input the resources for the task
@@ -314,7 +314,7 @@ module.exports = class CreepOp extends ChildOp {
         let creep = this._creep;
         let amount = 0;
         /**@type {ScreepsReturnCode|null} */
-        let result = ERR_INVALID_TARGET;
+        let result = ERR_NOT_IN_RANGE;
 
         // find the energy source
         let source = this.source;
