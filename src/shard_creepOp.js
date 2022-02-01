@@ -291,18 +291,6 @@ module.exports = class CreepOp extends ChildOp {
                 this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0) + 2)
             }
         }
-
-        //pick up nearby resources
-        // if (creep.getActiveBodyparts(CARRY) > 0) {
-        //     let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
-        //     for (let resource of resources) {
-        //         creep.pickup(resource);
-        //     }
-        //     let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
-        //     for (let tombstone of tombstones) {
-        //         creep.withdraw(tombstone, RESOURCE_ENERGY);
-        //     }
-        // }
     }
 
     //input the resources for the task
@@ -354,6 +342,18 @@ module.exports = class CreepOp extends ChildOp {
 
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
         
+        //pick up nearby resources of death predecessors
+        if (result == OK && (creep.ticksToLive||1500)>=CREEP_CLAIM_LIFE_TIME - 50 - this._parent.travelTicks && creep.getActiveBodyparts(CARRY) > 0) {
+            let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
+            for (let resource of resources) {
+                creep.pickup(resource);
+            }
+            let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
+            for (let tombstone of tombstones) {
+                creep.withdraw(tombstone, RESOURCE_ENERGY);
+            }
+        }
+
         return result;
     }
 

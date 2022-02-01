@@ -41,6 +41,8 @@ module.exports = class ShardChildOp extends ChildOp {
 
     get ownerRoomName() {return this._ownerRoomName}
 
+    get travelTicks() {return this._travelTicks||0}
+
     /** Returns the number of creeps in the operation
      * Corrects for creeps that have TTL smaller than their spawn time
      */
