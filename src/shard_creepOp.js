@@ -287,10 +287,8 @@ module.exports = class CreepOp extends ChildOp {
         if (moveTarget) {
             if (result == ERR_NOT_IN_RANGE) this._moveTo(moveTarget, {range:moveRange})
             else if (result == OK && !this._travelDone) {
-                if ( this._instruct == c.COMMAND_HARVEST || this._state == c.STATE_OUTPUT) {
-                    this._travelDone = true;
-                    this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0))
-                }
+                this._travelDone = true;
+                this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0) + 2)
             }
         }
 
