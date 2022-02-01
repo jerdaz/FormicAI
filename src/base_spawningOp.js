@@ -76,8 +76,9 @@ module.exports = class SpawningOp extends BaseChildOp {
         }
 
         this._energyStructures = /**@type {(StructureExtension|StructureSpawn)[]} */ (this._baseOp.spawns).concat(this._baseOp.extensions)
+        let zeroPos = this._baseOp.storage?this._baseOp.storage.pos:this._baseOp.centerPos;
         this._energyStructures.sort ( (a,b) => {
-                return a.pos.getRangeTo(this._baseOp.centerPos) - b.pos.getRangeTo(this._baseOp.centerPos);
+                return a.pos.getRangeTo(zeroPos) - b.pos.getRangeTo(zeroPos);
             })
     }
 

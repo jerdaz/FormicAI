@@ -46,6 +46,7 @@ module.exports = class CreepOp extends ChildOp {
         this._shardOp = shardOp;
         this._idleTime = 0;
         this._travelDone = creep.spawning?false:true;
+        this._retrieveOldResourcesDone = false;
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
         this._notifyWhenAttacked = true
@@ -328,6 +329,9 @@ module.exports = class CreepOp extends ChildOp {
             result = creep.harvest(/**@type {Source} */ (source));
             if (result == OK) {
                 amount = Math.min(source.energy, creep.getActiveBodyparts(WORK) * HARVEST_POWER)
+
+                // pickup predecessor resources;
+                this._retrieveOldResources()
             }
         }
         else if (source instanceof Resource) {
@@ -341,18 +345,7 @@ module.exports = class CreepOp extends ChildOp {
         mutations[creep.id] = (mutations[creep.id]||0) + amount;
 
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
-        
-        //pick up nearby resources of death predecessors
-        if (result == OK && (creep.ticksToLive||1500)>=CREEP_CLAIM_LIFE_TIME - 50 - this._parent.travelTicks && creep.getActiveBodyparts(CARRY) > 0) {
-            let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
-            for (let resource of resources) {
-                creep.pickup(resource);
-            }
-            let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
-            for (let tombstone of tombstones) {
-                creep.withdraw(tombstone, RESOURCE_ENERGY);
-            }
-        }
+    
 
         return result;
     }
@@ -387,6 +380,7 @@ module.exports = class CreepOp extends ChildOp {
             result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
             if (result == OK) {
                 amount = Math.min(creepAmount, maxEnergyPerTick)
+                this._retrieveOldResources()
             }
         }
         else if (target.store &&!this._carryPartUsed) {
@@ -408,6 +402,26 @@ module.exports = class CreepOp extends ChildOp {
         return result;
     }  
 
+
+    _retrieveOldResources() {
+        //pick up nearby resources of death predecessors
+        let creep=this.creep;
+        if ( creep.getActiveBodyparts(CARRY) == 0) return;
+        if (!this._retrieveOldResourcesDone || (creep.ticksToLive||1500)>=CREEP_CLAIM_LIFE_TIME - 10 - this._parent.travelTicks) {
+            if (!this._retrieveOldResourcesDone) {
+                let workDone = false;
+                let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
+                for (let resource of resources) {
+                    if (creep.pickup(resource) == OK) workDone = true;
+                }
+                let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
+                for (let tombstone of tombstones) {
+                    if (creep.withdraw(tombstone, RESOURCE_ENERGY) == OK) workDone = true;
+                }
+                if (!workDone) this._retrieveOldResourcesDone = false;
+            }
+        }        
+    }
 
     _command() {
         // check if command uses old or new style
