@@ -35,6 +35,8 @@ module.exports = class CreepOp extends ChildOp {
         this._mapOp = mapOp;
         /**@type {RoomPosition | null} */
         this._lastMoveToDest = null
+        /**@type {RoomPosition | undefined} */
+        this._moveToAltDest = undefined;
         /**@type {RoomPosition | null} */
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
@@ -272,25 +274,30 @@ module.exports = class CreepOp extends ChildOp {
         }
 
         // then move to new target
-        let moveRange = 1;
-        /**@type {RoomPosition|null} */
-        let moveTarget = null;;
+        if (result == ERR_NOT_IN_RANGE) {
+            let moveRange = 1;
+            /**@type {RoomPosition|undefined} */
+            let moveTarget = undefined;
+            let nextStop = undefined;
 
-        if (this._state == c.STATE_INPUT && this.source) {
-            moveTarget = this.source.pos;
-        }
-        else if (this._state == c.STATE_OUTPUT && this.dest) {
-            if (    this.dest instanceof StructureController
-                || this.dest instanceof ConstructionSite
-              ) moveRange = 3
-            moveTarget = this.dest.pos;
-        }
-        if (moveTarget) {
-            if (result == ERR_NOT_IN_RANGE) this._moveTo(moveTarget, {range:moveRange})
-            else if (result == OK && !this._travelDone) {
-                this._travelDone = true;
-                this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0) + 2)
+            if (this._state == c.STATE_INPUT && this.source) {
+                moveTarget = this.source.pos;
+                if (this.dest) nextStop = this.dest.pos;
             }
+            else if (this._state == c.STATE_OUTPUT && this.dest) {
+                if (    this.dest instanceof StructureController
+                    || this.dest instanceof ConstructionSite
+                ) moveRange = 3
+                moveTarget = this.dest.pos;
+                if (this.source) nextStop = this.source.pos
+            }
+            if (moveTarget) {
+                this._moveTo(moveTarget, {range:moveRange}, {nextStop:nextStop})
+
+            }
+        } else if (result == OK && !this._travelDone) {
+            this._travelDone = true;
+            this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0) + 2)
         }
     }
 
@@ -895,7 +902,7 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @arg {RoomPosition} endDest 
      * @arg {MoveToOpts} [opts]
-     * @arg {{noEvade:boolean}} [myOpts]
+     * @arg {{noEvade?:boolean, nextStop?:RoomPosition}} [myOpts]
     */
     _moveTo(endDest, opts, myOpts) {
         let creep = this._creep;
@@ -909,6 +916,24 @@ module.exports = class CreepOp extends ChildOp {
         let mapOp = this._mapOp
         let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
+
+        //choose optimum position next to goal for next stop
+        let nextStop = (myOpts?myOpts.nextStop:null);
+        if (range>0 && nextStop) { 
+            if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) {
+                let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
+                if (path.path.length>0) {
+                    dest = path.path[range-1]
+                    range = 0;
+                    this._moveToAltDest = dest;
+                } else this._moveToAltDest = undefined;
+            } else if (this._moveToAltDest) {
+                dest = this._moveToAltDest;
+                range = 0;
+            }
+        }  else this._moveToAltDest = undefined;
+        optsCopy.range = range;
+
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
