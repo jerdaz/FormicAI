@@ -911,28 +911,29 @@ module.exports = class CreepOp extends ChildOp {
         if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
-        let dest = endDest;
+        let dest = null
+        dest = Object.assign({}, endDest);
         let myPos = creep.pos;
         let mapOp = this._mapOp
         let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
 
         //choose optimum position next to goal for next stop
-        let nextStop = (myOpts?myOpts.nextStop:null);
-        if (range>0 && nextStop) { 
-            if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) {
-                let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
-                if (path.path.length>0) {
-                    dest = path.path[range-1]
-                    range = 0;
-                    this._moveToAltDest = dest;
-                } else this._moveToAltDest = undefined;
-            } else if (this._moveToAltDest) {
-                dest = this._moveToAltDest;
-                range = 0;
-            }
-        }  else this._moveToAltDest = undefined;
-        optsCopy.range = range;
+        // let nextStop = (myOpts?myOpts.nextStop:null);
+        // if (range>0 && nextStop) { 
+        //     if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) {
+        //         let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
+        //         if (path.path.length>0) {
+        //             dest = path.path[range-1]
+        //             range = 0;
+        //             this._moveToAltDest = dest;
+        //         } else this._moveToAltDest = undefined;
+        //     } else if (this._moveToAltDest) {
+        //         dest = this._moveToAltDest;
+        //         range = 0;
+        //     }
+        // }  else this._moveToAltDest = undefined;
+        // optsCopy.range = range;
 
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
