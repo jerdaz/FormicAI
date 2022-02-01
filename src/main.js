@@ -13,6 +13,8 @@ module.exports.loop = function() {
     Game.mainOp = mainOp;
     // @ts-ignore
     Game.shardOp = mainOp._shardOp;
+    // @ts-ignore
+    Game.debug = debug;
     
     mainOp.initTick();
 
