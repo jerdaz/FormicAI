@@ -912,7 +912,7 @@ module.exports = class CreepOp extends ChildOp {
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition | null} */
         let dest = null
-        dest = Object.assign({}, endDest);
+        dest = Object.assign(endDest);
         let myPos = creep.pos;
         let mapOp = this._mapOp
         let moveFlags = this._moveFlags;
