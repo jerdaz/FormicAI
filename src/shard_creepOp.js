@@ -478,6 +478,7 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
+                this._travelDone = true;
                 break;
 
         }
