@@ -35,8 +35,6 @@ module.exports = class CreepOp extends ChildOp {
         this._mapOp = mapOp;
         /**@type {RoomPosition | null} */
         this._lastMoveToDest = null
-        /**@type {RoomPosition | undefined} */
-        this._moveToAltDest = undefined;
         /**@type {RoomPosition | null} */
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
@@ -917,22 +915,7 @@ module.exports = class CreepOp extends ChildOp {
         let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
 
-        //choose optimum position next to goal for next stop
-        // let nextStop = (myOpts?myOpts.nextStop:null);
-        // if (range>0 && nextStop) { 
-        //     if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) {
-        //         let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
-        //         if (path.path.length>0) {
-        //             dest = path.path[range-1]
-        //             range = 0;
-        //             this._moveToAltDest = dest;
-        //         } else this._moveToAltDest = undefined;
-        //     } else if (this._moveToAltDest) {
-        //         dest = this._moveToAltDest;
-        //         range = 0;
-        //     }
-        // }  else this._moveToAltDest = undefined;
-        // optsCopy.range = range;
+
 
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
@@ -947,9 +930,21 @@ module.exports = class CreepOp extends ChildOp {
                 }
                 let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName, {routeCallback: callBack});
                 if (route instanceof Array && route.length > 2) {
-                    optsCopy.range = 20;
+                    range = 20;
                     dest = new RoomPosition(25,25,route[1].room)
                     this._lastMoveToInterimDest = dest;
+                } else if (range > 0 && nextStop) {
+                    //choose optimum position next to goal for next stop
+                    let nextStop = (myOpts?myOpts.nextStop:null);
+                    let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
+                    if (path.path.length>0) {
+                        dest = path.path[range-1]
+                        this._lastMoveToInterimDest = dest;
+                        range = 0;
+                    } else {
+                        dest = endDest;
+                        this._lastMoveToInterimDest = null;
+                    }
                 } else {
                     dest = endDest;
                     this._lastMoveToInterimDest = null;
@@ -990,6 +985,7 @@ module.exports = class CreepOp extends ChildOp {
         }
 
         optsCopy.maxOps = MAX_MOVE_OPS
+        optsCopy.range = range;
         let result = creep.moveTo(dest, optsCopy);
         if (result == ERR_NO_PATH && !(myPos.x == 0 || myPos.x == 49 || myPos.y == 0 || myPos.y == 49)) {
             this._instruct = c.COMMAND_NONE;
