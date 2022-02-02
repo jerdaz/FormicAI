@@ -171,8 +171,10 @@ module.exports = class TransportOp extends BaseChildOp {
             let sourceStructure = null;
             let creepCapacity = creepOp.creep.body.filter(o => o.type == 'carry').length * CARRY_CAPACITY;
             let linkEquilibrium = creepCapacity / 2; //baseLink equilibrium minimum
-            if (controllerLink) linkEquilibrium = Math.max(linkEquilibrium, controllerLink.store.getFreeCapacity(RESOURCE_ENERGY)-LINK_CAPACITY/2); //if controller link needs energy equilibrium is equal to emptyness of controller link below half capacity
+            if (controllerLink && baseLink != controllerLink) linkEquilibrium = Math.max(linkEquilibrium, controllerLink.store.getFreeCapacity(RESOURCE_ENERGY)-LINK_CAPACITY/2); //if controller link needs energy equilibrium is equal to emptyness of controller link below half capacity
+            if (controllerLink && baseLink && controllerLink == baseLink) linkEquilibrium = LINK_CAPACITY / 2;
             if (baseLink) linkEquilibrium = Math.min (linkEquilibrium, baseLink.store.getCapacity(RESOURCE_ENERGY) - creepCapacity/2) // equilibrium can't be higher then capacity - half of transport creep capacity
+            
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
             if (deathContainer && deathContainer.store.getUsedCapacity(RESOURCE_ENERGY) >= creepCapacity) sourceStructure = deathContainer;
