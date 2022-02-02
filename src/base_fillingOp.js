@@ -2,13 +2,14 @@ const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
+const fillTarget = 0.30 // Target percentage how often all energy should be full / how much % of the time filler should be idle
 
 module.exports = class FillingOp extends BaseChildOp {
     /**@param {BaseOp} baseOp */
     constructor(baseOp) {
         super(baseOp);
         this._lastTickFull = 0;
-        this._avgFillstate = 0.2;
+        this._avgFillstate = fillTarget;
         if (!baseOp.base.memory.fillerSize) baseOp.base.memory.fillerSize = 50;
     }
     get type() {return c.OPERATION_FILLING}
@@ -22,8 +23,8 @@ module.exports = class FillingOp extends BaseChildOp {
         
 
         if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER ) {
-            if (this._avgFillstate < 0.2 ) fillerSize++;
-            else if (this._avgFillstate > 0.2) fillerSize--; 
+            if (this._avgFillstate < fillTarget ) fillerSize++;
+            else if (this._avgFillstate > fillTarget) fillerSize--; 
             if (fillerSize > 50) fillerSize = 50;
             if (fillerSize < 2) fillerSize = 2;
         } else {
