@@ -3,6 +3,7 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const Version = require('./version');
 const { throttle } = require('lodash');
+const { COMMAND_NONE } = require('./constants');
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
@@ -24,6 +25,7 @@ module.exports = class CreepOp extends ChildOp {
         this._instruct = c.COMMAND_NONE;
         this._sourceId = '';
         this._destId = '';
+        this._carryPartUsed=false;
         this._destPos = null;
         this._destRoomName = '';
         /**@type {ResourceConstant} */
@@ -33,6 +35,8 @@ module.exports = class CreepOp extends ChildOp {
         this._mapOp = mapOp;
         /**@type {RoomPosition | null} */
         this._lastMoveToDest = null
+        /**@type {RoomPosition | undefined} */
+        this._moveToAltDest = undefined;
         /**@type {RoomPosition | null} */
         this._lastMoveToInterimDest = null
         this._lastPos = creep.pos
@@ -43,6 +47,8 @@ module.exports = class CreepOp extends ChildOp {
         this._hasWorkParts = null;
         this._shardOp = shardOp;
         this._idleTime = 0;
+        this._travelDone = creep.spawning?false:true;
+        this._retrieveOldResourcesDone = false;
         /**@type {boolean} */
         this._notifyWhenAttackedIntent = true;
         this._notifyWhenAttacked = true
@@ -156,17 +162,6 @@ module.exports = class CreepOp extends ChildOp {
         this._resourceType = resourceType||RESOURCE_ENERGY;
     }
 
-    /**
-     * @param {Source | Structure | Mineral} source
-     * @param {Structure | ConstructionSite} dest 
-     * @param {ResourceConstant | undefined} [resourceType] */
-     instructUpgradeDirect(source, dest, resourceType) {
-        this._sourceId = source.id;
-        this._destId = dest.id;
-        this._instruct = c.COMMAND_UPGRADE_DIRECT;
-        this._resourceType = resourceType||RESOURCE_ENERGY;
-    }
-    
     /**@param {RoomPosition | string} dest 
      * @param {number} [moveFlags]
     */
@@ -262,52 +257,182 @@ module.exports = class CreepOp extends ChildOp {
     _processTurn() {
         /**@type {{[index:string]:number}} */
         let mutations = {}
+        let creep = this._creep;
+        /**@type {ScreepsReturnCode} */
+        let result = OK;
+        this._carryPartUsed = false;
         if (!this._state) this._state = c.STATE_INPUT;
-        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
-        if (this._state == c.STATE_OUTPUT) this._outputResource(mutations);
-        if (this._state == c.STATE_INPUT) this._inputResource(mutations);
+        if (this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // first input
+        if (this._instruct == c.COMMAND_NONE) return;
+        if (result == OK && this._state == c.STATE_OUTPUT) {
+            result = this._outputResource(mutations);  // then output
+            if (this._instruct == c.COMMAND_NONE) return;
+            if (result == OK && this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // then input again
+            if (this._instruct == c.COMMAND_NONE) return;
+            if ( this._state == c.STATE_OUTPUT) result = this._outputResource(mutations); // then output again
+            if (this._instruct == c.COMMAND_NONE) return;
+        }
 
-        if (this._state == c.STATE_INPUT && this.source) this._moveTo(this.source.pos, {range:1});
-        else if (this._state == c.STATE_OUTPUT && this.dest) this._moveTo(this.dest.pos, {range:3})
+        // then move to new target
+        if (result == ERR_NOT_IN_RANGE) {
+            let moveRange = 1;
+            /**@type {RoomPosition|undefined} */
+            let moveTarget = undefined;
+            let nextStop = undefined;
+
+            if (this._state == c.STATE_INPUT && this.source) {
+                moveTarget = this.source.pos;
+                if (this.dest) nextStop = this.dest.pos;
+            }
+            else if (this._state == c.STATE_OUTPUT && this.dest) {
+                if (    this.dest instanceof StructureController
+                    || this.dest instanceof ConstructionSite
+                ) moveRange = 3
+                moveTarget = this.dest.pos;
+                if (this.source) nextStop = this.source.pos
+            }
+            if (moveTarget) {
+                this._moveTo(moveTarget, {range:moveRange}, {nextStop:nextStop})
+
+            }
+        } else if (result == OK && !this._travelDone) {
+            this._travelDone = true;
+            this._parent.updateTravelTime(CREEP_LIFE_TIME - (creep.ticksToLive||0) + 2)
+        }
     }
 
     //input the resources for the task
     /**@param {{[index:string]:number}} mutations */
     _inputResource(mutations) {
+        // init vars
         let creep = this._creep;
-        let source = /**@type {StructureLink}*/(this.source);
         let amount = 0;
-        let result = creep.withdraw(source, RESOURCE_ENERGY);
-        if (result == OK) {
-            amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
-            mutations[source.id] = (mutations[source.id]||0) -amount;
-            mutations[creep.id] = (mutations[creep.id]||0) + amount;
+        /**@type {ScreepsReturnCode|null} */
+        let result = ERR_NOT_IN_RANGE;
+
+        // find the energy source
+        let source = this.source;
+        if (this._instruct == c.COMMAND_FILL) {
+            if (source && source.store && source.store.getUsedCapacity(RESOURCE_ENERGY) == 0) source = null;
+            if (source == null) source = this._findEnergySource();
+            if (source && source.id) this._sourceId = source.id;
+            else this.sourceId = '';
         }
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT    
+        if (!source) {
+            this._instruct=COMMAND_NONE;
+            return ERR_INVALID_TARGET;
+        }
+        if (!source.id) throw Error('source id cannot be null')
+
+        // retrieve energy from the source
+        if (source.store && !this._carryPartUsed) {
+            result = creep.withdraw(/**@type {Structure}*/ (source), RESOURCE_ENERGY);
+            if (result == OK) {
+                this._carryPartUsed=true;
+                amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[source.id]||0));
+            }
+        }
+        else if (source instanceof Source) {
+            result = creep.harvest(/**@type {Source} */ (source));
+            if (result == OK) {
+                amount = Math.min(source.energy, creep.getActiveBodyparts(WORK) * HARVEST_POWER)
+
+                // pickup predecessor resources;
+                this._retrieveOldResources()
+            }
+        }
+        else if (source instanceof Resource) {
+            result = creep.pickup(source)
+            if (result == OK) {
+                amount = amount = Math.min(creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0), source.amount + (mutations[source.id]||0));
+            }
+        }
+        
+        mutations[source.id] = (mutations[source.id]||0) -amount;
+        mutations[creep.id] = (mutations[creep.id]||0) + amount;
+
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
+    
+
+        return result;
     }
 
     //output the resources for the task
     /**@param {{[index:string]:number}} mutations */
     _outputResource(mutations) {
         let creep = this._creep;
-        let targetController = /**@type {StructureController}*/(this.dest)
-        let amount = 0;
-        let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
-        if (targetController.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
-        let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
-
-        let result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
-        if (result == OK) {
-            amount = Math.min(creepAmount, maxEnergyPerTick)
-            mutations[creep.id] = (mutations[creep.id]||0) - amount;
+        /**@type {ScreepsReturnCode} */
+        let result = ERR_NOT_IN_RANGE;
+        
+        //determine target
+        let target = this.dest
+        if (this._instruct == c.COMMAND_FILL) {
+            if (target && target.id && target.store && target.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[target.id]||0) <= TOWER_ENERGY_COST) target = null;
+            if (!target) target = this._findFillTarget(mutations);
+            if (target && target.id) this._destId = target.id;
+            else this._destId = '';
         }
+        if (!target) {
+            this._instruct = c.COMMAND_NONE;
+            return ERR_INVALID_TARGET;
+        }
+        if (!target.id) throw Error ('target id cannot be null')
+        let amount = 0;
+
+        if (target instanceof StructureController) {
+            let maxEnergyPerTick = creep.getActiveBodyparts(WORK) * UPGRADE_CONTROLLER_POWER
+            if (target.level >= 8) maxEnergyPerTick = Math.min(maxEnergyPerTick, CONTROLLER_MAX_UPGRADE_PER_TICK);
+            let creepAmount = creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0)
+
+            result = creep.upgradeController(/**@type {StructureController}*/(this.dest))
+            if (result == OK) {
+                amount = Math.min(creepAmount, maxEnergyPerTick)
+                this._retrieveOldResources()
+            }
+        }
+        else if (target.store &&!this._carryPartUsed) {
+            let store = target.store;
+            result = creep.transfer(/**@type {Structure}*/ (target), RESOURCE_ENERGY)
+            if (result == OK) {
+                this._carryPartUsed=true;
+                amount = Math.min(creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0), 
+                                  store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[target.id]||0 )
+                                 );
+            }
+        }
+
+        mutations[target.id] = (mutations[target.id]||0) + amount;
+        mutations[creep.id] = (mutations[creep.id]||0) - amount;
+
         if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
+
+        return result;
     }  
 
 
+    _retrieveOldResources() {
+        //pick up nearby resources of death predecessors
+        let creep=this.creep;
+        if ( creep.getActiveBodyparts(CARRY) == 0) return;
+        if (!this._retrieveOldResourcesDone || (creep.ticksToLive||1500)>=CREEP_CLAIM_LIFE_TIME - 10 - this._parent.travelTicks) {
+            if (!this._retrieveOldResourcesDone) {
+                let workDone = false;
+                let resources = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1, {filter: o => o.resourceType == RESOURCE_ENERGY})
+                for (let resource of resources) {
+                    if (creep.pickup(resource) == OK) workDone = true;
+                }
+                let tombstones = creep.pos.findInRange(FIND_TOMBSTONES, 1)
+                for (let tombstone of tombstones) {
+                    if (creep.withdraw(tombstone, RESOURCE_ENERGY) == OK) workDone = true;
+                }
+                if (!workDone) this._retrieveOldResourcesDone = false;
+            }
+        }        
+    }
+
     _command() {
         // check if command uses old or new style
-        if (this._instruct == c.COMMAND_UPGRADE_DIRECT) {
+        if (this._instruct == c.COMMAND_TRANSFER || this._instruct == c.COMMAND_FILL) {
             this._processTurn()
             return;
         }
@@ -374,6 +499,7 @@ module.exports = class CreepOp extends ChildOp {
                 break;
             case c.COMMAND_NONE:
                 this._state = c.STATE_NONE;
+                this._travelDone = true;
                 break;
 
         }
@@ -551,7 +677,7 @@ module.exports = class CreepOp extends ChildOp {
                 } 
                 if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
                 break;
-            case c.STATE_RECYCLING:
+            case c.STATE_RECYCLING: 
                 if (!this._baseOp) {
                     this._state = c.COMMAND_NONE;
                     break;
@@ -560,14 +686,17 @@ module.exports = class CreepOp extends ChildOp {
                     this._moveTo(new RoomPosition(25,25,this._baseOp.name), {range:20})
                 } else {
                     if (!destObj) {
-                        destObj = creep.pos.findClosestByPath(this._baseOp.spawns);
+                        destObj = this._baseOp.deathContainer||null;
                         if (!destObj) { 
                             this._state = c.COMMAND_NONE;
                             break;
                         }
                     }
-                    this._moveTo(destObj.pos);
-                    if (destObj instanceof StructureSpawn) destObj.recycleCreep(creep);
+                    if (!creep.pos.isEqualTo(destObj.pos)) this._moveTo(destObj.pos);
+                    else {         
+                        let spawn = /**@type {StructureSpawn} */(destObj.pos.findInRange(FIND_MY_STRUCTURES,1,{filter: o=> o.structureType==STRUCTURE_SPAWN})[0])
+                        if (spawn) spawn.recycleCreep(creep);
+                    }
                 }
                 break;
                 
@@ -695,12 +824,17 @@ module.exports = class CreepOp extends ChildOp {
         return result;        
     }
 
-    _findFillTarget() {
+    /**@param {{[index:string]:number}} [p_mutations] */
+    _findFillTarget(p_mutations) {
+        /**@type {{[index:string]:number}} */
+        let mutations = {};
+        if (p_mutations) mutations = p_mutations
+
         let creep = this._creep;
         let dest = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
             let store = /**@type {any} */ (o).store;
             if (store == undefined) return false
-            return  (store[RESOURCE_ENERGY] < store.getCapacity(RESOURCE_ENERGY))
+            return  (store[RESOURCE_ENERGY] + (mutations[o.id]||0) < store.getCapacity(RESOURCE_ENERGY) )
                     && (o.structureType == STRUCTURE_SPAWN || o.structureType == STRUCTURE_EXTENSION || o.structureType == STRUCTURE_TOWER || o.structureType == STRUCTURE_LAB 
                         );
             }})
@@ -709,7 +843,7 @@ module.exports = class CreepOp extends ChildOp {
             dest = creep.room.find(FIND_MY_STRUCTURES, {filter: (/**@type {Structure}*/ o) => {
                 let store = /**@type {any} */ (o).store;
                 if (store == undefined) return false
-                return o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] < c.MAX_TRANSACTION
+                return o.structureType == STRUCTURE_TERMINAL && store[RESOURCE_ENERGY] + (mutations[o.id]||0) < c.MAX_TRANSACTION
             }})[0]
         }
         return dest;
@@ -730,12 +864,15 @@ module.exports = class CreepOp extends ChildOp {
                 if (o.structureType != STRUCTURE_ROAD && o.structureType != STRUCTURE_CONTAINER) return false;
                 let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR;
                 if (!needRepair) return false;
-                this._log({roadrepair: o.pos})
-                let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
-                if (!terrainArray) return false;
-                this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
-                if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
-                this._log('canrepair');
+
+                if (o.structureType == STRUCTURE_ROAD) {
+                    this._log({roadrepair: o.pos})
+                    let terrainArray = this._mapOp.getBreadCrumbs(creep.room.name);
+                    if (!terrainArray) return false;
+                    this._log({roadrepair: o.pos, terrain:terrainArray[o.pos.x][o.pos.y] })
+                    if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
+                    this._log('canrepair');
+                }
                 return true;
             }});
             dest = creep.pos.findClosestByRange(roads);
@@ -765,7 +902,7 @@ module.exports = class CreepOp extends ChildOp {
     /**
      * @arg {RoomPosition} endDest 
      * @arg {MoveToOpts} [opts]
-     * @arg {{noEvade:boolean}} [myOpts]
+     * @arg {{noEvade?:boolean, nextStop?:RoomPosition}} [myOpts]
     */
     _moveTo(endDest, opts, myOpts) {
         let creep = this._creep;
@@ -773,12 +910,30 @@ module.exports = class CreepOp extends ChildOp {
         if (opts && opts.range) range = opts.range;
         if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
-        /**@type {RoomPosition | null} */
-        let dest = endDest;
+        /**@type {RoomPosition } */
+        let dest = Object.assign(endDest);
         let myPos = creep.pos;
         let mapOp = this._mapOp
         let moveFlags = this._moveFlags;
         let evade = (myOpts && myOpts.noEvade)?false:true;
+
+        //choose optimum position next to goal for next stop
+        // let nextStop = (myOpts?myOpts.nextStop:null);
+        // if (range>0 && nextStop) { 
+        //     if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) {
+        //         let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
+        //         if (path.path.length>0) {
+        //             dest = path.path[range-1]
+        //             range = 0;
+        //             this._moveToAltDest = dest;
+        //         } else this._moveToAltDest = undefined;
+        //     } else if (this._moveToAltDest) {
+        //         dest = this._moveToAltDest;
+        //         range = 0;
+        //     }
+        // }  else this._moveToAltDest = undefined;
+        // optsCopy.range = range;
+
         if (myPos.roomName != endDest.roomName) {
             if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
             if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;

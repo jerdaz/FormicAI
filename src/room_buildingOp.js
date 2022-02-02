@@ -25,7 +25,6 @@ module.exports = class BuildingOp extends RoomChildOp {
 
         let buildWork = false;
         if (repairSites.length > 0 || constructionSites.length >0 ) buildWork = true;
-        if (repairSites.length > 0 && constructionSites.length == 0) maxLength = 6; // spawn small repair creep if only repairing.
         
         let roomInfo = this._map.getRoomInfo(this._roomName)
         if (roomInfo && (
@@ -57,6 +56,11 @@ module.exports = class BuildingOp extends RoomChildOp {
             if (buildWork && creepCount <= 1) {
                 creepCount = 1;
             }
+            if (repairSites.length > 0 && constructionSites.length == 0) {
+                 maxLength = 6; // spawn small repair creep if only repairing.
+                 if (creepCount > 1) creepCount = 1;
+            };
+        
         // always try to spawn 1 builder to continue build work if storage is not large enough
             if (creepCount == 1 ) {
                 // scale down the size of the worker in case energy is low to prevent completely draining the energy reserve
@@ -99,8 +103,8 @@ module.exports = class BuildingOp extends RoomChildOp {
             }
             else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork
             else if (creepOp.instruction == c.COMMAND_NONE) {
+                this._baseOp.spawningOp.ltRequestSpawn(this, {body:[]}, 0) // disable spawning of new creeps
                 creepOp.instructRecycle();
-                creepOp._strategy(); //update state to prevent spawning new creep
             }
         }
     }
@@ -126,7 +130,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
 
         }}
-        )       
+        )      
         return result; 
     }
 }

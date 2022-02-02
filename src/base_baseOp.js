@@ -65,6 +65,12 @@ module.exports = class BaseOp extends ShardChildOp{
     get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
     get labs() {return /**@type {StructureLab[]} */ (this._structures[STRUCTURE_LAB])||[]}
+    get containers() {return /**@type {StructureContainer[]} */ (this._structures[STRUCTURE_CONTAINER])||[]}
+    get deathContainer() {
+        for (let container of this.containers) {
+            if (container.pos.x == this.centerPos.x-1 && container.pos.y == this.centerPos.y+1) return container;
+        }
+    }
     get name() {return this._name}
     get phase() {return this._phase}
     get centerPos() { return this.basePlanOp.baseCenter;}
@@ -80,7 +86,7 @@ module.exports = class BaseOp extends ShardChildOp{
         // add op to room for easy access in debug console
         this._base.baseOp = this;
         this._structures = {spawn:[], extension:[], rampart:[], link:[], storage:[], observer:[], powerBank:[], extractor:[], lab:[], terminal:[], nuker:[], factory:[]};
-        let structures = this._base.find(FIND_MY_STRUCTURES);
+        let structures = this._base.find(FIND_STRUCTURES);
         for (let structure of structures) {
             if (this._structures[structure.structureType] == undefined) this._structures[structure.structureType] = [];
             this._structures[structure.structureType].push(structure);

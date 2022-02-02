@@ -45,13 +45,8 @@ module.exports = class Operation {
     }
 
     run() {
-        //last resort cpu overflow prevention.
+
         let cpuStart = Game.cpu.getUsed();
-        // if (cpuStart < 0) cpuStart = 0; //workaround for strange bug with negative cpu counter;
-        // if (Game.cpu.bucket < cpuStart + Game.cpu.limit) {
-        //     U.l('Warning out of CPU in operation ' + this.name);
-        //     return;
-        // }
         if (this._verboseAll) (U.l({RUNNING: this.constructor.name, name: this.name}))
 
         if (this._bFirstRun) {

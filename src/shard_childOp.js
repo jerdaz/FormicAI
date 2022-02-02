@@ -21,6 +21,7 @@ module.exports = class ShardChildOp extends ChildOp {
         /**@type {{[creepName:string]:CreepOp}} */
         this._creepOps = {}
         this._lastIdle = 0;
+        this._travelTicks = 0;
         let roomName = '';
         if (roomOp) roomName = roomOp.roomName
         else if (baseOp) roomName = baseOp.name;
@@ -40,6 +41,8 @@ module.exports = class ShardChildOp extends ChildOp {
 
     get ownerRoomName() {return this._ownerRoomName}
 
+    get travelTicks() {return this._travelTicks||0}
+
     /** Returns the number of creeps in the operation
      * Corrects for creeps that have TTL smaller than their spawn time
      */
@@ -48,8 +51,9 @@ module.exports = class ShardChildOp extends ChildOp {
         for (let name in this._creepOps) {
             let creepOp = this._creepOps[name];
             let creep = creepOp.creep;
-            //only count a creep if ticks to live is larger then spawn time 
-            if (!creep.ticksToLive || creep.ticksToLive > creep.body.length * 3) res++;
+            //only count a creep if ticks to live minus initial travel time is larger then spawn time 
+            let spawnTime = creep.body.length * 3
+            if (!creep.ticksToLive || creep.ticksToLive - this._travelTicks > spawnTime) res++;
         }
         return res;
     }
@@ -129,5 +133,9 @@ module.exports = class ShardChildOp extends ChildOp {
         this._creepOps[creep.name].initTickCreep(creep);
     }
 
+    /**@param {number} ticks */
+    updateTravelTime(ticks) {
+        this._travelTicks = ticks;
+    }
 }
 

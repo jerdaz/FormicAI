@@ -139,7 +139,6 @@ module.exports = class MainOp extends Operation {
         
 
         // if we are at maximum bases, find the lowest level single source room and abandon it
-        U.l(interShardMem)
         if (myBasesCount > 1 && totalBases == Game.gcl.level) {
             let shard = 0;
             let room = '';
@@ -148,7 +147,6 @@ module.exports = class MainOp extends Operation {
             let foundNoSpawnBase = false;
             for (let i = 0; i< interShardMem.shards.length;i++ ) {
                 let shardInfo = interShardMem.shards[i];
-                U.l(shardInfo)
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
                     // first check if we find a base without spawn. we don't want to abondon any base if we have one.
@@ -174,7 +172,6 @@ module.exports = class MainOp extends Operation {
                 && shard == this._shardNum 
                 && room) 
             {
-                U.l('Abandoning single source base: ' + room)
                 this._shardOp.unclaimBase(room)
             }
         }

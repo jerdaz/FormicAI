@@ -119,17 +119,19 @@ module.exports = class TransportOp extends BaseChildOp {
         if (baseLink) {
             let controllerLinkIsSourceLink = false;
             let targetLink = controllerLink;
-            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < LINK_CAPACITY/3 ) targetLink = this._baseLink;
+            if (targetLink == undefined || (targetLink.store.getFreeCapacity(RESOURCE_ENERGY)||0) < 300 ) targetLink = this._baseLink;
             if (baseLink && targetLink) {
                 for(let sourceLink of this._sourceLinks) {
                     if (sourceLink == controllerLink) {
                         controllerLinkIsSourceLink = true;
-                        if ( sourceLink.store.energy > LINK_CAPACITY / 8 * 6 ) {
-                            sourceLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                        if ( sourceLink.store.energy > 600 ) {
+                            sourceLink.transferEnergy(baseLink, 300); //transfer 3/8 capacity
                         }
                     }
-                    else if (LINK_CAPACITY / 8 <= sourceLink.store.energy) {
-                        sourceLink.transferEnergy(targetLink);
+                    else if (sourceLink.store.energy >= 300) {
+                        let amount = Math.min( sourceLink.store.getUsedCapacity(RESOURCE_ENERGY), targetLink.store.getFreeCapacity(RESOURCE_ENERGY))
+                        amount = Math.floor(amount / 100) * 100 // transfer multiples of 100 for optimum efficiency.
+                        sourceLink.transferEnergy(targetLink, amount);
                     }
                 }
             }
@@ -143,7 +145,8 @@ module.exports = class TransportOp extends BaseChildOp {
                 } else if (controllerLinkIsSourceLink
                             && controllerLink.store.energy < CARRY_CAPACITY) 
                 {
-                    baseLink.transferEnergy(baseLink, LINK_CAPACITY / 8 * 3); //transfer 3/8 capacity
+                    let amount = Math.min(Math.floor(baseLink.store.getUsedCapacity(RESOURCE_ENERGY) / 100) * 100, 300)
+                    baseLink.transferEnergy(baseLink, amount); 
                 }
             }
         }
@@ -153,6 +156,7 @@ module.exports = class TransportOp extends BaseChildOp {
         if (creepOp) {
             let storage = this._baseOp.storage;
             let terminal = this._baseOp.terminal;
+            let deathContainer = this._baseOp.deathContainer;
             let pos = creepOp.creep.pos;
             let structures = pos.findInRange(FIND_STRUCTURES,1)
             /**@type {StructureSpawn | null} */
@@ -178,6 +182,7 @@ module.exports = class TransportOp extends BaseChildOp {
             if (baseLink) linkEquilibrium = Math.min (linkEquilibrium, baseLink.store.getCapacity(RESOURCE_ENERGY) - creepCapacity/2) // equilibrium can't be higher then capacity - half of transport creep capacity
             if (storage) sourceStructure = storage;
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
+            if (deathContainer && deathContainer.store.getUsedCapacity(RESOURCE_ENERGY) >= creepCapacity) sourceStructure = deathContainer;
             if (baseLink && baseLink.store.energy > linkEquilibrium + creepCapacity/2) sourceStructure = baseLink;
             if (sourceStructure) {
                 /**@type {Structure |null} */

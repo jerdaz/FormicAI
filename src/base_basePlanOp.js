@@ -19,7 +19,7 @@ const CORE_OUTER_RADIUS = 2; // radius of core with free space around it
 const CORE_INNER_RADIUS = 1; // radius of the base core used for placing buildings
 // BASE TEMPLATE IS UPSIDE DOWN, builds from down to up (first south row with spawn, finally terminal row north)
 /**@type {(BuildableStructureConstant|null)[][]} */
-const baseCoreTemplate = [[STRUCTURE_TOWER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
+const baseCoreTemplate = [[STRUCTURE_CONTAINER, STRUCTURE_SPAWN, STRUCTURE_TOWER],
                           [STRUCTURE_STORAGE, null, STRUCTURE_LINK],
                           [STRUCTURE_TOWER,STRUCTURE_TERMINAL, STRUCTURE_TOWER]]
 
@@ -110,12 +110,6 @@ module.exports = class BasePlanOp extends BaseChildOp{
                            structure.destroy();
                         }
 
-                    // //check if the
-                    // else if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68' && structure.pos.getRangeTo(base.controller.pos) <= 3) {
-                    //     structure.destroy();
-                    //     this._centerPos == undefined;
-                    // }
-                    // if (structure.structureType == STRUCTURE_SPAWN && base.name == 'E5N68') U.l('survived?')
                     break;
                 case STRUCTURE_STORAGE:
                     if (!structure.pos.isEqualTo(this.baseCenter.x-1,this.baseCenter.y)) structure.destroy();

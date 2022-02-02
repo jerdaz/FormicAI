@@ -18,6 +18,10 @@ module.exports = class SpawningOp extends BaseChildOp {
 
         /**@type {number[]} */
         this._spawnPrio = [];
+
+        /**@type {(StructureExtension|StructureSpawn)[]} */
+        this._energyStructures = [];
+
         this._verbose = false;
     }
 
@@ -70,6 +74,12 @@ module.exports = class SpawningOp extends BaseChildOp {
             this._spawnPrio[c.OPERATION_SHARDDEFENSE] = 5;
             this._spawnPrio[c.OPERATION_ATTACK] = 1;
         }
+
+        this._energyStructures = /**@type {(StructureExtension|StructureSpawn)[]} */ (this._baseOp.spawns).concat(this._baseOp.extensions)
+        let zeroPos = this._baseOp.storage?this._baseOp.storage.pos:this._baseOp.centerPos;
+        this._energyStructures.sort ( (a,b) => {
+                return a.pos.getRangeTo(zeroPos) - b.pos.getRangeTo(zeroPos);
+            })
     }
 
     _command() {
@@ -117,7 +127,10 @@ module.exports = class SpawningOp extends BaseChildOp {
                                 let body = this._expandCreep(spawnItem.template);
                                 if (body.length>0) {
                                     let result = spawn.spawnCreep(body, spawnItem.ownerRoomName + '_' + spawnItem.opType + '_' + spawnItem.opInstance + '_' + _.random(0, 999999),
-                                            {directions: directions} )
+                                            {   directions: directions,
+                                                energyStructures: this._energyStructures
+                                            }
+                                            )
                                     if (result != OK) spawnList.push(spawnItem);
                                     this._log(body);
                                     this._log(result); 

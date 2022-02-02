@@ -3,7 +3,6 @@ const c = require('./constants');
 const RoomChildOp = require('./room_childOp');
 
 const HARVESTER_SIZE_BIG = 48
-const HARVESTER_SIZE_SMALL = 6*3
 
 module.exports = class HarvestingOp extends RoomChildOp {
     /** 
@@ -36,7 +35,8 @@ module.exports = class HarvestingOp extends RoomChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
         } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
-            this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_SMALL}, 1)
+            let body = [WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,CARRY]
+            this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength:body.length, maxLength:body.length}, 1)
             this._harvesterCount = null;
         } else if (this.baseOp.storage) {
             if (!this._harvesterCount) this._harvesterCount = 1;

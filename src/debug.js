@@ -1,5 +1,4 @@
 const U = require('./util');
-const { stringify } = require('./util');
 
 module.exports = class Debug {
     constructor(){
@@ -12,7 +11,7 @@ module.exports = class Debug {
     }
 
     //Print entire AI state as json.
-    dumpMain() {
+    static dumpMain() {
         U.l(/**@type {any}) */(Game).main);
     }
 
