@@ -137,17 +137,10 @@ module.exports = class TransportOp extends BaseChildOp {
             }
 
             // transfer energy from baselink to controller link if possible
-            if (baseLink && controllerLink) {
-                if (!controllerLinkIsSourceLink
-                    && controllerLink.store.energy <= baseLink.store.energy && controllerLink.store.getUsedCapacity(RESOURCE_ENERGY) < CARRY_CAPACITY) 
-                {
-                    baseLink.transferEnergy(controllerLink);
-                } else if (controllerLinkIsSourceLink
-                            && controllerLink.store.energy < CARRY_CAPACITY) 
-                {
-                    let amount = Math.min(Math.floor(baseLink.store.getUsedCapacity(RESOURCE_ENERGY) / 100) * 100, 300)
-                    baseLink.transferEnergy(baseLink, amount); 
-                }
+            if (baseLink && controllerLink && baseLink != controllerLink && controllerLink.store.energy < CARRY_CAPACITY) {
+                let amount = Math.min( baseLink.store.getUsedCapacity(RESOURCE_ENERGY), controllerLink.store.getFreeCapacity(RESOURCE_ENERGY))
+                amount = Math.floor(amount / 100) * 100 // transfer multiples of 100 for optimum efficiency.
+                baseLink.transferEnergy(controllerLink, amount);
             }
         }
 
