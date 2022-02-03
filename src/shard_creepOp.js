@@ -917,40 +917,74 @@ module.exports = class CreepOp extends ChildOp {
         let evade = (myOpts && myOpts.noEvade)?false:true;
 
 
-
-        if (myPos.roomName != endDest.roomName) {
-            if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
-            if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) dest = this._lastMoveToInterimDest;
-            else {
-                let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
-                    if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
-                        let roomInfo = mapOp.getRoomInfo(toRoomName)
-                        if (roomInfo && roomInfo.activeTowers >=1 ) return Infinity
-                    }
-                    return 0;
+        //Try to find iterim destinations 
+        // * when walking between rooms, find an interim destination using room pathfinding
+        // * when knowing the next Stop and range>=1 choose the best pos to walk to the location en route to the next stop
+        if (this._lastMoveToDest == null || !endDest.isEqualTo(this._lastMoveToDest)) this._lastMoveToInterimDest = null;
+        if (this._lastMoveToDest && dest.isEqualTo(this._lastMoveToDest) && myPos.roomName == this._lastPos.roomName && this._lastMoveToInterimDest) {
+            dest = this._lastMoveToInterimDest;
+            if (nextStop && dest.roomName == endDest.roomName) range-=1;
+        }
+        else if (myPos.roomName != endDest.roomName) {
+            let callBack = function (/**@type {string}*/ toRoomName, /**@type {string}*/ fromRoomName) {
+                if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && toRoomName != endDest.roomName) {
+                    let roomInfo = mapOp.getRoomInfo(toRoomName)
+                    if (roomInfo && roomInfo.activeTowers >=1 ) return Infinity
                 }
-                let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName, {routeCallback: callBack});
-                if (route instanceof Array && route.length > 2) {
-                    range = 20;
-                    dest = new RoomPosition(25,25,route[1].room)
+                return 0;
+            }
+            let route = Game.map.findRoute(creep.pos.roomName, endDest.roomName, {routeCallback: callBack});
+            if (route instanceof Array && route.length > 2) {
+                range = 20;
+                dest = new RoomPosition(25,25,route[1].room)
+                this._lastMoveToInterimDest = dest;
+            }
+        }
+        else if (range > 0 && nextStop ) {
+                    if (creep.name == 'E1N36_13_0_834206') U.l('finding optimum path')
+                //choose optimum position next to goal for next stop
+                    let roomCallback = function(/**@type {string}*/roomName) {
+                
+                        let room = Game.rooms[roomName];
+                        // In this example `room` will always exist, but since 
+                        // PathFinder supports searches which span multiple rooms 
+                        // you should be careful!
+                        if (!room) return false;
+                        let costs = new PathFinder.CostMatrix;
+                
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                            if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                            } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                        (struct.structureType !== STRUCTURE_RAMPART ||
+                                        !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                            }
+                        });
+                
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                            costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                
+                        return costs;
+                        }
+                let path = PathFinder.search(endDest, {pos:nextStop, range:1}, {roomCallback:roomCallback} )
+                if (path.path.length>0) {
+                    dest = path.path[range-1]
                     this._lastMoveToInterimDest = dest;
-                } else if (range > 0 && nextStop) {
-                    //choose optimum position next to goal for next stop
-                    let path = PathFinder.search(endDest, {pos:nextStop, range:1} )
-                    if (path.path.length>0) {
-                        dest = path.path[range-1]
-                        this._lastMoveToInterimDest = dest;
-                        range = 0;
-                    } else {
-                        dest = endDest;
-                        this._lastMoveToInterimDest = null;
-                    }
+                    range = 0;
                 } else {
                     dest = endDest;
                     this._lastMoveToInterimDest = null;
                 }
-            }
+        } else {
+            dest = endDest;
+            this._lastMoveToInterimDest = null;
         }
+
 
         //mark hostile rooms unwalkable
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
