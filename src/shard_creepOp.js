@@ -349,8 +349,10 @@ module.exports = class CreepOp extends ChildOp {
         mutations[source.id] = (mutations[source.id]||0) -amount;
         mutations[creep.id] = (mutations[creep.id]||0) + amount;
 
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
-    
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) {
+            this._state = c.STATE_OUTPUT 
+            if (this.instruct == c.COMMAND_FILL) this._sourceId = '';
+        }
 
         return result;
     }
@@ -402,8 +404,10 @@ module.exports = class CreepOp extends ChildOp {
         mutations[target.id] = (mutations[target.id]||0) + amount;
         mutations[creep.id] = (mutations[creep.id]||0) - amount;
 
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
-
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) {
+            this._state = c.STATE_OUTPUT 
+            if (this.instruct == c.COMMAND_FILL) this._sourceId = '';
+        }
         return result;
     }  
 
