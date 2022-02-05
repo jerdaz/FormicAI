@@ -181,7 +181,7 @@ module.exports = class BaseOp extends ShardChildOp{
         // update average gcl gain from base
         let upgradeEvents = this.events.filter(event => event.type == EVENT_UPGRADE_CONTROLLER);
         let upgradeAmount = 0
-        for (event of upgradeEvents) upgradeAmount += event.data.amount;
+        for (let event of upgradeEvents) upgradeAmount += event.data.amount;
         this.base.memory.upgradeAmount += upgradeAmount
     }
 
