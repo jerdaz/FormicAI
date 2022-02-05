@@ -160,7 +160,7 @@ module.exports = class BaseOp extends ShardChildOp{
             let currentTime = Date.now();
             let timeDiff = (currentTime - lastGCLTime) / 1000 / 3600; // calculate number of hours passed;
             if (timeDiff > 1) { // minimum of 1 hour should have passed
-                let gclRate = this.base.memory.upgradeAmount / timeDiff;
+                let gclRate = (this.base.memory.upgradeAmount||0) / timeDiff;
                 if (this.base.memory.gclRate) {
                     let factor = 24 * 7 // calculate average over a week
                     this.base.memory.gclRate = this.base.memory.gclRate / factor * (factor - 1) + gclRate / factor;
@@ -179,10 +179,9 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _command() {
         // update average gcl gain from base
-        let upgradeEvents = this.events.filter((event) => {return event.type == EVENT_UPGRADE_CONTROLLER});
         let upgradeAmount = 0
-        for (let event of upgradeEvents) upgradeAmount += event.data.amount;
-        this.base.memory.upgradeAmount += upgradeAmount
+        for (let event of this.events) if (event.event == EVENT_UPGRADE_CONTROLLER) upgradeAmount += event.data.amount;
+        this.base.memory.upgradeAmount = (this.base.memory.upgradeAmount||0) + upgradeAmount
     }
 
     _strategy() {
