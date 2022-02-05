@@ -405,7 +405,7 @@ module.exports = class CreepOp extends ChildOp {
         mutations[creep.id] = (mutations[creep.id]||0) - amount;
 
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) {
-            this._state = c.STATE_OUTPUT 
+            this._state = c.STATE_INPUT
             if (this._instruct == c.COMMAND_FILL) this._destId = '';
         }
         return result;
