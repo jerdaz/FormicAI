@@ -143,6 +143,7 @@ module.exports = class MainOp extends Operation {
             if (shardMem.avgGclRate > maxGclRate && shardMem.bucket >= c.MAX_BUCKET) maxGclRate = shardMem.avgGclRate;
             U.l({gclrate:shardMem.avgGclRate})
         }
+        U.l({totalBases: totalBases, gcl: Game.gcl.level, maxGclRate: maxGclRate})
         if (totalBases < Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) {
             this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
             U.l({maxbases:myBasesCount + Game.gcl.level - totalBases })
@@ -205,7 +206,7 @@ module.exports = class MainOp extends Operation {
                     let shardInfo = interShardMem.shards[i];
                     let baseInfos = shardInfo.bases;
                     for (let baseInfo of baseInfos) {
-                        if (baseInfo.age > avgEndLvlTime * 1.1) // base should be at least 1.1 times the age of average lvl 8 base grow time to be considered 
+                        if (baseInfo.age > avgEndLvlTime * 1.0) // base should be at least 1.1 times the age of average lvl 8 base grow time to be considered 
                         {   
                             baseCount++;
                             totalGclRate += baseInfo.gclRate;

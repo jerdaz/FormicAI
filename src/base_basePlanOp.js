@@ -58,7 +58,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //update current maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
-        if (this._baseOp.storage && this._baseOp.storage.store[RESOURCE_ENERGY] > STORAGE_CAPACITY / 3) this._maxWallHeight = Number.MAX_VALUE; // if energy surpluss just upgrade ramparts endlessly
+        if (this._baseOp.storage && this._baseOp.storage.store[RESOURCE_ENERGY] > STORAGE_CAPACITY / 3) this._maxWallHeight = Number.MAX_SAFE_INTEGER; // if energy surpluss just upgrade ramparts endlessly
         else {
             let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
             /**@type {number} */
