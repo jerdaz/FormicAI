@@ -172,15 +172,25 @@ module.exports = class ShardOp extends ChildOp {
 
         for(let baseOpKey of this._baseOpsMap) {
             let baseOp = baseOpKey[1];
-            let baseInfo = {name:baseOp.name,
-                            level: baseOp.level,
-                            sources: baseOp.base.find(FIND_SOURCES).length,
-                            progress: baseOp.base.controller.progress,
-                            hasSpawn: (baseOp.spawns.length>0)
-                        }
+            let baseInfo = baseOp.stats;
             result.push(baseInfo);
         }
         return result;
+    }
+
+    getAvgGclRate () {
+        let baseInfos = this.getBaseInfo();
+
+        let baseCount = 0;
+        let totalGclRate = 0;
+        // calculate averate time to end level
+        for (let baseInfo of baseInfos) {
+            if (baseInfo.gclRate) {
+                baseCount++
+                totalGclRate += baseInfo.gclRate;
+            }
+        }
+        return totalGclRate / baseCount;       
     }
     
 

@@ -2,12 +2,10 @@ let U = require('./util');
 let c = require('./constants');
 let Operation = require('./meta_operation');
 let ShardOp = require('./shard_shardOp');
+const { max } = require('lodash');
 
 
-// @ts-ignore
-if (!global.InterShardMemory) global.InterShardMemory = null;
-
-/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[]}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[], avgGclRate:number}[]}} ShardMem */
 
 module.exports = class MainOp extends Operation {
     constructor() {
@@ -111,12 +109,14 @@ module.exports = class MainOp extends Operation {
         let interShardMem = this._loadInterShardMem();
 
 
-        //update intershard memeory
+        //update intershard memory with base stats from this shard
         interShardMem.shards[this._shardNum].baseCount = myBasesCount;
         interShardMem.shards[this._shardNum].bases = this._shardOp.getBaseInfo();
+        interShardMem.shards[this._shardNum].avgGclRate = this._shardOp.getAvgGclRate();
         this._writeInterShardMem(interShardMem);
 
 
+        // Count total number of bases and check for a colonization request from other shards
         let totalBases = 0; // this will contain the total number of cross shard bases
         for (let i=0; i < interShardMem.shards.length; i++) {
             if (interShardMem.shards[i] && interShardMem.shards[i].baseCount) totalBases += interShardMem.shards[i].baseCount
@@ -132,12 +132,20 @@ module.exports = class MainOp extends Operation {
         }
 
 
-        if (totalBases == 0) totalBases = myBasesCount;
-        if (totalBases < Game.gcl.level) this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
+        
+        if (totalBases == 0) totalBases = myBasesCount; // can this be removed...???
+
+        // if there are less total bases then possible allow colonization of new bases on this shard.
+        let maxGclRate = 0;
+        for (let shardMem of interShardMem.shards) {
+            if (shardMem.avgGclRate > maxGclRate) maxGclRate = shardMem.avgGclRate;
+        }
+        if (totalBases < Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) {
+            this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
+        }
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
 
         
-
         // if we are at maximum bases, find the lowest level single source room and abandon it
         if (myBasesCount > 1 && totalBases == Game.gcl.level) {
             let shard = 0;
@@ -167,12 +175,56 @@ module.exports = class MainOp extends Operation {
                 if (foundNoSpawnBase) break;
             }
 
+ 
+            // Now try to find a below average room to despawn if we haven't found a single source room
+            if (!foundNoSpawnBase && !room) {
+                let lowestGcl = Number.MAX_VALUE;
+                let baseCount = 0;
+                let totalEndLvlBaseTime = 0;
+                let totalGclRate = 0;
+                // calculate averate time to end level
+                for (let i = 0; i< interShardMem.shards.length;i++ ) {
+                    let shardInfo = interShardMem.shards[i];
+                    let baseInfos = shardInfo.bases;
+                    for (let baseInfo of baseInfos) {
+                        if (baseInfo.level == 8 && baseInfo.endLvlTime) {
+                            baseCount++
+                            totalEndLvlBaseTime+= baseInfo.endLvlTime;
+                        }
+                    }
+                }
+                let avgEndLvlTime = totalEndLvlBaseTime / baseCount;
+                baseCount = 0 // recount end level bases if they haven't lived long enough
+
+
+                for (let i = 0; i< interShardMem.shards.length;i++ ) {
+                    let shardInfo = interShardMem.shards[i];
+                    let baseInfos = shardInfo.bases;
+                    for (let baseInfo of baseInfos) {
+                        if (baseInfo.age > avgEndLvlTime * 1.1) // base should be at least 1.1 times the age of average lvl 8 base grow time to be considered 
+                        {   
+                            baseCount++;
+                            totalGclRate += baseInfo.gclRate;
+                            if (baseInfo.gclRate<lowestGcl && shardInfo.baseCount>1) {
+                                shard = i;
+                                room = baseInfo.name;
+                                lowestGcl = baseInfo.gclRate;
+                            }
+                        }
+                    }
+                }
+                // check if lowest gcl rate is <90% of average. Otherwise don't despawn.
+                let avgGCLRate = totalGclRate / baseCount;
+                if (lowestGcl >= avgGCLRate * 0.9) room = '';
+            }
+
             //unclaim the lowest found base if we haven't found base without spawn
             if (!foundNoSpawnBase
                 && shard == this._shardNum 
                 && room) 
             {
                 this._shardOp.unclaimBase(room)
+                U.l('Despawning: ' + room)
             }
         }
     }
@@ -199,8 +251,10 @@ module.exports = class MainOp extends Operation {
         for (let shard of this._shards) {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
-                if (shard == Game.shard.name) interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo()};
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[]};
+                if (shard == Game.shard.name) {
+                    interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo(), avgGclRate: this._shardOp.getAvgGclRate()};
+                }
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[], avgGclRate:0};
             }
         }
         return interShardMem;

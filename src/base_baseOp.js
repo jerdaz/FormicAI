@@ -82,6 +82,20 @@ module.exports = class BaseOp extends ShardChildOp{
     get events() {return this._base.getEventLog()};
     get level() { return this._base.controller.level};
 
+    get stats() {
+        let now = Date.now();
+        return {
+            name: this.name,
+            level: this._base.controller.level,
+            sources: this.base.find(FIND_SOURCES).length,
+            progress: this.base.controller.progress,
+            hasSpawn: this.spawns.length>0,
+            age: now - (this.base.memory.birthDate||now),
+            endLvlTime: (this.base.memory.endLvlDate && this.base.memory.birthDate)?(this.base.memory.endLvlDate - this.base.memory.birthDate):null,
+            gclRate: this.base.memory.gclRate||0
+        }
+    }
+
     initTick() {
         super.initTick();
         this._base = /**@type {Base} */ (Game.rooms[this._name])
@@ -206,6 +220,10 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
+        if (!this.base.memory.birthDate || this.level == 1) {
+            this.base.memory.birthDate = Date.now()
+            delete this.base.memory.endLvlDate;
+        }
         // start harvesting when there is a storage.
         if (this.storage && this.storage.isActive()) this._phase=c.BASE_PHASE_HARVESTER
         else return;
@@ -226,7 +244,11 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
-        if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        if (this._base.controller.level >= 8 ) {
+            this._phase = c.BASE_PHASE_ENDLVL;
+            if (!this.base.memory.birthDate) this.base.memory.birthDate = Date.now() - 1000 * 3600 * 24 * 7 * 8 // 8 weeks in the past if unknown
+            if (!this.base.memory.endLvlDate) this.base.memory.endLvlDate = Date.now();
+        }
         return;
     }
 
