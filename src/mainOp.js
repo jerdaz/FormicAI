@@ -5,7 +5,7 @@ let ShardOp = require('./shard_shardOp');
 const { max } = require('lodash');
 
 
-/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[], avgGclRate:number}[]}} ShardMem */
+/**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[], avgGclRate:number, bucket:number}[]}} ShardMem */
 
 module.exports = class MainOp extends Operation {
     constructor() {
@@ -113,6 +113,7 @@ module.exports = class MainOp extends Operation {
         interShardMem.shards[this._shardNum].baseCount = myBasesCount;
         interShardMem.shards[this._shardNum].bases = this._shardOp.getBaseInfo();
         interShardMem.shards[this._shardNum].avgGclRate = this._shardOp.getAvgGclRate();
+        interShardMem.shards[this._shardNum].bucket = Game.cpu.bucket;
         this._writeInterShardMem(interShardMem);
 
 
@@ -137,11 +138,14 @@ module.exports = class MainOp extends Operation {
 
         // if there are less total bases then possible allow colonization of new bases on this shard.
         let maxGclRate = 0;
+        U.l({shard: this._shardNum})
         for (let shardMem of interShardMem.shards) {
-            if (shardMem.avgGclRate > maxGclRate) maxGclRate = shardMem.avgGclRate;
+            if (shardMem.avgGclRate > maxGclRate && shardMem.bucket >= c.MAX_BUCKET) maxGclRate = shardMem.avgGclRate;
+            U.l({gclrate:shardMem.avgGclRate})
         }
         if (totalBases < Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) {
             this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
+            U.l({maxbases:myBasesCount + Game.gcl.level - totalBases })
         }
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
 
@@ -252,9 +256,9 @@ module.exports = class MainOp extends Operation {
             let shardNum = U.getShardID(shard);
             if (_.isEmpty(interShardMem.shards[shardNum])) {
                 if (shard == Game.shard.name) {
-                    interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo(), avgGclRate: this._shardOp.getAvgGclRate()};
+                    interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_NONE, baseCount: this._shardOp.baseCount, bases:this._shardOp.getBaseInfo(), avgGclRate: this._shardOp.getAvgGclRate(), bucket: Game.cpu.bucket};
                 }
-                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[], avgGclRate:0};
+                else interShardMem.shards[shardNum] = {request: c.SHARDREQUEST_COLONIZER, baseCount: 0, bases:[], avgGclRate:0, bucket:0};
             }
         }
         return interShardMem;

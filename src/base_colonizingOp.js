@@ -71,6 +71,18 @@ module.exports = class ColonizingOp extends BaseChildOp {
         }
     }
 
+    _command() {
+        //draw colonization debug info
+        let roomName = this._colRoomName;
+        if (roomName) {
+            let source = this.baseOp.centerPos;
+            let target = new RoomPosition(25,25, roomName)
+            Game.map.visual.circle(source)
+            Game.map.visual.circle(target)
+            Game.map.visual.line(source, target)
+        }
+    }
+
     /**@returns {string | null} */
     _findColRoom() {
         /**@type {{name: string, distance: number, sources: number}[]} */
@@ -91,7 +103,9 @@ module.exports = class ColonizingOp extends BaseChildOp {
                ) {
                     let path = this._map.findRoute(this._baseName, roomName);
                     if (!(path instanceof Array)) continue;
+                    if (path.length > MAX_PATH_COL_DISTANCE || path.length == 0) continue;
                     let colRoom = {name: roomName, distance: path.length, sources: roomInfo.sourceCount}
+                    U.l(path)
                     colRooms.push(colRoom);
                }
         }

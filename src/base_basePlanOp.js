@@ -58,21 +58,24 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //update current maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
-        let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
-        /**@type {number} */
-        let minHeight = RAMPART_HITS_MAX[8];
-        for (let rampart of ramparts) {
-            //only repair ramparts protecting structures
-            let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
-            _.remove(structures,{structureType:STRUCTURE_ROAD});
-            if (structures.length <=1) continue;
-            if (rampart.hits < minHeight) minHeight = rampart.hits
-        }
-        let roomLevel = 1;
-        if (this._baseOp) roomLevel = this._baseOp.level
-        this._maxWallHeight = minHeight*2;
-        if (this._baseOp.directive != c.DIRECTIVE_FORTIFY) this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
-        if (this._maxWallHeight <= RAMPART_DECAY_AMOUNT * 2) this._maxWallHeight = RAMPART_DECAY_AMOUNT * 2 + 1;            
+        if (this._baseOp.storage && this._baseOp.storage.store[RESOURCE_ENERGY] > STORAGE_CAPACITY / 3) this._maxWallHeight = Number.MAX_VALUE; // if energy surpluss just upgrade ramparts endlessly
+        else {
+            let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
+            /**@type {number} */
+            let minHeight = RAMPART_HITS_MAX[8];
+            for (let rampart of ramparts) {
+                //only repair ramparts protecting structures
+                let structures = rampart.pos.lookFor(LOOK_STRUCTURES);
+                _.remove(structures,{structureType:STRUCTURE_ROAD});
+                if (structures.length <=1) continue;
+                if (rampart.hits < minHeight) minHeight = rampart.hits
+            }
+            let roomLevel = 1;
+            if (this._baseOp) roomLevel = this._baseOp.level
+            this._maxWallHeight = minHeight*2;
+            if (this._baseOp.directive != c.DIRECTIVE_FORTIFY) this._maxWallHeight = Math.min(c.MAX_WALL_HEIGHT * RAMPART_HITS_MAX[this._baseOp.level], minHeight*2);       
+            if (this._maxWallHeight <= RAMPART_DECAY_AMOUNT * 2) this._maxWallHeight = RAMPART_DECAY_AMOUNT * 2 + 1;      
+        }      
 
 
         //find & destroy improperly placed buildings.

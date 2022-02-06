@@ -175,7 +175,7 @@ module.exports = class MapOp extends ChildOp {
         //retrieve path from cache
         /**@type {RoomPath} */
         let result = [];
-        if (this._routeCache[from] && this._routeCache[from][to] && this._routeCache[from][to].time > Game.time - c.SUPPORT_INTERVAL * 100) {
+        if (this._routeCache[from] && this._routeCache[from][to] && this._routeCache[from][to].time > Game.time - c.SUPPORT_INTERVAL) {
             result = this._routeCache[from][to].path;
         } else {
             let result2 = Game.map.findRoute(from, to, {routeCallback: (roomName, fromRoomName) => 
