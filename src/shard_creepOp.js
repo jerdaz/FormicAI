@@ -914,7 +914,7 @@ module.exports = class CreepOp extends ChildOp {
         if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition } */
-        let dest = Object.assign(endDest);
+        let dest = new RoomPosition(endDest.x, endDest.y, endDest.roomName);
         let nextStop = (myOpts?myOpts.nextStop:null);
         let myPos = creep.pos;
         let mapOp = this._mapOp
