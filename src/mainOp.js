@@ -156,14 +156,14 @@ module.exports = class MainOp extends Operation {
             let room = '';
             let lowestLevel = 100;
             let lowestProgress = 0;
-            let foundNoSpawnBase = false;
+            let foundBaseWithoutSpawn = false;
             for (let i = 0; i< interShardMem.shards.length;i++ ) {
                 let shardInfo = interShardMem.shards[i];
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
                     // first check if we find a base without spawn. we don't want to abondon any base if we have one.
                     if (!baseInfo.hasSpawn ) {
-                        foundNoSpawnBase = true;
+                        foundBaseWithoutSpawn = true;
                         break;
                     }
                     // check if the base is single source and lower developed then we found
@@ -176,12 +176,12 @@ module.exports = class MainOp extends Operation {
                         lowestProgress = baseInfo.progress;
                     }
                 }
-                if (foundNoSpawnBase) break;
+                if (foundBaseWithoutSpawn) break;
             }
 
  
             // Now try to find a below average room to despawn if we haven't found a single source room
-            if (!foundNoSpawnBase && !room) {
+            if (!foundBaseWithoutSpawn && !room) {
                 let lowestGcl = Number.MAX_VALUE;
                 let baseCount = 0;
                 let totalEndLvlBaseTime = 0;
@@ -223,7 +223,7 @@ module.exports = class MainOp extends Operation {
             }
 
             //unclaim the lowest found base if we haven't found base without spawn
-            if (!foundNoSpawnBase
+            if (!foundBaseWithoutSpawn
                 && shard == this._shardNum 
                 && room) 
             {
