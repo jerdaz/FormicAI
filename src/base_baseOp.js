@@ -46,6 +46,8 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
+
+        if (!this.base.memory.upgradeAmount) this.base.memory.upgradeAmount = 0;
     }
 
     get type() {return c.OPERATION_BASE}
@@ -147,6 +149,24 @@ module.exports = class BaseOp extends ShardChildOp{
     _support() {
         // remember this room has been colonized
         Memory.colonizations[this.name] = Game.time;
+
+        //update average gcl per time
+        let lastGCLTime = this.base.memory.lastGCLTime;
+        if (!lastGCLTime) {
+            this.base.memory.lastGCLTime = Date.now();
+            this.base.memory.upgradeAmount = 0;
+        }
+        else {
+            let currentTime = Date.now();
+            let timeDiff = (currentTime - lastGCLTime) / 1000 / 3600; // calculate number of hours passed;
+            if (timeDiff > 1) { // minimum of 1 hour should have passed
+                let gclRate = (this.base.memory.upgradeAmount||0) / timeDiff;
+                if (this.base.memory.gclRate) {
+                    let factor = 24 * 7 // calculate average over a week
+                    this.base.memory.gclRate = this.base.memory.gclRate / factor * (factor - 1) + gclRate / factor;
+                } else this.base.memory.gclRate = gclRate;
+            }
+        }
     }
 
     _tactics() {
@@ -155,6 +175,13 @@ module.exports = class BaseOp extends ShardChildOp{
             hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 || o.getActiveBodyparts(WORK) > 0})
             if (hostileCreeps.length == 0 || this._base.controller.safeMode) this._shardOp.requestBuilder(this.name);
         }
+    }
+
+    _command() {
+        // update average gcl gain from base
+        let upgradeAmount = 0
+        for (let event of this.events) if (event.event == EVENT_UPGRADE_CONTROLLER) upgradeAmount += event.data.amount;
+        this.base.memory.upgradeAmount = (this.base.memory.upgradeAmount||0) + upgradeAmount
     }
 
     _strategy() {
