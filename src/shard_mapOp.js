@@ -33,6 +33,7 @@ const ChildOp = require('./meta_childOp');
 
 const MIN_ROAD_FATIGUE_COST =   1000 * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
 
+
 module.exports = class MapOp extends ChildOp {
     /** @param {ShardOp} shardOp */
     constructor(shardOp) {
@@ -81,7 +82,7 @@ module.exports = class MapOp extends ChildOp {
      * @param {boolean} hasSpawn
      * @param {number | undefined} lastSeenHostile
      * @returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME, maxDistance = 1000) {
         // if (this._baseDist[roomName]) {
         //     for (let baseDist of this._baseDist[roomName]) {
         //         let base = this._parent.getBase(baseDist.roomName);
@@ -93,7 +94,7 @@ module.exports = class MapOp extends ChildOp {
                 let baseName = baseInfo.name;
                 if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
                     let route = this.findRoute(roomName, baseName);
-                    if (route instanceof Array && route.length < closestBase.dist) {
+                    if (route instanceof Array && route.length < closestBase.dist && route.length <= maxDistance) {
                         closestBase.roomName = baseName;
                         closestBase.dist = route.length;
                     }  

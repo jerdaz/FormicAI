@@ -626,11 +626,16 @@ module.exports = class CreepOp extends ChildOp {
                             let result = -1000;
                             destObj = room.controller;
                             if (destObj instanceof StructureController) {
-                                if (this.state == c.STATE_CLAIMING) result = creep.claimController(destObj);
+                                if (this.state == c.STATE_CLAIMING) {
+                                    result = creep.claimController(destObj);
+                                    if (result == OK) Memory.colonizations[roomName] = Game.time; // mark colonization time of the room.
+                                }
                                 if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
                             }
                             if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
-                            else if (result == OK) if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
+                            else if (result == OK) {
+                                if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
+                            }
                         }
                     } else {
                         this._moveTo(new RoomPosition(25,25, roomName));
@@ -891,7 +896,7 @@ module.exports = class CreepOp extends ChildOp {
                     let structures = o.pos.lookFor(LOOK_STRUCTURES);
                     _.remove(structures,{structureType:STRUCTURE_ROAD});
                     if (structures.length <=1 && !o.pos.isEqualTo(baseOp.centerPos)) return;
-                    let needRepair = o.hits < o.hitsMax && o.hits < baseOp.basePlanOp.maxWallHeight;                    
+                    let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR && o.hits < baseOp.basePlanOp.maxWallHeight;                    
                     if (!needRepair) return false;
                     else return true;
                 }
