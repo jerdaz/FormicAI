@@ -85,7 +85,15 @@ module.exports = class ColonizingOp extends BaseChildOp {
             Game.map.visual.circle(source)
             Game.map.visual.circle(target)
             Game.map.visual.line(source, target)
+            for (let creepName in this._creepOps) {
+                let creepOp = this._creepOps[creepName];
+                // draw visual progress
+                let target = new RoomPosition(25, 25, roomName)
+                let creepPos = creepOp.creep.pos;
+                Game.map.visual.line(creepPos, target, {color:'#0000ff'})
+            }
         }
+
     }
 
     /**@returns {string | null} */
