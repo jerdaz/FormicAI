@@ -90,10 +90,10 @@ module.exports = class MapOp extends ChildOp {
         if (!result) return undefined
         let x = 0
         let y = 0
-        if (result[0]) x+= Number(result[0]) + 1 // east is positive plus one to prevent double 0's
-        if (result[1]) x-= Number(result[1]) // west is negative
-        if (result[2]) y+= Number(result[2]) + 1 // north positive and 1
-        if (result[3]) y-= Number(result[3])
+        if (result[1]) x+= Number(result[1]) + 1 // east is positive plus one to prevent double 0's
+        if (result[2]) x-= Number(result[2]) // west is negative
+        if (result[3]) y+= Number(result[3]) + 1 // north positive and 1
+        if (result[4]) y-= Number(result[4])
         return {x: x,
                 y: y
             }
