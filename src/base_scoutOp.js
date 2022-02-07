@@ -86,7 +86,6 @@ module.exports = class ScoutOp extends BaseChildOp {
         if (observer) {
             let scoutRoom = this._map.getNeighBour(this.baseName, this._scoutRoomX, this._scoutRoomY)
             let result = observer.observeRoom(scoutRoom);
-            if (this.baseName == 'E2N38') U.l({result:result, room:scoutRoom})
             this._scoutRoomX++;
             if (this._scoutRoomX > OBSERVER_RANGE) {
                 this._scoutRoomX = -1 * OBSERVER_RANGE;
