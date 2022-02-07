@@ -38,8 +38,8 @@ module.exports = class MapOp extends ChildOp {
     constructor(shardOp) {
         super(shardOp);
         this._parent = shardOp;
-        /**@type {{[index:string]: BaseDist[]}} */
-        this._baseDist;
+        // /**@type {{[index:string]: BaseDist[]}} */
+        // this._baseDist;
 
         //retrieve roominfo from memory
         /**@type {RoomInfo} */
@@ -82,17 +82,17 @@ module.exports = class MapOp extends ChildOp {
      * @param {number | undefined} lastSeenHostile
      * @returns {String | undefined} */
     findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME) {
-        if (this._baseDist[roomName]) {
-            for (let baseDist of this._baseDist[roomName]) {
-                let base = this._parent.getBase(baseDist.roomName);
-                if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).spawns.length >= 1 )) return base.name;
-            }
-        } else {
+        // if (this._baseDist[roomName]) {
+        //     for (let baseDist of this._baseDist[roomName]) {
+        //         let base = this._parent.getBase(baseDist.roomName);
+        //         if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).spawns.length >= 1 )) return base.name;
+        //     }
+        // } else {
             let closestBase = {roomName: '', dist:10000}
-            for (let baseName in this._baseDist) {
-
+            for (let baseInfo of this._parent.getBaseInfo()) {
+                let baseName = baseInfo.name;
                 if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
-                    let route = Game.map.findRoute(roomName, baseName);
+                    let route = this.findRoute(roomName, baseName);
                     if (route instanceof Array && route.length < closestBase.dist) {
                         closestBase.roomName = baseName;
                         closestBase.dist = route.length;
@@ -100,8 +100,8 @@ module.exports = class MapOp extends ChildOp {
                 }
             }
             return closestBase.roomName;
-        }
-        return undefined;
+        // }
+        // return undefined;
     }
 
     /**@param {string[]} roomNames
@@ -124,32 +124,32 @@ module.exports = class MapOp extends ChildOp {
         return closestRoom
     }
 
-    /** @param {Map<string,BaseOp>} baseOpsMap*/
-    updateBaseDistances(baseOpsMap) {
-        this._baseDist = {};
-        let baseNames = [];
-        for(let baseOpKey of baseOpsMap) {
-            let baseName = baseOpKey[0];
-            this._baseDist[baseName] = [];
-            baseNames.push(baseName);
-        }
-        for(let i=0; i <baseNames.length;i++) {
-            let baseAName = baseNames[i];
-            for(let j=i+1; j < baseNames.length;j++){
-                let baseBName = baseNames[j]
-                let path = this.findRoute(baseAName, baseBName)
-                if (path.length > 0) { 
-                    this._baseDist[baseAName].push( {roomName:baseBName, dist: path.length })
-                    this._baseDist[baseBName].push( {roomName:baseAName, dist: path.length })
-                }
-            }
-            this._baseDist[baseAName].sort((a,b) => {
-                if (a.dist < b.dist) return -1;
-                else if (a.dist > b.dist) return 1;
-                else return 0;
-            })
-        }
-    }
+    // /** @param {Map<string,BaseOp>} baseOpsMap*/
+    // updateBaseDistances(baseOpsMap) {
+    //     this._baseDist = {};
+    //     let baseNames = [];
+    //     for(let baseOpKey of baseOpsMap) {
+    //         let baseName = baseOpKey[0];
+    //         this._baseDist[baseName] = [];
+    //         baseNames.push(baseName);
+    //     }
+    //     for(let i=0; i <baseNames.length;i++) {
+    //         let baseAName = baseNames[i];
+    //         for(let j=i+1; j < baseNames.length;j++){
+    //             let baseBName = baseNames[j]
+    //             let path = this.findRoute(baseAName, baseBName)
+    //             if (path.length > 0) { 
+    //                 this._baseDist[baseAName].push( {roomName:baseBName, dist: path.length })
+    //                 this._baseDist[baseBName].push( {roomName:baseAName, dist: path.length })
+    //             }
+    //         }
+    //         this._baseDist[baseAName].sort((a,b) => {
+    //             if (a.dist < b.dist) return -1;
+    //             else if (a.dist > b.dist) return 1;
+    //             else return 0;
+    //         })
+    //     }
+    // }
 
     /**@param {String} roomName */
     findClosestPortalRoom(roomName){

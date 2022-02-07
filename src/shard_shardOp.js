@@ -245,7 +245,7 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
         if (updateMap) {
-            this._map.updateBaseDistances(this._baseOpsMap);
+            // this._map.updateBaseDistances(this._baseOpsMap);
              //allocate rooms for remote mining
             this._allocateSubRooms();
         }
