@@ -186,7 +186,7 @@ module.exports = class BaseOp extends ShardChildOp{
     _tactics() {
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
             let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
-            hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 || o.getActiveBodyparts(WORK) > 0})
+            hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 })
             if (hostileCreeps.length == 0 || this._base.controller.safeMode) this._shardOp.requestBuilder(this.name);
         }
     }
