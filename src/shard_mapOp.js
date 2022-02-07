@@ -70,6 +70,49 @@ module.exports = class MapOp extends ChildOp {
         return result;
     }
 
+    /**
+     * @param {String} roomName
+     * @param {number} xOffset
+     * @param {number} yOffset
+     */
+    getNeighBour(roomName, xOffset, yOffset){
+        let roomCoordinate = this.getRoomCoordinates(roomName);
+        if (!roomCoordinate) throw Error ('coordinate error')
+        return this.getRoomFromCoordinates(roomCoordinate.x + xOffset, roomCoordinate.y + yOffset)
+
+    }
+
+    /**
+     * @param {String} roomName
+     */
+    getRoomCoordinates(roomName) {
+        let result = roomName.match(new RegExp('(?:E([0-9]*)|W([0-9]*))(?:N([0-9]*)|S([0-9]*))'))
+        if (!result) return undefined
+        let x = 0
+        let y = 0
+        if (result[0]) x+= Number(result[0]) + 1 // east is positive plus one to prevent double 0's
+        if (result[1]) x-= Number(result[1]) // west is negative
+        if (result[2]) y+= Number(result[2]) + 1 // north positive and 1
+        if (result[3]) y-= Number(result[3])
+        return {x: x,
+                y: y
+            }
+    }
+
+    /**
+     * 
+     * @param {Number} x 
+     * @param {Number} y 
+     */
+    getRoomFromCoordinates(x, y){
+        let roomName = '' 
+        if (x>0) roomName += 'E' + String(x - 1);
+        else roomName += 'W' + String(x * -1)
+        if (y>0) roomName += 'N' + String(y - 1);
+        else roomName += 'S' + String(y * -1)
+        return roomName;
+    }
+
     /**@param {String} roomName */
     getRoomInfo(roomName) {
         if (this._roomInfo[roomName]) return this._roomInfo[roomName];

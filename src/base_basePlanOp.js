@@ -11,6 +11,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LINK, max:1},
     {type: STRUCTURE_TERMINAL},
     {type: STRUCTURE_SPAWN},
+    {type: STRUCTURE_OBSERVER}
 //  {type: STRUCTURE_LAB, max:1}
 ]
 
