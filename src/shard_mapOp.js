@@ -124,9 +124,9 @@ module.exports = class MapOp extends ChildOp {
      * @param {String} roomName
      * @param {number} minLevel
      * @param {boolean} hasSpawn
-     * @param {number | undefined} lastSeenHostile
+     * @param {number | undefined} lastSeenAttacker
      * @returns {String | undefined} */
-    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenHostile = CREEP_LIFE_TIME, maxDistance = 1000) {
+    findClosestBaseByPath(roomName, minLevel, hasSpawn = false, lastSeenAttacker = CREEP_LIFE_TIME, maxDistance = 1000) {
         // if (this._baseDist[roomName]) {
         //     for (let baseDist of this._baseDist[roomName]) {
         //         let base = this._parent.getBase(baseDist.roomName);
@@ -136,16 +136,18 @@ module.exports = class MapOp extends ChildOp {
             let closestBase = {roomName: '', dist:10000}
             for (let baseInfo of this._parent.getBaseInfo()) {
                 let baseName = baseInfo.name;
-                if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < lastSeenHostile)) {
-                    let route = this.findRoute(roomName, baseName);
-                    let baseOp = this._parent.getBaseOp(baseName)
-                    if (route instanceof Array && route.length < closestBase.dist 
-                        && route.length <= maxDistance 
-                        && (hasSpawn == false || baseOp.spawns.length >= 1 )
-                        && baseOp.level >= minLevel
-                        ) {
-                        closestBase.roomName = baseName;
-                        closestBase.dist = route.length;
+                if (!lastSeenAttacker ||
+                    ! this._roomInfo[baseName] ||
+                    (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)) {
+                        let route = this.findRoute(roomName, baseName);
+                        let baseOp = this._parent.getBaseOp(baseName)
+                        if (route instanceof Array && route.length < closestBase.dist 
+                            && route.length <= maxDistance 
+                            && (hasSpawn == false || baseOp.spawns.length >= 1 )
+                            && baseOp.level >= minLevel
+                            ) {
+                            closestBase.roomName = baseName;
+                            closestBase.dist = route.length;
                     }  
                 }
             }
