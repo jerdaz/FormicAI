@@ -133,7 +133,7 @@ module.exports = class ShardOp extends ChildOp {
 
     /**@param {String} roomName */
     requestBuilder(roomName){
-        let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true, 20);
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true, 1500, 20);
         if (!donorRoom) return;
         let baseOp = this._baseOpsMap.get(donorRoom);
         if (!baseOp) throw Error('donorroom not in basemap');
