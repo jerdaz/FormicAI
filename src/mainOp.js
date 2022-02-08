@@ -220,7 +220,7 @@ module.exports = class MainOp extends Operation {
                 }
                 // check if lowest gcl rate is <90% of average. Otherwise don't despawn.
                 let avgGCLRate = totalGclRate / baseCount;
-                if (lowestGcl >= avgGCLRate * 0.9) room = '';
+                if (lowestGcl >= avgGCLRate * 0.8) room = '';
             }
 
             //unclaim the lowest found base if we haven't found base without spawn
