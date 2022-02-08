@@ -28,7 +28,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         
         let roomInfo = this._map.getRoomInfo(this._roomName)
         if (roomInfo && (
-            roomInfo.lastSeenHostile >= Game.time - 1500
+            roomInfo.lastSeenAttacker >= Game.time - 1500
             || roomInfo.activeTowers >= 1
             || roomInfo.invasion == true
             )) {

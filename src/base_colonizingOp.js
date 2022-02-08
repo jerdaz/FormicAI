@@ -105,8 +105,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
         for (let roomName in this._map.knownRooms) {
             let roomInfo = knownRooms[roomName];
             if (   roomInfo.hostileOwner == false 
-                && roomInfo.lastSeenHostile < Game.time - CREEP_LIFE_TIME
-                //&& roomInfo.lastSeen >= Game.time - COLONIZE_LASTSEEN_TIME
+                && roomInfo.lastSeenPlayerCreeps < roomInfo.lastSeen
+                && roomInfo.lastSeen >= Game.time - COLONIZE_LASTSEEN_TIME
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
                 && roomInfo.level == 0

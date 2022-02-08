@@ -948,7 +948,7 @@ module.exports = class CreepOp extends ChildOp {
                 range = 20;
                 dest = new RoomPosition(25,25,route[1].room)
                 this._lastMoveToInterimDest = dest;
-            }
+            } else this._lastMoveToInterimDest = null;
         }
         else if (range > 0 && nextStop ) {
                     if (creep.name == 'E1N36_13_0_834206') U.l('finding optimum path')

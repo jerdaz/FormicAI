@@ -3,7 +3,8 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 
 /** @typedef {{[roomName:string]: {
- *      lastSeenHostile:number, 
+ *      lastSeenAttacker:number, 
+ *      lastSeenPlayerCreeps:number,
  *      hostileSource:RoomPosition,
  *      lastSeen:number, 
  *      hostileOwner:boolean,
@@ -135,7 +136,7 @@ module.exports = class MapOp extends ChildOp {
             let closestBase = {roomName: '', dist:10000}
             for (let baseInfo of this._parent.getBaseInfo()) {
                 let baseName = baseInfo.name;
-                if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenHostile || 0 ) < lastSeenHostile)) {
+                if (!(lastSeenHostile && this._roomInfo[baseName] && (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < lastSeenHostile)) {
                     let route = this.findRoute(roomName, baseName);
                     let baseOp = this._parent.getBaseOp(baseName)
                     if (route instanceof Array && route.length < closestBase.dist 
@@ -280,7 +281,7 @@ module.exports = class MapOp extends ChildOp {
         for(let roomName in Game.rooms) {
             // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {lastSeenHostile:0, hostileSource: new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
+                this._roomInfo[roomName] = {lastSeenPlayerCreeps: 0, lastSeenAttacker:0, hostileSource: new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasRamparts: false}
             }
             if (this._breadCrumbs[roomName] == undefined) {
                 this._breadCrumbs[roomName] = []
@@ -297,19 +298,25 @@ module.exports = class MapOp extends ChildOp {
             let hostiles = room.find(FIND_HOSTILE_CREEPS);
             if (hostiles.length>0) {
                 let hostileFound = false;
+                let otherPlayerFound = false;
                 for (let hostile of hostiles) {
                     if (hostile.owner.username == c.INVADER_USERNAME) {
                         this._roomInfo[roomName].invasion = true;
                         this._roomInfo[roomName].invasionEnd = Game.time + (hostile.ticksToLive||0);
                     } else if (hostile.owner.username != 'Source Keeper') {
+                        otherPlayerFound = true;
                         if (hostile.getActiveBodyparts(ATTACK) > 0 || hostile.getActiveBodyparts(RANGED_ATTACK)> 0 /*|| hostile.getActiveBodyparts(WORK)>0*/) hostileFound = true;
+                    }
+                    if (otherPlayerFound) {
+                        this._roomInfo[roomName].lastSeenPlayerCreeps = Game.time;
                     }
                     if (hostileFound) {
                         // if there weren't hostiles the previous turn update the hostile source locations
-                        if (this._roomInfo[roomName].lastSeenHostile < this._roomInfo[roomName].lastSeen) this._roomInfo[roomName].hostileSource = hostile.pos;
-                        this._roomInfo[roomName].lastSeenHostile = Game.time;
+                        if (this._roomInfo[roomName].lastSeenAttacker < this._roomInfo[roomName].lastSeen) this._roomInfo[roomName].hostileSource = hostile.pos;
+                        this._roomInfo[roomName].lastSeenAttacker = Game.time;
                         break;
                     }
+
                 }
             } else this._roomInfo[roomName].invasion = false;
             this._roomInfo[roomName].lastSeen = Game.time;

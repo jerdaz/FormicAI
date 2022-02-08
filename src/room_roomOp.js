@@ -45,7 +45,7 @@ module.exports = class RoomOp extends BaseChildOp {
     get isSafe() { 
         if (this._roomInfo) {
             if (this._roomInfo.invasion) return false;
-            if (this._roomInfo.lastSeen - this._roomInfo.lastSeenHostile < HOSTILE_SAFE_TIME) return false;
+            if (this._roomInfo.lastSeen - this._roomInfo.lastSeenAttacker < HOSTILE_SAFE_TIME) return false;
         }
         return true;
     }
