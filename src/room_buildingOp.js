@@ -28,7 +28,7 @@ module.exports = class BuildingOp extends RoomChildOp {
         
         let roomInfo = this._map.getRoomInfo(this._roomName)
         if (roomInfo && (
-            roomInfo.lastSeenHostile >= Game.time - 1500
+            roomInfo.lastSeenAttacker >= Game.time - 1500
             || roomInfo.activeTowers >= 1
             || roomInfo.invasion == true
             )) {
@@ -56,6 +56,7 @@ module.exports = class BuildingOp extends RoomChildOp {
             if (buildWork && creepCount <= 1) {
                 creepCount = 1;
             }
+            if (this.baseOp.phase >= c.BASE_PHASE_CONTROLLER_LINK && creepCount >=3) creepCount = 3; // preven too many creeps when not using them for controller upgrading. It can block the roads around the buildwork.
             if (repairSites.length > 0 && constructionSites.length == 0) {
                  maxLength = 6; // spawn small repair creep if only repairing.
                  if (creepCount > 1) creepCount = 1;

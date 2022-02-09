@@ -46,6 +46,8 @@ module.exports = class BaseOp extends ShardChildOp{
 
         /**@type {{[index:string]:Structure[]}} */
         this._structures = {};
+
+        if (!this.base.memory.upgradeAmount) this.base.memory.upgradeAmount = 0;
     }
 
     get type() {return c.OPERATION_BASE}
@@ -65,6 +67,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
     get labs() {return /**@type {StructureLab[]} */ (this._structures[STRUCTURE_LAB])||[]}
+    get observer() {return /**@type {StructureObserver} */ ((this._structures[STRUCTURE_OBSERVER]||[])[0])}
     get containers() {return /**@type {StructureContainer[]} */ (this._structures[STRUCTURE_CONTAINER])||[]}
     get deathContainer() {
         for (let container of this.containers) {
@@ -79,6 +82,20 @@ module.exports = class BaseOp extends ShardChildOp{
     get credits() {return this._shardOp.bank.getCredits(this._name)}
     get events() {return this._base.getEventLog()};
     get level() { return this._base.controller.level};
+
+    get stats() {
+        let now = Date.now();
+        return {
+            name: this.name,
+            level: this._base.controller.level,
+            sources: this.base.find(FIND_SOURCES).length,
+            progress: this.base.controller.progress,
+            hasSpawn: this.spawns.length>0,
+            age: now - (this.base.memory.birthDate||now),
+            endLvlTime: (this.base.memory.endLvlDate && this.base.memory.birthDate)?(this.base.memory.endLvlDate - this.base.memory.birthDate):null,
+            gclRate: this.base.memory.gclRate||0
+        }
+    }
 
     initTick() {
         super.initTick();
@@ -147,14 +164,39 @@ module.exports = class BaseOp extends ShardChildOp{
     _support() {
         // remember this room has been colonized
         Memory.colonizations[this.name] = Game.time;
+
+        //update average gcl per time
+        let lastGCLTime = this.base.memory.lastGCLTime;
+        if (!lastGCLTime) {
+            this.base.memory.lastGCLTime = Date.now();
+            this.base.memory.upgradeAmount = 0;
+        }
+        else {
+            let currentTime = Date.now();
+            let timeDiff = (currentTime - lastGCLTime) / 1000 / 3600; // calculate number of hours passed;
+            if (timeDiff > 1) { // minimum of 1 hour should have passed
+                let gclRate = (this.base.memory.upgradeAmount||0) / timeDiff;
+                if (this.base.memory.gclRate) {
+                    let factor = 24 * 7 // calculate average over a week
+                    this.base.memory.gclRate = this.base.memory.gclRate / factor * (factor - 1) + gclRate / factor;
+                } else this.base.memory.gclRate = gclRate;
+            }
+        }
     }
 
     _tactics() {
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
             let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
-            hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 || o.getActiveBodyparts(WORK) > 0})
+            hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 })
             if (hostileCreeps.length == 0 || this._base.controller.safeMode) this._shardOp.requestBuilder(this.name);
         }
+    }
+
+    _command() {
+        // update average gcl gain from base
+        let upgradeAmount = 0
+        for (let event of this.events) if (event.event == EVENT_UPGRADE_CONTROLLER) upgradeAmount += event.data.amount;
+        this.base.memory.upgradeAmount = (this.base.memory.upgradeAmount||0) + upgradeAmount
     }
 
     _strategy() {
@@ -179,6 +221,10 @@ module.exports = class BaseOp extends ShardChildOp{
 
     _setPhase() {
         this._phase = c.BASE_PHASE_BIRTH;
+        if (!this.base.memory.birthDate || this.level == 1) {
+            this.base.memory.birthDate = Date.now()
+            delete this.base.memory.endLvlDate;
+        }
         // start harvesting when there is a storage.
         if (this.storage && this.storage.isActive()) this._phase=c.BASE_PHASE_HARVESTER
         else return;
@@ -199,7 +245,11 @@ module.exports = class BaseOp extends ShardChildOp{
         else return;
         if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
-        if (this._base.controller.level >= 8 ) this._phase = c.BASE_PHASE_EOL
+        if (this._base.controller.level >= 8 ) {
+            this._phase = c.BASE_PHASE_ENDLVL;
+            if (!this.base.memory.birthDate) this.base.memory.birthDate = Date.now() - 1000 * 3600 * 24 * 7 * 8 // 8 weeks in the past if unknown
+            if (!this.base.memory.endLvlDate) this.base.memory.endLvlDate = Date.now();
+        }
         return;
     }
 

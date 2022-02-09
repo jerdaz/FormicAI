@@ -349,8 +349,10 @@ module.exports = class CreepOp extends ChildOp {
         mutations[source.id] = (mutations[source.id]||0) -amount;
         mutations[creep.id] = (mutations[creep.id]||0) + amount;
 
-        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0)  <= 0) this._state = c.STATE_OUTPUT 
-    
+        if (creep.store.getFreeCapacity(RESOURCE_ENERGY) - (mutations[creep.id]||0) <= 0) {
+            this._state = c.STATE_OUTPUT 
+            if (this._instruct == c.COMMAND_FILL) this._sourceId = '';
+        }
 
         return result;
     }
@@ -402,8 +404,10 @@ module.exports = class CreepOp extends ChildOp {
         mutations[target.id] = (mutations[target.id]||0) + amount;
         mutations[creep.id] = (mutations[creep.id]||0) - amount;
 
-        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) this._state = c.STATE_INPUT;
-
+        if (creep.store.getUsedCapacity(RESOURCE_ENERGY) + (mutations[creep.id]||0) <= 0) {
+            this._state = c.STATE_INPUT;
+            if (this._instruct == c.COMMAND_FILL) this._destId = '';
+        }
         return result;
     }  
 
@@ -430,318 +434,324 @@ module.exports = class CreepOp extends ChildOp {
 
     _command() {
         // check if command uses old or new style
+        let creep = this._creep;
         if (this._instruct == c.COMMAND_TRANSFER || this._instruct == c.COMMAND_FILL) {
             this._processTurn()
-            return;
         }
-
-        // continue with old style commands
-        let creep = this._creep;
-        switch (this._instruct) {
-            case c.COMMAND_HARVEST:
-                if (creep.store.getUsedCapacity() == 0) {
-                    this._state = c.STATE_RETRIEVING;
-                }
-                else if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_DROPENERGY;
-                }
-                else if (this._state != c.STATE_RETRIEVING && this.state != c.STATE_DROPENERGY) this._state = c.STATE_DROPENERGY;
-                break;
-            case c.COMMAND_FILL:
-                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
-                else if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_FILLING;
-                }
-                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_FILLING) this._state = c.STATE_FILLING;
-                break;
-            case c.COMMAND_TRANSFER:
-                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
-                else if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
-                else if (this._state != c.STATE_RETRIEVING && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
-                break;
-            case c.COMMAND_MOVETO:
-                this._state=c.STATE_MOVING;
-                break;
-            case c.COMMAND_CLAIMCONTROLLER:
-                this._state=c.STATE_CLAIMING
-                break;
-            case c.COMMAND_RESERVE:
-                this._state=c.STATE_RESERVING
-                break;
-            case c.COMMAND_BUILD:
-                if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
-                else if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_BUILDING;
-                }
-                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
-                break;
-            case c.COMMAND_UPGRADE:
-                if (creep.store.getUsedCapacity()  == 0) {
-                    if (this._state != c.STATE_FINDENERGY) {
-                        this._sourceId = '';
-                        this._state = c.STATE_FINDENERGY;
+        else {
+            // continue with old style commands
+            switch (this._instruct) {
+                case c.COMMAND_HARVEST:
+                    if (creep.store.getUsedCapacity() == 0) {
+                        this._state = c.STATE_RETRIEVING;
                     }
-                }
-                else if (creep.store.getFreeCapacity() == 0) {
-                    this._state = c.STATE_DELIVERING;
-                }
-                else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
-                break;
-            case c.COMMAND_ATTACK:
-                if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
-                else this._state = c.STATE_ATTACKING;
-                if (creep.hits< creep.hitsMax) creep.heal(creep);
-                break;
-            case c.COMMAND_RECYCLE:
-                this._state = c.STATE_RECYCLING
-                break;
-            case c.COMMAND_NONE:
-                this._state = c.STATE_NONE;
-                this._travelDone = true;
-                break;
+                    else if (creep.store.getFreeCapacity() == 0) {
+                        this._state = c.STATE_DROPENERGY;
+                    }
+                    else if (this._state != c.STATE_RETRIEVING && this.state != c.STATE_DROPENERGY) this._state = c.STATE_DROPENERGY;
+                    break;
+                case c.COMMAND_FILL:
+                    if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                    else if (creep.store.getFreeCapacity() == 0) {
+                        this._state = c.STATE_FILLING;
+                    }
+                    else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_FILLING) this._state = c.STATE_FILLING;
+                    break;
+                case c.COMMAND_TRANSFER:
+                    if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_RETRIEVING;
+                    else if (creep.store.getFreeCapacity() == 0) this._state = c.STATE_DELIVERING;
+                    else if (this._state != c.STATE_RETRIEVING && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
+                    break;
+                case c.COMMAND_MOVETO:
+                    this._state=c.STATE_MOVING;
+                    break;
+                case c.COMMAND_CLAIMCONTROLLER:
+                    this._state=c.STATE_CLAIMING
+                    break;
+                case c.COMMAND_RESERVE:
+                    this._state=c.STATE_RESERVING
+                    break;
+                case c.COMMAND_BUILD:
+                    if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                    else if (creep.store.getFreeCapacity() == 0) {
+                        this._state = c.STATE_BUILDING;
+                    }
+                    else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) this._state = c.STATE_BUILDING;
+                    break;
+                case c.COMMAND_UPGRADE:
+                    if (creep.store.getUsedCapacity()  == 0) {
+                        if (this._state != c.STATE_FINDENERGY) {
+                            this._sourceId = '';
+                            this._state = c.STATE_FINDENERGY;
+                        }
+                    }
+                    else if (creep.store.getFreeCapacity() == 0) {
+                        this._state = c.STATE_DELIVERING;
+                    }
+                    else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) this._state = c.STATE_DELIVERING;
+                    break;
+                case c.COMMAND_ATTACK:
+                    if (this._lastPos.roomName != this._destRoomName) this._state = c.STATE_MOVING;
+                    else this._state = c.STATE_ATTACKING;
+                    if (creep.hits< creep.hitsMax) creep.heal(creep);
+                    break;
+                case c.COMMAND_RECYCLE:
+                    this._state = c.STATE_RECYCLING
+                    break;
+                case c.COMMAND_NONE:
+                    this._state = c.STATE_NONE;
+                    this._travelDone = true;
+                    break;
 
-        }
+            }
 
-        /**@type {RoomObjectEx | null} */
-        let sourceObj = U.getRoomObject(this._sourceId);
-        /**@type {RoomObjectEx | null} */
-        let destObj = U.getRoomObject(this._destId);
-        let resourceType = this._resourceType;
-       
-        switch (this._state) {
-            case c.STATE_FINDENERGY:
-                if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
-                if(sourceObj == undefined) {
-                    sourceObj = this._findEnergySource();
-                    if (sourceObj && sourceObj.id) this._sourceId = sourceObj.id;
-                    else this._sourceId = '';
-                }
-                //deliberate fallthrough to retrieving
-            case c.STATE_RETRIEVING:
-                if (sourceObj == null){
-                        this._instruct = c.COMMAND_NONE; 
+            /**@type {RoomObjectEx | null} */
+            let sourceObj = U.getRoomObject(this._sourceId);
+            /**@type {RoomObjectEx | null} */
+            let destObj = U.getRoomObject(this._destId);
+            let resourceType = this._resourceType;
+        
+            switch (this._state) {
+                case c.STATE_FINDENERGY:
+                    if (sourceObj && sourceObj.store && sourceObj.store[resourceType] == 0) sourceObj = null;
+                    if(sourceObj == undefined) {
+                        sourceObj = this._findEnergySource();
+                        if (sourceObj && sourceObj.id) this._sourceId = sourceObj.id;
+                        else this._sourceId = '';
+                    }
+                    //deliberate fallthrough to retrieving
+                case c.STATE_RETRIEVING:
+                    if (sourceObj == null){
+                            this._instruct = c.COMMAND_NONE; 
+                            break;
+                        }
+                    this._moveTo(sourceObj.pos, {range:1});
+
+                    // also pick up stuff on the way
+                    let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1)[0];
+                    if (tombstone) {
+                        let res = creep.withdraw(tombstone, resourceType);
+                        // also withdraw other stuff & bring to terminal if that is destination
+                        if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) res = creep.withdraw(tombstone, U.getLargestStoreResource(creep.store));
+                        if (res == OK) break;
+                    }
+                    else {
+                        let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
+                        if (dropped_resource) {
+                            let result;
+                            if (dropped_resource.resourceType == resourceType) result = creep.pickup(dropped_resource);
+                            // also withdraw other stuff & bring to terminal if that is destination
+                            else if (destObj instanceof StructureTerminal) result = creep.pickup(dropped_resource);
+                            if (result == OK) break;
+                        }
+                    }
+
+                    let result = -1000
+                    if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
+                    else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
+                    else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
+                    else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
+                    else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
+                    else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
+                    else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
+                    if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
+                    //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
+                    break;
+
+                case c.STATE_DROPENERGY:
+                case c.STATE_FILLING:
+                    if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= TOWER_ENERGY_COST) destObj = null;
+                    if (destObj == null) {
+                        switch (this._state) {
+                            case c.STATE_DROPENERGY:
+                                destObj = this._findEnergySink();
+                                if (!destObj) {
+                                    this._state = c.STATE_FILLING;
+                                } else break;
+                            case c.STATE_FILLING:
+                                destObj = this._findFillTarget();
+                                break;
+                        }
+                        if (destObj && destObj.id) this._destId = destObj.id;
+                        else this._destId = ''
+                    }
+                    this._deliver(destObj);
+                    break;
+
+                case c.STATE_BUILDING:
+                    if (destObj instanceof Structure) {
+                        let roomLevel = 1;
+                        if (this._baseOp) roomLevel = this._baseOp.level
+                        let needRepair = destObj.hits < destObj.hitsMax; 
+                        // only repair walls/ramparts if there are no structures to build        
+                        if (needRepair && destObj.structureType == STRUCTURE_RAMPART || destObj.structureType == STRUCTURE_WALL
+                                && creep.room.find(FIND_MY_CONSTRUCTION_SITES).length>0) needRepair = false; 
+                        if (!needRepair) destObj = null;
+                    } ;
+                    if (destObj == null) {
+                        destObj = this._findBuildTarget();
+                        if (destObj && destObj.id) this._destId = destObj.id;
+                        else this._destId = ''
+                    }
+                    this._deliver(destObj);
+                    break;
+
+
+                case c.STATE_DELIVERING:
+                    this._deliver(destObj);
+                    break;
+            
+                case c.STATE_MOVING:
+                    if (this._destPos) {
+                        if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
+                        else this._moveTo(this._destPos);
+                    } else if (this._destRoomName) {
+                        if (creep.pos.roomName != this._destRoomName || creep.pos.getRangeTo(new RoomPosition(25,25,this._destRoomName) ) > 20) {
+                            this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
+
+                        } else {
+                            this._instruct = c.COMMAND_NONE;
+                        }
+                    } else this._instruct = c.COMMAND_NONE;
+                    if (c.CREEP_EMOTES) creep.say('🦶')
+                    break;
+
+                case c.STATE_RESERVING:
+                case c.STATE_CLAIMING:
+                    let roomName = this._destId;
+                    let room = Game.rooms[roomName]
+                    if (room && room.controller) {
+                        if (room.controller.my) creep.suicide();
+                        else {
+                            let result = -1000;
+                            destObj = room.controller;
+                            if (destObj instanceof StructureController) {
+                                if (this.state == c.STATE_CLAIMING) {
+                                    result = creep.claimController(destObj);
+                                    if (result == OK) Memory.colonizations[roomName] = Game.time; // mark colonization time of the room.
+                                }
+                                if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
+                            }
+                            if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
+                            else if (result == OK) {
+                                if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
+                            }
+                        }
+                    } else {
+                        this._moveTo(new RoomPosition(25,25, roomName));
+                    }
+                    if (c.CREEP_EMOTES) creep.say('Cl:' + roomName)
+                    break;
+                case c.STATE_ATTACKING:
+                    let hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
+                    /**@type {Creep[]} */
+                    let healHostiles = [];
+                    for (let hostile of hostiles) {
+                        for (let bodyPart of hostile.body) {
+                            if (bodyPart.type == HEAL) {
+                                healHostiles.push(hostile)
+                                break;
+                            }
+                        }
+                    }
+                    if (healHostiles.length>0) hostiles = healHostiles;
+                    /**@type {AnyStructure | AnyCreep | null} */
+                    let hostile = creep.pos.findClosestByPath(hostiles)
+                    let attackResult = -100;
+                    let rangedAttackResult = -100
+                    let dismantleResult = -100
+                    if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
+                    if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.hits > 0 }})
+                    if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
+                    if (hostile) {
+                        let pos = creep.pos
+                        let range = hostile.pos.getRangeTo(pos)
+                        if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
+                        else if (range>1) this._moveTo (hostile.pos, {range:1}, {noEvade: true})
+                        //else this._moveTo(hostile.pos, {range:3}, {noEvade:true, flee:true})
+                        if (range == 1) rangedAttackResult = creep.rangedMassAttack();
+                        else rangedAttackResult = creep.rangedAttack(hostile);
+                        attackResult = creep.attack(hostile);
+                        if (hostile instanceof Structure) dismantleResult = creep.dismantle(hostile)
+                    } else {
+                        let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
+                        if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
+                        else {
+                            let scountInfo = this._mapOp.getRoomInfo(this._destRoomName);
+                            if (scountInfo && scountInfo.hostileSource) this._moveTo(new RoomPosition(scountInfo.hostileSource.x, scountInfo.hostileSource.y, this._destRoomName), {range:3})
+                        }
+                    } 
+                    if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
+                    break;
+                case c.STATE_RECYCLING: 
+                    if (!this._baseOp) {
+                        this._state = c.COMMAND_NONE;
                         break;
                     }
-                this._moveTo(sourceObj.pos, {range:1});
-
-                // also pick up stuff on the way
-                let tombstone = creep.pos.findInRange(FIND_TOMBSTONES, 1)[0];
-                if (tombstone) {
-                    let res = creep.withdraw(tombstone, resourceType);
-                    // also withdraw other stuff & bring to terminal if that is destination
-                    if (res == ERR_NOT_ENOUGH_RESOURCES && destObj instanceof StructureTerminal) res = creep.withdraw(tombstone, U.getLargestStoreResource(creep.store));
-                    if (res == OK) break;
-                }
-                else {
-                    let dropped_resource = creep.pos.findInRange(FIND_DROPPED_RESOURCES, 1)[0];
-                    if (dropped_resource) {
-                        let result;
-                        if (dropped_resource.resourceType == resourceType) result = creep.pickup(dropped_resource);
-                        // also withdraw other stuff & bring to terminal if that is destination
-                        else if (destObj instanceof StructureTerminal) result = creep.pickup(dropped_resource);
-                        if (result == OK) break;
-                    }
-                }
-
-                let result = -1000
-                if      (sourceObj instanceof Source)    result = creep.harvest(sourceObj);
-                else if (sourceObj instanceof Structure) result = creep.withdraw(sourceObj,resourceType);
-                else if (sourceObj instanceof Ruin) result = creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Tombstone) result = creep.withdraw(sourceObj, resourceType);
-                else if (sourceObj instanceof Resource) result = creep.pickup(sourceObj);
-                else if (sourceObj instanceof Mineral) result = creep.harvest(sourceObj);
-                else throw Error('Cannot retrieve from object ' + sourceObj + '(room: ' + creep.room.name + ' creep: ' + creep.name + ')');
-                if (result == OK && c.CREEP_EMOTES) creep.say('➤🚚')
-                //if (result != ERR_NOT_IN_RANGE && result != OK) this._instruct = c.COMMAND_NONE;
-                break;
-
-            case c.STATE_DROPENERGY:
-            case c.STATE_FILLING:
-                if (destObj && destObj.store && destObj.store.getFreeCapacity(resourceType) <= TOWER_ENERGY_COST) destObj = null;
-                if (destObj == null) {
-                    switch (this._state) {
-                        case c.STATE_DROPENERGY:
-                            destObj = this._findEnergySink();
-                            if (!destObj) {
-                                this._state = c.STATE_FILLING;
-                            } else break;
-                        case c.STATE_FILLING:
-                            destObj = this._findFillTarget();
-                            break;
-                    }
-                    if (destObj && destObj.id) this._destId = destObj.id;
-                    else this._destId = ''
-                }
-                this._deliver(destObj);
-                break;
-
-            case c.STATE_BUILDING:
-                if (destObj instanceof Structure) {
-                    let roomLevel = 1;
-                    if (this._baseOp) roomLevel = this._baseOp.level
-                    let needRepair = destObj.hits < destObj.hitsMax; 
-                    // only repair walls/ramparts if there are no structures to build        
-                    if (needRepair && destObj.structureType == STRUCTURE_RAMPART || destObj.structureType == STRUCTURE_WALL
-                            && creep.room.find(FIND_MY_CONSTRUCTION_SITES).length>0) needRepair = false; 
-                    if (!needRepair) destObj = null;
-                } ;
-                if (destObj == null) {
-                    destObj = this._findBuildTarget();
-                    if (destObj && destObj.id) this._destId = destObj.id;
-                    else this._destId = ''
-                }
-                this._deliver(destObj);
-                break;
-
-
-            case c.STATE_DELIVERING:
-                this._deliver(destObj);
-                break;
-        
-            case c.STATE_MOVING:
-                if (this._destPos) {
-                    if (this._destPos.isEqualTo(creep.pos)) this._instruct = c.COMMAND_NONE
-                    else this._moveTo(this._destPos);
-                } else if (this._destRoomName) {
-                    if (creep.pos.roomName != this._destRoomName || creep.pos.getRangeTo(new RoomPosition(25,25,this._destRoomName) ) > 20) {
-                        this._moveTo(new RoomPosition(25,25,this._destRoomName), {range:20})
-
+                    if (creep.room.name != this._baseOp.name) {
+                        this._moveTo(new RoomPosition(25,25,this._baseOp.name), {range:20})
                     } else {
-                        this._instruct = c.COMMAND_NONE;
-                    }
-                } else this._instruct = c.COMMAND_NONE;
-                if (c.CREEP_EMOTES) creep.say('🦶')
-                break;
-
-            case c.STATE_RESERVING:
-            case c.STATE_CLAIMING:
-                let roomName = this._destId;
-                let room = Game.rooms[roomName]
-                if (room && room.controller) {
-                    if (room.controller.my) creep.suicide();
-                    else {
-                        let result = -1000;
-                        destObj = room.controller;
-                        if (destObj instanceof StructureController) {
-                            if (this.state == c.STATE_CLAIMING) result = creep.claimController(destObj);
-                            if (this.state == c.STATE_RESERVING) result = creep.reserveController(destObj);
+                        if (!destObj) {
+                            destObj = this._baseOp.deathContainer||null;
+                            if (!destObj) { 
+                                this._state = c.COMMAND_NONE;
+                                break;
+                            }
                         }
-                        if (result == ERR_NOT_IN_RANGE) this._moveTo(room.controller.pos, {range:1});
-                        else if (result == OK) if (room.controller.sign == undefined || room.controller.sign.text != c.MY_SIGN) creep.signController(room.controller,c.MY_SIGN);
-                    }
-                } else {
-                    this._moveTo(new RoomPosition(25,25, roomName));
-                }
-                if (c.CREEP_EMOTES) creep.say('Cl:' + roomName)
-                break;
-            case c.STATE_ATTACKING:
-                let hostiles = creep.room.find(FIND_HOSTILE_CREEPS);
-                /**@type {Creep[]} */
-                let healHostiles = [];
-                for (let hostile of hostiles) {
-                    for (let bodyPart of hostile.body) {
-                        if (bodyPart.type == HEAL) {
-                            healHostiles.push(hostile)
-                            break;
+                        if (!creep.pos.isEqualTo(destObj.pos)) this._moveTo(destObj.pos);
+                        else {         
+                            let spawn = /**@type {StructureSpawn} */(destObj.pos.findInRange(FIND_MY_STRUCTURES,1,{filter: o=> o.structureType==STRUCTURE_SPAWN})[0])
+                            if (spawn) spawn.recycleCreep(creep);
                         }
                     }
-                }
-                if (healHostiles.length>0) hostiles = healHostiles;
-                /**@type {AnyStructure | AnyCreep | null} */
-                let hostile = creep.pos.findClosestByPath(hostiles)
-                let attackResult = -100;
-                let rangedAttackResult = -100
-                let dismantleResult = -100
-                if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.hits > 0 }})
-                if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
-                if (hostile) {
-                    let pos = creep.pos
-                    let range = hostile.pos.getRangeTo(pos)
-                    if (pos.x >= 49 || pos.x <= 0 || pos.y >=49 || pos.y <=0) this._moveTo(new RoomPosition(25,25, hostile.pos.roomName), {range:20}, {noEvade: true}) // prevent attacking from border
-                    else if (range>1) this._moveTo (hostile.pos, {range:1}, {noEvade: true})
-                    //else this._moveTo(hostile.pos, {range:3}, {noEvade:true, flee:true})
-                    if (range == 1) rangedAttackResult = creep.rangedMassAttack();
-                    else rangedAttackResult = creep.rangedAttack(hostile);
-                    attackResult = creep.attack(hostile);
-                    if (hostile instanceof Structure) dismantleResult = creep.dismantle(hostile)
-                } else {
-                    let hostileCSite = creep.pos.findClosestByPath(FIND_HOSTILE_CONSTRUCTION_SITES);
-                    if (hostileCSite) this._moveTo(hostileCSite.pos, {}, {noEvade:true})
-                    else {
-                        let scountInfo = this._mapOp.getRoomInfo(this._destRoomName);
-                        if (scountInfo && scountInfo.hostileSource) this._moveTo(new RoomPosition(scountInfo.hostileSource.x, scountInfo.hostileSource.y, this._destRoomName), {range:3})
-                    }
-                } 
-                if (attackResult != OK && creep.hits<creep.hitsMax) creep.heal(creep);
-                break;
-            case c.STATE_RECYCLING: 
-                if (!this._baseOp) {
-                    this._state = c.COMMAND_NONE;
                     break;
-                }
-                if (creep.room.name != this._baseOp.name) {
-                    this._moveTo(new RoomPosition(25,25,this._baseOp.name), {range:20})
-                } else {
-                    if (!destObj) {
-                        destObj = this._baseOp.deathContainer||null;
-                        if (!destObj) { 
-                            this._state = c.COMMAND_NONE;
-                            break;
-                        }
-                    }
-                    if (!creep.pos.isEqualTo(destObj.pos)) this._moveTo(destObj.pos);
-                    else {         
-                        let spawn = /**@type {StructureSpawn} */(destObj.pos.findInRange(FIND_MY_STRUCTURES,1,{filter: o=> o.structureType==STRUCTURE_SPAWN})[0])
-                        if (spawn) spawn.recycleCreep(creep);
-                    }
-                }
-                break;
-                
-            case c.STATE_NONE:
-                //flee from sources and spawns and construction sites
-                /**@type {RoomObject[]} */
-                let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
-                targets = targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
-                targets = targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
-                if (targets.length>0) {
-                    let poss = []
-                    for (let target of targets) poss.push({pos: target.pos, range: 3})
-                    let roomCallback = function(/**@type {string}*/ roomName) {
+                    
+                case c.STATE_NONE:
+                    //flee from sources and spawns and construction sites
+                    /**@type {RoomObject[]} */
+                    let targets = creep.pos.findInRange(FIND_SOURCES_ACTIVE, 2);
+                    targets = targets.concat(creep.pos.findInRange(FIND_MY_STRUCTURES, 2, {filter: {structureType: STRUCTURE_SPAWN}}));
+                    targets = targets.concat(creep.pos.lookFor(LOOK_CONSTRUCTION_SITES));
+                    if (targets.length>0) {
+                        let poss = []
+                        for (let target of targets) poss.push({pos: target.pos, range: 3})
+                        let roomCallback = function(/**@type {string}*/ roomName) {
 
-                        let room = Game.rooms[roomName];
-                        if (!room) return false;
-                        let costs = new PathFinder.CostMatrix;
-                
-                        room.find(FIND_STRUCTURES).forEach(function(struct) {
-                          if (struct.structureType === STRUCTURE_ROAD) {
-                            // Favor roads over plain tiles
-                            costs.set(struct.pos.x, struct.pos.y, 1);
-                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                                     (struct.structureType !== STRUCTURE_RAMPART ||
-                                      !struct.my)) {
-                            // Can't walk through non-walkable buildings
-                            costs.set(struct.pos.x, struct.pos.y, 0xff);
-                          }
-                        });
-                
-                        // Avoid creeps in the room
-                        room.find(FIND_CREEPS).forEach(function(creep) {
-                          costs.set(creep.pos.x, creep.pos.y, 0xff);
-                        });
-                
-                        return costs;
-                      }
-                    let result = PathFinder.search(creep.pos, poss,{flee:true, roomCallback: roomCallback})
-                    creep.moveByPath(result.path)
-                }
-                if (c.CREEP_EMOTES) creep.say('💤')
-                break;
-        }    
-        if (this._instruct== c.COMMAND_NONE) {
-            this._parent.lastIdle = Game.time;
-            this._idleTime++;
-        } else this._idleTime = 0;
+                            let room = Game.rooms[roomName];
+                            if (!room) return false;
+                            let costs = new PathFinder.CostMatrix;
+                    
+                            room.find(FIND_STRUCTURES).forEach(function(struct) {
+                            if (struct.structureType === STRUCTURE_ROAD) {
+                                // Favor roads over plain tiles
+                                costs.set(struct.pos.x, struct.pos.y, 1);
+                            } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                        (struct.structureType !== STRUCTURE_RAMPART ||
+                                        !struct.my)) {
+                                // Can't walk through non-walkable buildings
+                                costs.set(struct.pos.x, struct.pos.y, 0xff);
+                            }
+                            });
+                    
+                            // Avoid creeps in the room
+                            room.find(FIND_CREEPS).forEach(function(creep) {
+                            costs.set(creep.pos.x, creep.pos.y, 0xff);
+                            });
+                    
+                            return costs;
+                        }
+                        let result = PathFinder.search(creep.pos, poss,{flee:true, roomCallback: roomCallback})
+                        creep.moveByPath(result.path)
+                    }
+                    if (c.CREEP_EMOTES) creep.say('💤')
+                    break;
+            }    
+            if (this._instruct== c.COMMAND_NONE) {
+                this._parent.lastIdle = Game.time;
+                this._idleTime++;
+            } else this._idleTime = 0;
+        }
+
         if (!creep.pos.isEqualTo(this._lastPos)) this._registerCreepStep();
         this._lastPos = this._creep.pos;
     }
@@ -886,7 +896,7 @@ module.exports = class CreepOp extends ChildOp {
                     let structures = o.pos.lookFor(LOOK_STRUCTURES);
                     _.remove(structures,{structureType:STRUCTURE_ROAD});
                     if (structures.length <=1 && !o.pos.isEqualTo(baseOp.centerPos)) return;
-                    let needRepair = o.hits < o.hitsMax && o.hits < baseOp.basePlanOp.maxWallHeight;                    
+                    let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR && o.hits < baseOp.basePlanOp.maxWallHeight;                    
                     if (!needRepair) return false;
                     else return true;
                 }
@@ -909,7 +919,7 @@ module.exports = class CreepOp extends ChildOp {
         if (creep.pos.inRangeTo(endDest,range)) return OK;
         let optsCopy = Object.assign(opts||{});
         /**@type {RoomPosition } */
-        let dest = Object.assign(endDest);
+        let dest = new RoomPosition(endDest.x, endDest.y, endDest.roomName);
         let nextStop = (myOpts?myOpts.nextStop:null);
         let myPos = creep.pos;
         let mapOp = this._mapOp
@@ -938,7 +948,7 @@ module.exports = class CreepOp extends ChildOp {
                 range = 20;
                 dest = new RoomPosition(25,25,route[1].room)
                 this._lastMoveToInterimDest = dest;
-            }
+            } else this._lastMoveToInterimDest = null;
         }
         else if (range > 0 && nextStop ) {
                     if (creep.name == 'E1N36_13_0_834206') U.l('finding optimum path')
@@ -990,7 +1000,7 @@ module.exports = class CreepOp extends ChildOp {
         optsCopy.costCallback = function (/**@type {string}*/roomName, /**@type {CostMatrix} */ costMatrix) {
             if (!(moveFlags & c.MOVE_ALLOW_HOSTILE_ROOM) && roomName != endDest.roomName && roomName != creep.pos.roomName) {
                 let roomInfo = mapOp.getRoomInfo(roomName);
-                if (roomInfo && (roomInfo.lastSeenHostile + CREEP_LIFE_TIME >= Game.time || roomInfo.activeTowers >= 1)) {
+                if (roomInfo && (/*roomInfo.lastSeenHostile + CREEP_LIFE_TIME >= Game.time ||*/ roomInfo.activeTowers >= 1)) {
                     for (let x =0; x<50;x++) {
                         for (let y = 0; y<50; y++){
                             costMatrix.set(x,y,255);

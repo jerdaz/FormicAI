@@ -34,7 +34,7 @@ module.exports = class AttackOp extends RoomChildOp {
         if (scoutInfo.hasRamparts
             && !scoutInfo.safeMode
             && scoutInfo.activeTowers <=0
-            && scoutInfo.lastSeenHostile < Game.time - 1500) {
+            && scoutInfo.lastSeenAttacker < Game.time - 1500) {
                 attackLevel = 1;
 
         }
@@ -59,7 +59,7 @@ module.exports = class AttackOp extends RoomChildOp {
         if             
         (
             scoutInfo.my
-            && (scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen || Game.time - scoutInfo.lastSeenHostile <= GUARD_TIME)
+            && (scoutInfo.invasion || scoutInfo.lastSeenAttacker == scoutInfo.lastSeen || Game.time - scoutInfo.lastSeenAttacker <= GUARD_TIME)
         )
         {
             attackLevel = 2 ;
@@ -94,7 +94,7 @@ module.exports = class AttackOp extends RoomChildOp {
             let creep = creepOp.creep;
             let scoutInfo = this._map.getRoomInfo(this.roomName);
             if (scoutInfo &&
-                scoutInfo.lastSeen - scoutInfo.lastSeenHostile > 1500 && 
+                scoutInfo.lastSeen - scoutInfo.lastSeenAttacker > 1500 && 
                 scoutInfo.invasion == false &&
                 scoutInfo.hostileOwner == false
                 )
