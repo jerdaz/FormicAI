@@ -5,7 +5,7 @@ const BaseChildOp = require('./base_childOp');
 // time we try to colonize a room before trying another
 const ROOM_CLAIM_TIMEOUT = 2000
 // time after which we retry colonizing a room
-const COLONIZE_RETRY_TIME = 100000
+const COLONIZE_RETRY_TIME = 1000000 //+- 6 weeks
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
 // maximum lineair distance for colonization
@@ -39,7 +39,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
 
         //check for new colonization room
-        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
+        if ( (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE)
+            && this._baseOp.base.controller.safeModeAvailable) {    // don't colonize if no safe mode available (globally). The new base needs it to defend
             // give up colonization after timeout
             if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 Memory.colonizations[this._colRoomName] = Game.time; // mark colonization attempt
