@@ -135,7 +135,7 @@ module.exports = class CreepOp extends ChildOp {
 
     /**@param {Structure | ConstructionSite} [dest] */
     instructFill(dest) {
-        this._sourceId = ''
+        //this._sourceId = ''
         if (dest) this._destId = dest.id;
         else this._destId = '';
         this._instruct = c.COMMAND_FILL
@@ -143,7 +143,7 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     instructBuild() {
-        this._sourceId = ''
+        //this._sourceId = ''
         this._destId = '';
         this._instruct = c.COMMAND_BUILD;
         this._resourceType = RESOURCE_ENERGY;
