@@ -314,7 +314,7 @@ module.exports = class CreepOp extends ChildOp {
             if (source && source.store && source.store.getUsedCapacity(RESOURCE_ENERGY) == 0) source = null;
             if (source == null) source = this._findEnergySource();
             if (source && source.id) this._sourceId = source.id;
-            else this.sourceId = '';
+            else this._sourceId = '';
         }
         if (!source) {
             this._instruct=COMMAND_NONE;
@@ -802,8 +802,8 @@ module.exports = class CreepOp extends ChildOp {
         let roomObjects = [];
         /**@type RoomObject|null */
         let result;
-        roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
-        roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
+        //roomObjects = room.find(FIND_DROPPED_RESOURCES, {filter: {resourceType: RESOURCE_ENERGY}})
+        //roomObjects = roomObjects.concat(room.find(FIND_TOMBSTONES, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
         roomObjects = roomObjects.concat(room.find(FIND_RUINS, {filter: (o) => {return o.store.energy > 0}}), roomObjects)
         roomObjects = roomObjects.concat(room.find(FIND_MY_STRUCTURES, {filter: (o) => {return (o.structureType == STRUCTURE_STORAGE 
                                                                                                 ) && o.store.energy > 0
