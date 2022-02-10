@@ -472,7 +472,12 @@ module.exports = class CreepOp extends ChildOp {
                     this._state=c.STATE_RESERVING
                     break;
                 case c.COMMAND_BUILD:
-                    if (creep.store.getUsedCapacity()  == 0) this._state = c.STATE_FINDENERGY;
+                    if (creep.store.getUsedCapacity()  == 0) {
+                        if (this._state != c.STATE_FINDENERGY) {
+                            this._sourceId = '';
+                            this._state = c.STATE_FINDENERGY;
+                        }
+                    }
                     else if (creep.store.getFreeCapacity() == 0) {
                         this._state = c.STATE_BUILDING;
                     }
