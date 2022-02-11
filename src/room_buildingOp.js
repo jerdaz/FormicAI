@@ -127,7 +127,9 @@ module.exports = class BuildingOp extends RoomChildOp {
                 if (!terrainArray) return false;
                 if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
             }
-               
+            if (o.structureType == STRUCTURE_CONTAINER) {
+                if (o.pos.getRangeTo(/**@type {Base}  */ (o.room).baseOp.centerPos) > 1) return false;
+            }
             return o.hits < o.hitsMax * c.REPAIR_FACTOR*c.REPAIR_FACTOR && o.hits < this._baseOp.basePlanOp.maxWallHeight * (forSpawn?0.5:1)
 
         }}

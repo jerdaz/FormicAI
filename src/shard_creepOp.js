@@ -884,6 +884,9 @@ module.exports = class CreepOp extends ChildOp {
                     if (terrainArray[o.pos.x][o.pos.y].fatigueCost <= 0) return false;
                     this._log('canrepair');
                 }
+                if (o.structureType == STRUCTURE_CONTAINER) {
+                    if (o.pos.getRangeTo(/**@type {Base}  */ (o.room).baseOp.centerPos) > 1) return false;
+                }
                 return true;
             }});
             dest = creep.pos.findClosestByRange(roads);
