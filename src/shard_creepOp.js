@@ -483,8 +483,8 @@ module.exports = class CreepOp extends ChildOp {
                         this._state = c.STATE_BUILDING;
                     }
                     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) {
-                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_BUILDING
-                        else this._state = c.STATE_FINDENERGY;
+                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY
+                        else this._state = c.STATE_BUILDING;
                     }
                     break;
                 case c.COMMAND_UPGRADE:
@@ -497,8 +497,8 @@ module.exports = class CreepOp extends ChildOp {
                         this._state = c.STATE_DELIVERING;
                     }
                     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) {
-                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_DELIVERING; 
-                        else this._state = c.STATE_FINDENERGY;
+                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY; 
+                        else this._state = c.STATE_BUILDING;
                     }
                     break;
                 case c.COMMAND_ATTACK:
