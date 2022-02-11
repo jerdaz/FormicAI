@@ -9,8 +9,8 @@ const COLONIZE_RETRY_TIME = 1000000 //+- 6 weeks
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
 // maximum lineair distance for colonization
-const MAX_LINEAIR_COL_DISTANCE = 12
-const MAX_PATH_COL_DISTANCE = 12
+const MAX_LINEAIR_COL_DISTANCE = 13
+const MAX_PATH_COL_DISTANCE = 13
 
 
 module.exports = class ColonizingOp extends BaseChildOp {
