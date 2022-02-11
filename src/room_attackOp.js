@@ -28,11 +28,13 @@ module.exports = class AttackOp extends RoomChildOp {
             //this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE], maxLength:1},1)
             return;
         }
+
+        let safeModeNow = (scoutInfo.safeMode||0 - Game.time + scoutInfo.lastSeen) <= 0;
         
         // check for attack level 1
         // no defense, but there are still ramparts
         if (scoutInfo.hasRamparts
-            && !scoutInfo.safeMode
+            && !safeModeNow
             && scoutInfo.activeTowers <=0
             && scoutInfo.lastSeenAttacker < Game.time - 1500) {
                 attackLevel = 1;
@@ -44,7 +46,7 @@ module.exports = class AttackOp extends RoomChildOp {
 
         if (
                 (   scoutInfo.hostileOwner
-                    && !scoutInfo.safeMode
+                    && !safeModeNow
                     && scoutInfo.level >= 1
                     && scoutInfo.activeTowers <= 0
                     && (lastAttackTicks < MAX_ATTACK_LENGTH || lastAttackTicks > ATTACK_RETRY_TIME)
