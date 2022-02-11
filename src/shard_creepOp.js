@@ -265,7 +265,7 @@ module.exports = class CreepOp extends ChildOp {
             if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_INPUT; 
             else this._state = c.STATE_OUTPUT;
         }
-        
+
         if (this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // first input
         if (this._instruct == c.COMMAND_NONE) return;
         if (result == OK && this._state == c.STATE_OUTPUT) {
@@ -487,7 +487,8 @@ module.exports = class CreepOp extends ChildOp {
                         this._state = c.STATE_BUILDING;
                     }
                     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) {
-                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY
+                        if (this._state == c.STATE_DELIVERING) this._state = c.STATE_BUILDING
+                        else if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY
                         else this._state = c.STATE_BUILDING;
                     }
                     break;
@@ -500,8 +501,9 @@ module.exports = class CreepOp extends ChildOp {
                     else if (creep.store.getFreeCapacity() == 0) {
                         this._state = c.STATE_DELIVERING;
                     }
-                    else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) {
-                        if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY; 
+                    else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_DELIVERING) {
+                        if (this._state == c.STATE_BUILDING) this._state = c.STATE_DELIVERING;
+                        else if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY; 
                         else this._state = c.STATE_DELIVERING;
                     }
                     break;
