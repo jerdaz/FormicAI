@@ -261,7 +261,11 @@ module.exports = class CreepOp extends ChildOp {
         /**@type {ScreepsReturnCode} */
         let result = OK;
         this._carryPartUsed = false;
-        if (!this._state) this._state = c.STATE_INPUT;
+        if (this._state != c.STATE_INPUT && this._state != c.STATE_OUTPUT) {
+            if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_INPUT; 
+            else this._state = c.STATE_OUTPUT;
+        }
+        
         if (this._state == c.STATE_INPUT) result = this._inputResource(mutations);    // first input
         if (this._instruct == c.COMMAND_NONE) return;
         if (result == OK && this._state == c.STATE_OUTPUT) {
@@ -498,7 +502,7 @@ module.exports = class CreepOp extends ChildOp {
                     }
                     else if (this._state != c.STATE_FINDENERGY && this._state != c.STATE_BUILDING) {
                         if (creep.store.getUsedCapacity() < creep.store.getFreeCapacity() ) this._state = c.STATE_FINDENERGY; 
-                        else this._state = c.STATE_BUILDING;
+                        else this._state = c.STATE_DELIVERING;
                     }
                     break;
                 case c.COMMAND_ATTACK:
