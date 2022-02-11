@@ -810,9 +810,9 @@ module.exports = class CreepOp extends ChildOp {
                                                                                             || o.structureType == STRUCTURE_LINK && o.energy > 0;   
                                                                                         }   
                                                                         }))
-        roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0
-                                                                                        || o.structureType == STRUCTURE_TERMINAL && o.store.energy > c.MAX_TRANSACTION * 2    
-                                                                                        }}));        
+        // roomObjects = roomObjects.concat(room.find(FIND_STRUCTURES, {filter: (o) => {return o.structureType == STRUCTURE_CONTAINER && o.store.energy > 0
+        //                                                                                 || o.structureType == STRUCTURE_TERMINAL && o.store.energy > c.MAX_TRANSACTION * 2    
+        //                                                                                 }}));        
         result = this._creep.pos.findClosestByPath(roomObjects)
         if (result == null && this.hasWorkParts) {
             result = this._creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE);
