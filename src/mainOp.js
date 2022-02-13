@@ -157,14 +157,14 @@ module.exports = class MainOp extends Operation {
             let room = '';
             let lowestLevel = 100;
             let lowestProgress = 0;
-            let foundBaseWithoutSpawn = false;
+            let foundLowLvlBase = false;
             for (let i = 0; i< interShardMem.shards.length;i++ ) {
                 let shardInfo = interShardMem.shards[i];
                 let baseInfos = shardInfo.bases;
                 for (let baseInfo of baseInfos) {
                     // first check if we find a base without spawn. we don't want to abondon any base if we have one.
-                    if (!baseInfo.hasSpawn ) {
-                        foundBaseWithoutSpawn = true;
+                    if (!baseInfo.hasSpawn || baseInfo.level < 4) {
+                        foundLowLvlBase = true;
                         break;
                     }
                     // check if the base is single source and lower developed then we found
@@ -177,12 +177,12 @@ module.exports = class MainOp extends Operation {
                         lowestProgress = baseInfo.progress;
                     }
                 }
-                if (foundBaseWithoutSpawn) break;
+                if (foundLowLvlBase) break;
             }
 
  
             // Now try to find a below average room to despawn if we haven't found a single source room
-            if (!foundBaseWithoutSpawn && !room) {
+            if (!foundLowLvlBase && !room) {
                 let lowestGcl = Number.MAX_VALUE;
                 let baseCount = 0;
                 let totalEndLvlBaseTime = 0;
@@ -206,7 +206,7 @@ module.exports = class MainOp extends Operation {
                     let shardInfo = interShardMem.shards[i];
                     let baseInfos = shardInfo.bases;
                     for (let baseInfo of baseInfos) {
-                        if (baseInfo.age > avgEndLvlTime * 1.2) // base should be at least 1.2 times the age of average lvl 8 base grow time to be considered 
+                        if (baseInfo.age > avgEndLvlTime * 1.1) // base should be at least 1.2 times the age of average lvl 8 base grow time to be considered 
                         {   
                             baseCount++;
                             totalGclRate += baseInfo.gclRate;
@@ -224,7 +224,7 @@ module.exports = class MainOp extends Operation {
             }
 
             //unclaim the lowest found base if we haven't found base without spawn
-            if (!foundBaseWithoutSpawn
+            if (!foundLowLvlBase
                 && shard == this._shardNum 
                 && room) 
             {

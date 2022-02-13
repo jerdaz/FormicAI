@@ -145,6 +145,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //destroy all hostile structures
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
+        for (let hostileConstructionSite of base.find(FIND_HOSTILE_CONSTRUCTION_SITES)) hostileConstructionSite.remove();
 
         // if there are too many spawns for controller level, start removing them because the primary spawn
         // MUST be active
