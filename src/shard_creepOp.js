@@ -974,7 +974,6 @@ module.exports = class CreepOp extends ChildOp {
             } else this._lastMoveToInterimDest = null;
         }
         else if (range > 0 && nextStop ) {
-                    if (creep.name == 'E1N36_13_0_834206') U.l('finding optimum path')
                 //choose optimum position next to goal for next stop
                     let roomCallback = function(/**@type {string}*/roomName) {
                 
@@ -1007,8 +1006,10 @@ module.exports = class CreepOp extends ChildOp {
                 let path = PathFinder.search(endDest, {pos:nextStop, range:1}, {roomCallback:roomCallback} )
                 if (path.path.length>0) {
                     dest = path.path[range-1]
-                    this._lastMoveToInterimDest = dest;
-                    range = 0;
+                    if (dest) { 
+                        this._lastMoveToInterimDest = dest;
+                        range = 0;
+                    }
                 } else {
                     dest = endDest;
                     this._lastMoveToInterimDest = null;
