@@ -43,6 +43,7 @@ module.exports = class ShardOp extends ChildOp {
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
         this.addChildOp(new ShardSpawningOp(this));
+        this._safeModeAvailable = false;
         //this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = ''
@@ -75,6 +76,10 @@ module.exports = class ShardOp extends ChildOp {
 
     get subRooms() {
         return this._subRooms;
+    }
+
+    get safeModeAvailable() {
+        return this._safeModeAvailable;
     }
 
     
@@ -134,6 +139,7 @@ module.exports = class ShardOp extends ChildOp {
     /**@param {String} roomName */
     requestBuilder(roomName){
         let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true);
+        U.l({builderrequestfrom:roomName, donor:donorRoom})
         if (!donorRoom) return;
         let baseOp = this._baseOpsMap.get(donorRoom);
         if (!baseOp) throw Error('donorroom not in basemap');
@@ -230,11 +236,14 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
 
+        // update safemode
+        this._safeModeAvailable = true;
         //iterate through all rooms and update / add new room objects to baseOps
         // and init them
         for (let roomName in Game.rooms) {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
+                if (room.controller.safeMode) this._safeModeAvailable = false;
                 let baseOp = this._baseOpsMap.get(room.name);
                 if (!baseOp) {
                     baseOp = new BaseOp(this.getBase(room.name), this)
