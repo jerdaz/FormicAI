@@ -40,7 +40,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
 
         //check for new colonization room
         if ( (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE)
-            && this._baseOp.base.controller.safeModeAvailable) {    // don't colonize if no safe mode available (globally). The new base needs it to defend
+            && this._shardOp.safeModeAvailable) {    // don't colonize if no safe mode available (globally). The new base needs it to defend
             // give up colonization after timeout
             if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 Memory.colonizations[this._colRoomName] = Game.time; // mark colonization attempt
