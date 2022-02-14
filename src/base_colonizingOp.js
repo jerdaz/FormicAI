@@ -5,12 +5,12 @@ const BaseChildOp = require('./base_childOp');
 // time we try to colonize a room before trying another
 const ROOM_CLAIM_TIMEOUT = 2000
 // time after which we retry colonizing a room
-const COLONIZE_RETRY_TIME = 100000
+const COLONIZE_RETRY_TIME = 1000000 //+- 6 weeks
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
 // maximum lineair distance for colonization
-const MAX_LINEAIR_COL_DISTANCE = 20
-const MAX_PATH_COL_DISTANCE = 15
+const MAX_LINEAIR_COL_DISTANCE = 13
+const MAX_PATH_COL_DISTANCE = 13
 
 
 module.exports = class ColonizingOp extends BaseChildOp {
@@ -37,14 +37,16 @@ module.exports = class ColonizingOp extends BaseChildOp {
         // stop colonizing when no longer necessary
         if (this.baseOp.directive != c.DIRECTIVE_COLONIZE && this.baseOp.directive != c.DIRECTIVE_COLONIZE_2SOURCE) this._colRoomName = null;
 
-        // give up colonization after timeout
-        if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
-            Memory.colonizations[this._colRoomName] = Game.time;
-            this._colRoomName = null;
-        }
 
         //check for new colonization room
-        if (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE) {
+        if ( (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE)
+            && this._baseOp.base.controller.safeModeAvailable) {    // don't colonize if no safe mode available (globally). The new base needs it to defend
+            // give up colonization after timeout
+            if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+                Memory.colonizations[this._colRoomName] = Game.time; // mark colonization attempt
+                this._colRoomName = null;
+            }
+            //find new room if necessary
             if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
                 this._colRoomName = this._findColRoom();
                 this._colStart = Game.time;
@@ -68,6 +70,10 @@ module.exports = class ColonizingOp extends BaseChildOp {
         for (let creepName in this._creepOps) {
             let creepOp = this._creepOps[creepName];
             creepOp.instructClaimController(colRoomName);
+            // draw visual progress
+            let target = new RoomPosition(25, 25, colRoomName)
+            let creepPos = creepOp.creep.pos;
+            Game.map.visual.line(creepPos, target, {color:'#0000ff'})
         }
     }
 
@@ -80,7 +86,15 @@ module.exports = class ColonizingOp extends BaseChildOp {
             Game.map.visual.circle(source)
             Game.map.visual.circle(target)
             Game.map.visual.line(source, target)
+            for (let creepName in this._creepOps) {
+                let creepOp = this._creepOps[creepName];
+                // draw visual progress
+                let target = new RoomPosition(25, 25, roomName)
+                let creepPos = creepOp.creep.pos;
+                Game.map.visual.line(creepPos, target, {color:'#0000ff'})
+            }
         }
+
     }
 
     /**@returns {string | null} */
@@ -92,7 +106,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         for (let roomName in this._map.knownRooms) {
             let roomInfo = knownRooms[roomName];
             if (   roomInfo.hostileOwner == false 
-                && roomInfo.lastSeenHostile < Game.time - CREEP_LIFE_TIME
+                && roomInfo.lastSeenPlayerCreeps < roomInfo.lastSeen
                 && roomInfo.lastSeen >= Game.time - COLONIZE_LASTSEEN_TIME
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
@@ -110,9 +124,14 @@ module.exports = class ColonizingOp extends BaseChildOp {
                }
         }
         colRooms.sort((a, b) => {
+            let lastColTimeA = Memory.colonizations[a.name];
+            let lastColTimeB = Memory.colonizations[b.name];
+            if (lastColTimeA && lastColTimeB ) return lastColTimeA - lastColTimeB; // sort ascending. most recent colonization attempt last
+            if (lastColTimeA) return 1; // if A had a colonization attempt sort B first
+            if (lastColTimeB) return -1; // if B had a colonization attempt, sort A first
             if (a.sources > b.sources) return -1; // if A has more sources sort it first
             if (b.sources > a.sources) return 1; // if B has more sources, sort it first
-            return a.distance-b.distance; // else sort distance ascending
+            else return a.distance-b.distance; // else sort distance ascending
         })
         if (colRooms.length > 0) return colRooms[0].name;
         else return null;

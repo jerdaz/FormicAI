@@ -11,6 +11,7 @@ const baseBuildTemplate = [
     {type: STRUCTURE_LINK, max:1},
     {type: STRUCTURE_TERMINAL},
     {type: STRUCTURE_SPAWN},
+    {type: STRUCTURE_OBSERVER}
 //  {type: STRUCTURE_LAB, max:1}
 ]
 
@@ -58,8 +59,8 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //update current maximum wall height
         //ramparts shouldn't be repaired beyond 2x the lowest height
-        if (this._baseOp.storage && this._baseOp.storage.store[RESOURCE_ENERGY] > STORAGE_CAPACITY / 3) this._maxWallHeight = Number.MAX_SAFE_INTEGER; // if energy surpluss just upgrade ramparts endlessly
-        else {
+        if (this._baseOp.storage && this._baseOp.storage.store[RESOURCE_ENERGY] > STORAGE_CAPACITY / 2) this._maxWallHeight = Number.MAX_SAFE_INTEGER; // if energy surpluss just upgrade ramparts endlessly
+        else if (!this._baseOp.storage || (this._maxWallHeight == Number.MAX_SAFE_INTEGER && this._baseOp.storage.store[RESOURCE_ENERGY] < STORAGE_CAPACITY / 3)){
             let ramparts = this._baseOp.myStructures[STRUCTURE_RAMPART];
             /**@type {number} */
             let minHeight = RAMPART_HITS_MAX[8];
@@ -144,6 +145,7 @@ module.exports = class BasePlanOp extends BaseChildOp{
 
         //destroy all hostile structures
         for (let hostileStructure of base.find(FIND_HOSTILE_STRUCTURES)) hostileStructure.destroy();
+        for (let hostileConstructionSite of base.find(FIND_HOSTILE_CONSTRUCTION_SITES)) hostileConstructionSite.remove();
 
         // if there are too many spawns for controller level, start removing them because the primary spawn
         // MUST be active

@@ -67,6 +67,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get terminal() {return /**@type {StructureTerminal | null}*/((this._structures[STRUCTURE_TERMINAL]||[])[0])}
     get towers() {return /**@type {StructureTower[]}*/ (this._structures[STRUCTURE_TOWER])||[]}
     get labs() {return /**@type {StructureLab[]} */ (this._structures[STRUCTURE_LAB])||[]}
+    get observer() {return /**@type {StructureObserver} */ ((this._structures[STRUCTURE_OBSERVER]||[])[0])}
     get containers() {return /**@type {StructureContainer[]} */ (this._structures[STRUCTURE_CONTAINER])||[]}
     get deathContainer() {
         for (let container of this.containers) {
