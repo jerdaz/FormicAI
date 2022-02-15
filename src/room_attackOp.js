@@ -28,13 +28,15 @@ module.exports = class AttackOp extends RoomChildOp {
             //this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE], maxLength:1},1)
             return;
         }
+
+        let safeModeNow = (scoutInfo.safeMode||0 - Game.time + scoutInfo.lastSeen) <= 0;
         
         // check for attack level 1
         // no defense, but there are still ramparts
         if (scoutInfo.hasRamparts
-            && !scoutInfo.safeMode
+            && !safeModeNow
             && scoutInfo.activeTowers <=0
-            && scoutInfo.lastSeenHostile < Game.time - 1500) {
+            && scoutInfo.lastSeenAttacker < Game.time - 1500) {
                 attackLevel = 1;
 
         }
@@ -44,7 +46,7 @@ module.exports = class AttackOp extends RoomChildOp {
 
         if (
                 (   scoutInfo.hostileOwner
-                    && !scoutInfo.safeMode
+                    && !safeModeNow
                     && scoutInfo.level >= 1
                     && scoutInfo.activeTowers <= 0
                     && (lastAttackTicks < MAX_ATTACK_LENGTH || lastAttackTicks > ATTACK_RETRY_TIME)
@@ -59,7 +61,7 @@ module.exports = class AttackOp extends RoomChildOp {
         if             
         (
             scoutInfo.my
-            && (scoutInfo.invasion || scoutInfo.lastSeenHostile == scoutInfo.lastSeen || Game.time - scoutInfo.lastSeenHostile <= GUARD_TIME)
+            && (scoutInfo.invasion || scoutInfo.lastSeenAttacker == scoutInfo.lastSeen || Game.time - scoutInfo.lastSeenAttacker <= GUARD_TIME)
         )
         {
             attackLevel = 2 ;
@@ -79,7 +81,7 @@ module.exports = class AttackOp extends RoomChildOp {
             case 2:
                 body = [RANGED_ATTACK,MOVE,RANGED_ATTACK,MOVE,HEAL,MOVE]
                 creepCount = 1;
-                minLength = 6
+                minLength = 2;
                 noSort=false;
                 break;
         }
@@ -94,7 +96,7 @@ module.exports = class AttackOp extends RoomChildOp {
             let creep = creepOp.creep;
             let scoutInfo = this._map.getRoomInfo(this.roomName);
             if (scoutInfo &&
-                scoutInfo.lastSeen - scoutInfo.lastSeenHostile > 1500 && 
+                scoutInfo.lastSeen - scoutInfo.lastSeenAttacker > 1500 && 
                 scoutInfo.invasion == false &&
                 scoutInfo.hostileOwner == false
                 )

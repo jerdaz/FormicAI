@@ -43,6 +43,7 @@ module.exports = class ShardOp extends ChildOp {
         this._bank = new BankOp(this, this);
         this.addChildOp(this._bank);
         this.addChildOp(new ShardSpawningOp(this));
+        this._safeModeAvailable = false;
         //this.addChildOp(new ShardDefenseOp(this))
         this._teamShardColonizing = new ColonizingOp(this, this);
         this._userName = ''
@@ -75,6 +76,10 @@ module.exports = class ShardOp extends ChildOp {
 
     get subRooms() {
         return this._subRooms;
+    }
+
+    get safeModeAvailable() {
+        return this._safeModeAvailable;
     }
 
     
@@ -133,7 +138,7 @@ module.exports = class ShardOp extends ChildOp {
 
     /**@param {String} roomName */
     requestBuilder(roomName){
-        let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true);
+        let donorRoom = this._map.findClosestBaseByPath(roomName, 4 , true, 0, 20);
         if (!donorRoom) return;
         let baseOp = this._baseOpsMap.get(donorRoom);
         if (!baseOp) throw Error('donorroom not in basemap');
@@ -172,15 +177,25 @@ module.exports = class ShardOp extends ChildOp {
 
         for(let baseOpKey of this._baseOpsMap) {
             let baseOp = baseOpKey[1];
-            let baseInfo = {name:baseOp.name,
-                            level: baseOp.level,
-                            sources: baseOp.base.find(FIND_SOURCES).length,
-                            progress: baseOp.base.controller.progress,
-                            hasSpawn: (baseOp.spawns.length>0)
-                        }
+            let baseInfo = baseOp.stats;
             result.push(baseInfo);
         }
         return result;
+    }
+
+    getAvgGclRate () {
+        let baseInfos = this.getBaseInfo();
+
+        let baseCount = 0;
+        let totalGclRate = 0;
+        // calculate averate time to end level
+        for (let baseInfo of baseInfos) {
+            if (baseInfo.gclRate) {
+                baseCount++
+                totalGclRate += baseInfo.gclRate;
+            }
+        }
+        return totalGclRate / baseCount;       
     }
     
 
@@ -220,11 +235,14 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
 
+        // update safemode
+        this._safeModeAvailable = true;
         //iterate through all rooms and update / add new room objects to baseOps
         // and init them
         for (let roomName in Game.rooms) {
             let room = this.getRoom(roomName);
             if (room.controller && room.controller.my) {
+                if (room.controller.safeMode) this._safeModeAvailable = false;
                 let baseOp = this._baseOpsMap.get(room.name);
                 if (!baseOp) {
                     baseOp = new BaseOp(this.getBase(room.name), this)
@@ -235,7 +253,7 @@ module.exports = class ShardOp extends ChildOp {
             }
         }
         if (updateMap) {
-            this._map.updateBaseDistances(this._baseOpsMap);
+            // this._map.updateBaseDistances(this._baseOpsMap);
              //allocate rooms for remote mining
             this._allocateSubRooms();
         }

@@ -35,11 +35,14 @@ module.exports = class TowerOp extends BaseChildOp {
         }});
         for (let tower of towers) {
             if (hostiles.length > 0) {
-                let healHostiles = _.filter(hostiles,o => {return o.getActiveBodyparts(HEAL) > 0})
-                let hostile = tower.pos.findClosestByRange(healHostiles);
-                if (!hostile) hostile = tower.pos.findClosestByRange(hostiles);
+                let hostile = tower.pos.findClosestByRange(hostiles);
                 if (!hostile) throw Error();
-                let pos = hostile.pos
+                let healHostiles = hostile.pos.findInRange(FIND_HOSTILE_CREEPS,3,{filter: o => o.getActiveBodyparts(HEAL) > 0} )
+                if (healHostiles.length > 0) {
+                    healHostiles.sort ((a,b) => a.hits-b.hits)
+                    hostile = healHostiles[0];
+                }
+
                 //if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
                 tower.attack(hostile);
                 continue;
@@ -58,9 +61,9 @@ module.exports = class TowerOp extends BaseChildOp {
         }
 
         if (hostiles.length>0 && hostiles[0].owner.username != c.INVADER_USERNAME) {
-            // activate safe mode when there are hostile without a tower.
+            // activate safe mode when there are hostile without a tower to defend.
             if (_.filter(this._baseOp.myStructures[STRUCTURE_TOWER], o => {return o.isActive()}).length == 0) {
-                if (_.filter(hostiles, o => {return o.getActiveBodyparts(ATTACK) > 0|| o.getActiveBodyparts(RANGED_ATTACK) > 0})) {
+                if (_.filter(hostiles, o => {return (o.getActiveBodyparts(ATTACK) > 0) || (o.getActiveBodyparts(RANGED_ATTACK) > 0)}).length>0) {
                     this.baseOp.activateSafemode();
                 }
             }

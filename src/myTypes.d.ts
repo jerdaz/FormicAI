@@ -22,7 +22,7 @@ declare module NodeJS  {
         mainOp: MainOp
     }
 }
-declare interface Base extends Room {controller: StructureController, baseOp?: BaseOp};
+declare interface Base extends Room {controller: StructureController, baseOp: BaseOp};
 declare interface RoomObjectEx extends RoomObject {store?: Store, id?: string};
 declare interface OrderEx extends Order {transactionCost?: number, netPrice?: number}
 declare var _ = import('lodash');
@@ -30,12 +30,12 @@ declare var _ = import('lodash');
 declare interface Instruction {command: number};
 declare interface CreepOpInstruction extends Instruction {source: RoomObject, dest: RoomObject};
 declare type CreepTemplate = {body: BodyPartConstant[], minLength?: number, maxLength?: number, noSort?:boolean};
-declare type BaseInformation = {name: string, level: number, progress: number, sources: number, hasSpawn: boolean};
+declare type BaseInformation = {name: string, level: number, progress: number, sources: number, hasSpawn: boolean, age:number, endLvlTime:number|null, gclRate:number};
 interface Memory {[name: string]: any}
 interface Debug {DebugType}
 interface MainOp {MainOp}
 interface ShardOp {ShardOp}
 
 interface CreepMemory {operationType: number, baseName: string, operationInstance:number}
-interface RoomMemory {distanceOffset: number; unclaimTimer: number; attackStartTime?:number, fillerSize: number, upgradeAmount?:number, lastGCLTime?:number, gclRate?:number}
+interface RoomMemory {distanceOffset: number; unclaimTimer: number; attackStartTime?:number, fillerSize?: number, upgradeAmount?:number, lastGCLTime?:number, gclRate?:number, birthDate?:number, endLvlDate?:number}
 ;

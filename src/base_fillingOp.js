@@ -19,7 +19,7 @@ module.exports = class FillingOp extends BaseChildOp {
     }
     
     _support() {
-        let fillerSize = this._baseOp.base.memory.fillerSize;
+        let fillerSize = (this._baseOp.base.memory.fillerSize||50);
         
 
         if (this.baseOp.phase >= c.BASE_PHASE_HARVESTER ) {
@@ -35,7 +35,7 @@ module.exports = class FillingOp extends BaseChildOp {
     }
 
     _strategy() {
-        let fillerSize = this._baseOp.base.memory.fillerSize;
+        let fillerSize = (this._baseOp.base.memory.fillerSize||50);
         
 
         let template = {body:[MOVE,WORK,CARRY], maxLength: 5*3}

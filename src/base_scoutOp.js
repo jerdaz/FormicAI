@@ -14,6 +14,9 @@ module.exports = class ScoutOp extends BaseChildOp {
         /**@type {{[creepName:string]: string}} */
         this._lastRoomName = {};
         this._lastSpawn = 0; //Game.time + Math.random() * SCOUT_INTERVAL;
+
+        this._scoutRoomX = -1 * OBSERVER_RANGE
+        this._scoutRoomY = -1 * OBSERVER_RANGE
     }
 
     get type() {return c.OPERATION_SCOUTING}
@@ -35,7 +38,7 @@ module.exports = class ScoutOp extends BaseChildOp {
     _strategy() {
         let creepCount = 0;
         //if (this.baseOp.directive != c.DIRECTIVE_COLONIZE) creepCount = 0;
-        if (Game.time - this._lastSpawn > CREEP_LIFE_TIME) creepCount = 1;
+        if (!this._baseOp.observer && Game.time - this._lastSpawn > CREEP_LIFE_TIME) creepCount = 1;
         this._baseOp.spawningOp.ltRequestSpawn(this,{body: [MOVE], maxLength:1, minLength:1},creepCount);
     }
 
@@ -73,6 +76,22 @@ module.exports = class ScoutOp extends BaseChildOp {
                     this._nextRoomName[creepName] = destRoomName;
                     creepOp.instructMoveTo(destRoomName, c.MOVE_ALLOW_HOSTILE_ROOM)
                     this._lastRoomName[creepName] = room.name;
+                }
+            }
+        }
+    }
+
+    _command() {
+        let observer = this._baseOp.observer;
+        if (observer) {
+            let scoutRoom = this._map.getNeighBour(this.baseName, this._scoutRoomX, this._scoutRoomY)
+            let result = observer.observeRoom(scoutRoom);
+            this._scoutRoomX++;
+            if (this._scoutRoomX > OBSERVER_RANGE) {
+                this._scoutRoomX = -1 * OBSERVER_RANGE;
+                this._scoutRoomY++;
+                if (this._scoutRoomY > OBSERVER_RANGE) {
+                    this._scoutRoomY = -1 * OBSERVER_RANGE;
                 }
             }
         }
