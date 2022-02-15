@@ -7,6 +7,8 @@ const { max } = require('lodash');
 
 /**@typedef {{timeStamp: Date, shards: {request: number, baseCount: number, bases: BaseInformation[], avgGclRate:number, bucket:number}[]}} ShardMem */
 
+const CPULIMITS = [300, 300, 300, 20]
+
 module.exports = class MainOp extends Operation {
     constructor() {
         super();
@@ -68,23 +70,60 @@ module.exports = class MainOp extends Operation {
     }
 
     _support() {
-        //if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
+        // divide cpu evenly between shards based on number of bases, taking max cpu into account
+        let totalCPU = 0;
+        /**@type {{[key:string]:number}} */
+        let shardLimits = {};
+        Object.assign(shardLimits, Game.cpu.shardLimits);
+        for (let shard in shardLimits) {
+            totalCPU += shardLimits[shard]
+        }
+        let totalCpuAssert = totalCPU;
+        let interShardMem = this._loadInterShardMem();
+        let shards = interShardMem.shards;
+        /**@type {Number[]} */
+        let shardBaseCounter = [];
+        /**@type {Number[]} */
+        let shardCPULimit = [];
+        let skipCount = 0;
+        let curShard = 0;
+        let loopCount = 0;
+        for (let i = 0; i < shards.length; i++ ) {
+            shardBaseCounter[i] = 0;
+            shardCPULimit[i] = 0;
+        }
+        while (totalCPU > 0) {
+            if (curShard ==0) skipCount = 0;
+            if (shardBaseCounter[curShard] < shards[curShard].baseCount && shardCPULimit[curShard] < CPULIMITS[curShard]) {
+                shardCPULimit[curShard]++;
+                shardBaseCounter[curShard]++;
+                totalCPU--;
+            } else skipCount++
+            curShard++;
+            if (curShard>=this._shards.length) curShard=0;
+            if (skipCount >=this._shards.length) {
+                for (let i = 0; i < shards.length; i++ ) {
+                    shardBaseCounter[i] = 0;
+                }
+                skipCount = 0;
+            }
+            if (loopCount++ > 1000) throw Error('Infinite loop detected')
+        }
+
+        for(let i = 0; i < shards.length; i++) {
+            shardLimits['shard' + i] = shardCPULimit[i]
+        }
+
+        for (let shard in shardLimits) {
+            totalCPU += shardLimits[shard]
+        }
+        if (totalCPU != totalCpuAssert) throw Error ('Error in CPU calculation')
+
+        Game.cpu.setShardLimits(shardLimits);
     }
 
     _strategy() {
-        // // divide cpu evenly between shards
-        // let totalCPU = 0;
-        // /**@type {{[key:string]:number}} */
-        // let shardLimits = {};
-        // Object.assign(shardLimits, Game.cpu.shardLimits);
-        // for (let shard in shardLimits) {
-        //     totalCPU += shardLimits[shard]
-        // }
-        // let dividedCPU = Math.floor(totalCPU / this._shards.length);
-        // for (let shard of this._shards) {
-        //     shardLimits[shard] = dividedCPU;
-        // }
-        // //Game.cpu.setShardLimits(shardLimits);
+
 
         // //set max bases
         // let nBases = Game.gcl.level
@@ -220,7 +259,7 @@ module.exports = class MainOp extends Operation {
                 }
                 // check if lowest gcl rate is <90% of average. Otherwise don't despawn.
                 let avgGCLRate = totalGclRate / baseCount;
-                if (lowestGcl >= avgGCLRate * 0.8) room = '';
+                if (lowestGcl >= avgGCLRate * 0.9) room = '';
             }
 
             //unclaim the lowest found base if we haven't found base without spawn

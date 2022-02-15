@@ -29,7 +29,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
     get type() {return c.OPERATION_COLONIZING}
 
     _firstRun() {
-        this._strategy();
+        //this._strategy();
     }
 
     _strategy() {
@@ -106,7 +106,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         for (let roomName in this._map.knownRooms) {
             let roomInfo = knownRooms[roomName];
             if (   roomInfo.hostileOwner == false 
-                && roomInfo.lastSeenPlayerCreeps < roomInfo.lastSeen
+                && roomInfo.lastSeenPlayerCreeps||0 < roomInfo.lastSeen
                 && roomInfo.lastSeen >= Game.time - COLONIZE_LASTSEEN_TIME
                 && Game.map.getRoomStatus(roomName).status != 'closed'
                 && roomInfo.hasController == true
