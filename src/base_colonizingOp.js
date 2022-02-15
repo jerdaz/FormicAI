@@ -29,7 +29,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
     get type() {return c.OPERATION_COLONIZING}
 
     _firstRun() {
-        this._strategy();
+        //this._strategy();
     }
 
     _strategy() {
