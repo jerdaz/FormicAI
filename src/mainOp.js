@@ -67,12 +67,10 @@ module.exports = class MainOp extends Operation {
 
     _firstRun() {
         this._strategy();
-        this._support();
     }
 
     _support() {
-        //if (Game.shard.name == 'shard3' && Game.cpu.getHeapStatistics) Game.notify(JSON.stringify(Game.cpu.getHeapStatistics(),undefined,3))
-        // divide cpu evenly between shards
+        // divide cpu evenly between shards based on number of bases, taking max cpu into account
         let totalCPU = 0;
         /**@type {{[key:string]:number}} */
         let shardLimits = {};
@@ -80,6 +78,7 @@ module.exports = class MainOp extends Operation {
         for (let shard in shardLimits) {
             totalCPU += shardLimits[shard]
         }
+        let totalCpuAssert = totalCPU;
         let interShardMem = this._loadInterShardMem();
         let shards = interShardMem.shards;
         /**@type {Number[]} */
@@ -88,11 +87,17 @@ module.exports = class MainOp extends Operation {
         let shardCPULimit = [];
         let skipCount = 0;
         let curShard = 0;
+        let loopCount = 0;
+        for (let i = 0; i < shards.length; i++ ) {
+            shardBaseCounter[i] = 0;
+            shardCPULimit[i] = 0;
+        }
         while (totalCPU > 0) {
+            if (curShard ==0) skipCount = 0;
             if (shardBaseCounter[curShard] < shards[curShard].baseCount && shardCPULimit[curShard] < CPULIMITS[curShard]) {
                 shardCPULimit[curShard]++;
                 shardBaseCounter[curShard]++;
-                totalCPU --
+                totalCPU--;
             } else skipCount++
             curShard++;
             if (curShard>=this._shards.length) curShard=0;
@@ -102,14 +107,19 @@ module.exports = class MainOp extends Operation {
                 }
                 skipCount = 0;
             }
+            if (loopCount++ > 1000) throw Error('Infinite loop detected')
         }
 
         for(let i = 0; i < shards.length; i++) {
             shardLimits['shard' + i] = shardCPULimit[i]
         }
 
-        U.l('setting new CPU limit')
-        U.l(shardLimits)
+        for (let shard in shardLimits) {
+            totalCPU += shardLimits[shard]
+        }
+        if (totalCPU != totalCpuAssert) throw Error ('Error in CPU calculation')
+
+        Game.cpu.setShardLimits(shardLimits);
     }
 
     _strategy() {
