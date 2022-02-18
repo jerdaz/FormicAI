@@ -245,10 +245,10 @@ module.exports = class BaseOp extends ShardChildOp{
         }
         
         this.transportOp.updateLinks(); // updatelinks. In first tick baseOp runs before transportop, links will not be up to date.
-        if (this.transportOp.baseLink) this._phase = c.BASE_PHASE_SOURCE_LINKS;
+        if (this.transportOp.baseLink) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
         else return;
-        if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
-        else return;
+        // if (CONTROLLER_STRUCTURES[STRUCTURE_LINK][this.level] > this._base.find(FIND_SOURCES).length + 1) this._phase = c.BASE_PHASE_CONTROLLER_LINK;
+        // else return;
         if (this._base.controller.level >= 8 ) {
             this._phase = c.BASE_PHASE_ENDLVL;
             if (!this.base.memory.birthDate) this.base.memory.birthDate = Date.now() - 1000 * 3600 * 24 * 7 * 8 // 8 weeks in the past if unknown
