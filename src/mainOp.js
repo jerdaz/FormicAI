@@ -43,6 +43,7 @@ module.exports = class MainOp extends Operation {
         /**@type {String[]} */
         this._shards = [];
         this._shardNum = parseInt(Game.shard.name.slice(-1));
+        this._baseGracePeriod = 0;
 
         try {
             let i=0;
@@ -57,6 +58,8 @@ module.exports = class MainOp extends Operation {
     }
 
     get type() { return c.OPERATION_MAIN; }
+
+    get baseGracePeriod() { return this._baseGracePeriod}
 
 
     // Request a helper creep from another shard of one of the SHARDREQUEST constnant types (builder, colonizer etc)
@@ -199,6 +202,7 @@ module.exports = class MainOp extends Operation {
                     }
                 }
                 let avgEndLvlTime = totalEndLvlBaseTime / baseCount;
+                this._baseGracePeriod = avgEndLvlTime * 1.1
                 baseCount = 0 // recount end level bases if they haven't lived long enough
 
 
@@ -206,7 +210,7 @@ module.exports = class MainOp extends Operation {
                     let shardInfo = interShardMem.shards[i];
                     let baseInfos = shardInfo.bases;
                     for (let baseInfo of baseInfos) {
-                        if (baseInfo.age > avgEndLvlTime * 1.1) // base should be at least 1.2 times the age of average lvl 8 base grow time to be considered 
+                        if (baseInfo.age > this._baseGracePeriod) // base should be at least 1.2 times the age of average lvl 8 base grow time to be considered 
                         {   
                             baseCount++;
                             totalGclRate += baseInfo.gclRate;
