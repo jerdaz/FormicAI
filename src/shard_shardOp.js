@@ -11,7 +11,7 @@ const ShardChildOp = require('./shard_childOp');
 const { stubString } = require('lodash');
 const { OPERATION_SHARDCOLONIZING } = require('./constants');
 
-const CONSTRUCTION_SITE_CLEAN_INTERVAL = 1000000
+const CONSTRUCTION_SITE_CLEAN_INTERVAL = 4000000 // +-half a year
 
 
 module.exports = class ShardOp extends ChildOp {
