@@ -34,7 +34,7 @@ module.exports = class HarvestingOp extends RoomChildOp {
         if (!this._roomOp.isSafe || this.baseOp.phase < c.BASE_PHASE_HARVESTER) {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK]}, 0)
             this._harvesterCount = null;
-        } else if (this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && links.length >=1) {
+        } else if (links.length >=1) {
             let body = [WORK,WORK,WORK,WORK,WORK,MOVE,MOVE,MOVE,CARRY]
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:body, minLength:body.length, maxLength:body.length}, 1)
             this._harvesterCount = null;
@@ -43,42 +43,38 @@ module.exports = class HarvestingOp extends RoomChildOp {
             this.baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CARRY,WORK], maxLength:HARVESTER_SIZE_BIG}, Math.round(this._harvesterCount))
         }
 
-        if (this._isMainRoom && this.baseOp.phase >= c.BASE_PHASE_SOURCE_LINKS && this.baseOp.transportOp.baseLink) {
+        //
+        if (this._isMainRoom && links.length == 0 && this.baseOp.transportOp.controllerLink) {
             let base = this.baseOp.base;
-            if(links.length == 0) {
-                //create roomcallback to prevent building on room edges;
-                let roomCallback = function(/**@type {string}*/ roomName) {
-                    let matrix = new PathFinder.CostMatrix;
-                    for (let i=0; i<c.MAX_ROOM_SIZE;i++) {
-                        matrix.set(i,0,255);
-                        matrix.set(i,1,255);
-                        matrix.set(i,c.MAX_ROOM_SIZE-1,255);
-                        matrix.set(i,c.MAX_ROOM_SIZE-2,255);
-                        matrix.set(0,i,255);
-                        matrix.set(1,i,255);
-                        matrix.set(c.MAX_ROOM_SIZE-1,i,255);
-                        matrix.set(c.MAX_ROOM_SIZE-2,i,255);
-                        
-                        
-                    }
-                    return matrix;
-
-                } 
-                let sources = base.find(FIND_SOURCES);
-                /**@type {{pos:RoomPosition, range:number}[]} */
-                let fleeTargets = []
-                for (let source of sources) fleeTargets.push ({pos:source.pos, range:2})
-                fleeTargets.push ({pos:this.baseOp.centerPos, range:3})
-                let result = PathFinder.search(source.pos, fleeTargets,{roomCallback: roomCallback, flee:true} )
-                let pos = result.path[1];
-                if (pos) {
-                    let structures = pos.lookFor(LOOK_STRUCTURES)
-                    for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
-                    pos.createConstructionSite(STRUCTURE_LINK);
+            //create roomcallback to prevent building on room edges;
+            let roomCallback = function(/**@type {string}*/ roomName) {
+                let matrix = new PathFinder.CostMatrix;
+                for (let i=0; i<c.MAX_ROOM_SIZE;i++) {
+                    matrix.set(i,0,255);
+                    matrix.set(i,1,255);
+                    matrix.set(i,c.MAX_ROOM_SIZE-1,255);
+                    matrix.set(i,c.MAX_ROOM_SIZE-2,255);
+                    matrix.set(0,i,255);
+                    matrix.set(1,i,255);
+                    matrix.set(c.MAX_ROOM_SIZE-1,i,255);
+                    matrix.set(c.MAX_ROOM_SIZE-2,i,255);
+                    
+                    
                 }
-            }
-            else if (links.length > 1) {
-                for(let i = 1;i<links.length;i++ ) links[i];
+                return matrix;
+
+            } 
+            let sources = base.find(FIND_SOURCES);
+            /**@type {{pos:RoomPosition, range:number}[]} */
+            let fleeTargets = []
+            for (let source of sources) fleeTargets.push ({pos:source.pos, range:2})
+            fleeTargets.push ({pos:this.baseOp.centerPos, range:3})
+            let result = PathFinder.search(source.pos, fleeTargets,{roomCallback: roomCallback, flee:true} )
+            let pos = result.path[1];
+            if (pos) {
+                let structures = pos.lookFor(LOOK_STRUCTURES)
+                for(let structure of structures) if (structure.structureType != STRUCTURE_ROAD) structure.destroy();
+                pos.createConstructionSite(STRUCTURE_LINK);
             }
         }
     }

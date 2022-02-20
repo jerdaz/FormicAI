@@ -188,9 +188,8 @@ module.exports = class ShardOp extends ChildOp {
 
         let baseCount = 0;
         let totalGclRate = 0;
-        // calculate averate time to end level
         for (let baseInfo of baseInfos) {
-            if (baseInfo.gclRate) {
+            if (baseInfo.gclRate && baseInfo.age > this._parent.baseGracePeriod ) {
                 baseCount++
                 totalGclRate += baseInfo.gclRate;
             }
