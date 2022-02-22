@@ -133,7 +133,6 @@ module.exports = class MainOp extends Operation {
         // update grace period
         let baseCount = 0;
         let totalEndLvlBaseTime = 0;
-        // calculate average time to end level
         for (let i = 0; i< interShardMem.shards.length;i++ ) {
             let shardInfo = interShardMem.shards[i];
             let baseInfos = shardInfo.bases;
