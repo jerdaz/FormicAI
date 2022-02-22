@@ -69,10 +69,14 @@ module.exports = class MainOp extends Operation {
     requestCreep(shardRequest) { this._requestCreep(shardRequest); }
 
     _firstRun() {
+        this._support();
         this._strategy();
     }
 
     _support() {
+
+
+        
         // divide cpu evenly between shards based on number of bases, taking max cpu into account
         let totalCPU = 0;
         /**@type {{[key:string]:number}} */
@@ -123,6 +127,25 @@ module.exports = class MainOp extends Operation {
         if (totalCPU != totalCpuAssert) throw Error ('Error in CPU calculation')
 
         Game.cpu.setShardLimits(shardLimits);
+
+
+
+        // update grace period
+        let baseCount = 0;
+        let totalEndLvlBaseTime = 0;
+        // calculate average time to end level
+        for (let i = 0; i< interShardMem.shards.length;i++ ) {
+            let shardInfo = interShardMem.shards[i];
+            let baseInfos = shardInfo.bases;
+            for (let baseInfo of baseInfos) {
+                if (baseInfo.level == 8 && baseInfo.endLvlTime) {
+                    baseCount++
+                    totalEndLvlBaseTime+= baseInfo.endLvlTime;
+                }
+            }
+        }
+        let avgEndLvlTime = totalEndLvlBaseTime / baseCount;
+        this._baseGracePeriod = avgEndLvlTime * 1.1
     }
 
     _strategy() {
@@ -229,7 +252,7 @@ module.exports = class MainOp extends Operation {
                 let baseCount = 0;
                 let totalEndLvlBaseTime = 0;
                 let totalGclRate = 0;
-                // calculate averate time to end level
+                // calculate average time to end level
                 for (let i = 0; i< interShardMem.shards.length;i++ ) {
                     let shardInfo = interShardMem.shards[i];
                     let baseInfos = shardInfo.bases;
