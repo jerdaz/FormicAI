@@ -208,7 +208,7 @@ module.exports = class MainOp extends Operation {
             U.l({gclrate:shardMem.avgGclRate})
         }
         U.l({totalBases: totalBases, gcl: Game.gcl.level, maxGclRate: maxGclRate})
-        if (totalBases < Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) {
+        if ((totalBases + 1 == Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) || totalBases <= Game.gcl.level - 2 ) {
             this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
             U.l({maxbases:myBasesCount + Game.gcl.level - totalBases })
         }
