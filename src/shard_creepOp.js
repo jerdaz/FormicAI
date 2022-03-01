@@ -832,9 +832,9 @@ module.exports = class CreepOp extends ChildOp {
             let sources = this._creep.room.find(FIND_SOURCES_ACTIVE); // find new active source
             /**@type {{source:Source, distance:number}[]} */
             let sourceDist = []
-            for (let i=0;i++ i<sources.length) {
+            for (let i=0;i++ ;i<sources.length) {
                 sourceDist[i].source = sources[i];
-                let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps = false})
+                let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps : false})
                 if (path.length) sourceDist[i].distance = path.length;
                 else sourceDist[i].distance = 99999;
             }
