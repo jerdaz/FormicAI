@@ -219,6 +219,7 @@ module.exports = class ShardOp extends ChildOp {
     unclaimBase(baseName) {
         let baseOp = this.getBaseOp(baseName);
         baseOp.unclaim();
+        this._baseOpsMap.delete(baseName);
     }
 
     initTick(){
