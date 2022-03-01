@@ -5,7 +5,7 @@ const BaseChildOp = require('./base_childOp');
 // time we try to colonize a room before trying another
 const ROOM_CLAIM_TIMEOUT = 2000
 // time after which we retry colonizing a room
-const COLONIZE_RETRY_TIME = 1000000 //+- 6 weeks
+const COLONIZE_RETRY_TIME = 2000000 //+- 12 weeks
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
 // maximum lineair distance for colonization

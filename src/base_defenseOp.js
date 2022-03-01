@@ -3,6 +3,8 @@ const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
 
 const MAX_HITS_REPAIR_PER_LEVEL = 10000 // maximum hits per level repaired by towers
+const DEFENSE_ENERGY_RESERVE = 10000 // minimum energy reserve in storage, otherwise switch to energy saving defense (don't shoot until enemies are close)
+const ENERGY_SAVE_RANGE = 6;
 
 module.exports = class TowerOp extends BaseChildOp {
     get type() { return c.OPERATION_DEFENSE; }
@@ -21,7 +23,9 @@ module.exports = class TowerOp extends BaseChildOp {
     }
 
     _command() {
+        const saveEnergy = !(this._baseOp.storage && this._baseOp.storage.store.getUsedCapacity(RESOURCE_ENERGY) > DEFENSE_ENERGY_RESERVE)
         let hostiles = this._baseOp.base.find(FIND_HOSTILE_CREEPS);
+        if (saveEnergy) hostiles.filter(o => o.pos.getRangeTo(this._baseOp.centerPos) <= ENERGY_SAVE_RANGE)
         let base = this._baseOp.base;
         let towers = this._baseOp.towers;
         let creepsHit = base.find(FIND_MY_CREEPS, {filter: (creep) => {return (creep.hits < creep.hitsMax );}} );
@@ -33,6 +37,7 @@ module.exports = class TowerOp extends BaseChildOp {
             }
             return (structure.hits < structure.hitsMax - TOWER_POWER_REPAIR && structure.hits < MAX_HITS_REPAIR_PER_LEVEL * base.controller.level && structure.structureType!= STRUCTURE_ROAD)
         }});
+        
         for (let tower of towers) {
             if (hostiles.length > 0) {
                 let hostile = tower.pos.findClosestByRange(hostiles);
