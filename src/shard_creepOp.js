@@ -847,7 +847,8 @@ module.exports = class CreepOp extends ChildOp {
                 else return usageB - usageA;
             })
             /**@type {Source|null} */
-            let source = sources[0];
+            let source = null;
+            if (sourceDist.length > 0) source = sourceDist[0].source;
             if (source) this._lastSourceId = source.id; // if source found save it for later
             else if (this._lastSourceId) source = Game.getObjectById(this._lastSourceId); // use last known active source 
             result = source;
