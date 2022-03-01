@@ -830,14 +830,20 @@ module.exports = class CreepOp extends ChildOp {
         result = this._creep.pos.findClosestByPath(roomObjects)
         if (result == null && this.hasWorkParts) {
             let sources = this._creep.room.find(FIND_SOURCES_ACTIVE); // find new active source
-            sources.sort((a,b) => {
-                let usageA = a.energy/a.ticksToRegeneration;
-                let usageB = b.energy/b.ticksToRegeneration;
-                if (usageA == usageB) {
-                    let closest = this._creep.pos.findClosestByPath([a,b]);
-                    if (closest == a) return -1;
-                    else return 1;
-                }
+            /**@type {{source:Source, distance:number}[]} */
+            let sourceDist = []
+            for (let i=0;i++ i<sources.length) {
+                sourceDist[i].source = sources[i];
+                let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps = false})
+                if (path.length) sourceDist[i].distance = path.length;
+                else sourceDist[i].distance = 99999;
+            }
+            sourceDist.sort((a,b) => {
+                if (a.distance == 99999 && b.distance != 99999) return 1;
+                if (b.distance == 99999 && a.distance != 99999) return -1
+                let usageA = a.source.energy/a.source.ticksToRegeneration;
+                let usageB = b.source.energy/b.source.ticksToRegeneration;
+                if (usageA == usageB) return a.distance - b.distance;
                 else return usageA - usageB;
             })
             /**@type {Source|null} */
