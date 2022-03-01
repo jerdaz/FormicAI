@@ -842,8 +842,8 @@ module.exports = class CreepOp extends ChildOp {
             sourceDist.sort((a,b) => {
                 if (a.distance == 99999 && b.distance != 99999) return 1;
                 if (b.distance == 99999 && a.distance != 99999) return -1
-                let usageA = Math.min(a.source.energy/a.source.ticksToRegeneration, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
-                let usageB = Math.min(b.source.energy/b.source.ticksToRegeneration, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
+                let usageA = Math.min(a.source.energy/(a.source.ticksToRegeneration||ENERGY_REGEN_TIME), SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
+                let usageB = Math.min(b.source.energy/(b.source.ticksToRegeneration||ENERGY_REGEN_TIME), SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
                 if (usageA == usageB) return a.distance - b.distance;
                 else return usageB - usageA;
             })
