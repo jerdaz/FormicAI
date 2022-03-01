@@ -844,7 +844,7 @@ module.exports = class CreepOp extends ChildOp {
                 let usageA = Math.min(a.source.energy/a.source.ticksToRegeneration, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
                 let usageB = Math.min(b.source.energy/b.source.ticksToRegeneration, SOURCE_ENERGY_CAPACITY/ENERGY_REGEN_TIME);
                 if (usageA == usageB) return a.distance - b.distance;
-                else return usageA - usageB;
+                else return usageB - usageA;
             })
             /**@type {Source|null} */
             let source = sources[0];
