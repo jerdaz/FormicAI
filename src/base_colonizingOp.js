@@ -1,6 +1,8 @@
 const U = require('./util');
 const c = require('./constants');
 const BaseChildOp = require('./base_childOp');
+const AttackOp = require('./room_attackOp');
+const { OPERATION_ATTACK } = require('./constants');
 
 // time we try to colonize a room before trying another
 const ROOM_CLAIM_TIMEOUT = 2000
@@ -28,6 +30,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
     
     get type() {return c.OPERATION_COLONIZING}
 
+    get attackOp() {return this._childOps[OPERATION_ATTACK][0]}
+
     _firstRun() {
         //this._strategy();
     }
@@ -42,23 +46,49 @@ module.exports = class ColonizingOp extends BaseChildOp {
         if ( (this._baseOp.directive == c.DIRECTIVE_COLONIZE || this._baseOp.directive == c.DIRECTIVE_COLONIZE_2SOURCE)
             && this._shardOp.safeModeAvailable) {    // don't colonize if no safe mode available (globally). The new base needs it to defend
             // give up colonization after timeout
-            if (this._colRoomName && this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+            let timeout=ROOM_CLAIM_TIMEOUT;
+            if (this.attackOp) timeout *= 100; // if attacking the room, use larger timeout
+            if (this._colRoomName && this._colStart + timeout < Game.time) {
                 Memory.colonizations[this._colRoomName] = Game.time; // mark colonization attempt
                 this._colRoomName = null;
+                this.removeChildOp(this.attackOp,true)
             }
             //find new room if necessary
-            if (this._colRoomName == null || this._colStart + ROOM_CLAIM_TIMEOUT < Game.time) {
+            if (this._colRoomName == null || this._colStart + timeout < Game.time) {
                 this._colRoomName = this._findColRoom();
                 this._colStart = Game.time;
+                this.removeChildOp(this.attackOp, true)
             }
-            if (this._colRoomName) nCreep = 1;
+
+
+            // remove attack operation if there is a path
+            if (this._colRoomName && this.attackOp) {
+                let colRoom = Game.rooms[this._colRoomName];
+                if (colRoom && colRoom.controller) {
+                    let creep = colRoom.find(FIND_MY_CREEPS)[0];
+                    if (creep) {
+                        let path = creep.pos.findPathTo(colRoom.controller.pos, {range:1})
+                        if (path.length >1) {
+                            this.removeChildOp(this.attackOp, true)
+                        }
+                    }
+                }
+            }
+
+            if (this._colRoomName && !this.attackOp) nCreep = 1;
         }
+
+
+
         this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE,CLAIM], maxLength: 2, minLength:2}, nCreep)
+
     }
 
     _tactics() {
         let colRoomName = this._colRoomName;
         if (!colRoomName) return;
+
+        
         let room = Game.rooms[colRoomName];
         if (room && room.controller && room.controller.my) {
             this._colRoomName = null;
@@ -74,6 +104,20 @@ module.exports = class ColonizingOp extends BaseChildOp {
             let target = new RoomPosition(25, 25, colRoomName)
             let creepPos = creepOp.creep.pos;
             Game.map.visual.line(creepPos, target, {color:'#0000ff'})
+        }
+
+        // spawn attack operation if there is no path to the controller
+        if (this._colRoomName && !this.attackOp) {
+            let colRoom = Game.rooms[this._colRoomName];
+            if (colRoom && colRoom.controller) {
+                let creep = colRoom.find(FIND_MY_CREEPS)[0];
+                if (creep) {
+                    let path = creep.pos.findPathTo(colRoom.controller.pos, {range:1})
+                    if (path.length == 0) {
+                        this.addChildOp(new AttackOp(this._colRoomName, this, this._shardOp, this._baseOp))
+                    }
+                }
+            }
         }
     }
 

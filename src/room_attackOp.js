@@ -1,25 +1,34 @@
 const U = require('./util');
 const c = require('./constants');
 const RoomChildOp = require('./room_childOp');
+const ShardChildOp = require('./shard_childOp');
 
 const MAX_ATTACK_LENGTH = 500000
 const ATTACK_RETRY_TIME = 5000000
 const GUARD_TIME = 1300
 
-module.exports = class AttackOp extends RoomChildOp {
-    /**@param {RoomOp} roomOp
-     */
-    constructor(roomOp) {
-        super(roomOp);
+module.exports = class AttackOp extends ShardChildOp {
+    /**
+     * @param {string} roomName
+     * @param {ShardOp}  shardOp
+     * @param {Operation}  parent
+     * @param {BaseOp} baseOp
+     * */
+    constructor(roomName, parent, shardOp, baseOp) {
+        super(parent, shardOp, baseOp);
+        this._baseOp = baseOp;
+        this._roomName = roomName
     }
     get type() {return c.OPERATION_ATTACK}
+    get roomName() {return this._roomName}
 
     _firstRun() {
         this._strategy();
     }
 
     _strategy() {
-        if (this.isMainRoom) return;
+        // don't attack own room
+        if (this._baseOp && this.roomName == this._baseOp.name) return;
 
         let attackLevel = 0;
         let lastAttackTicks = Game.time - ( Memory.rooms[this.roomName].attackStartTime||0);

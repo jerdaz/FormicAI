@@ -3,7 +3,7 @@ const c = require('./constants');
 const ChildOp = require('./meta_childOp');
 const Version = require('./version');
 const { throttle } = require('lodash');
-const { COMMAND_NONE } = require('./constants');
+const { COMMAND_NONE, MAX_ROOM_SIZE } = require('./constants');
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
@@ -678,6 +678,30 @@ module.exports = class CreepOp extends ChildOp {
                     let rangedAttackResult = -100
                     let dismantleResult = -100
                     if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
+                    if (!hostile && creep.room.controller) { // carve path to controller
+                        let path = creep.pos.findPathTo(creep.room.controller, {ignoreDestructibleStructures:true, range:1, 
+                            costCallback: function (roomName, costMatrix) {
+                                let room = Game.rooms[roomName]
+                                if(!room) return;
+                                for (let structure of room.find(FIND_STRUCTURES)) {
+                                    if (structure.structureType != STRUCTURE_ROAD && structure.structureType != STRUCTURE_CONTAINER) {
+                                        costMatrix.set(structure.pos.x, structure.pos.y, structure.hits/RAMPART_HITS_MAX[8]/200+10)
+                                    }
+                                }
+                            }
+                        })
+                        for (let step of path) {
+                            let pos = new RoomPosition(step.x, step.y, creep.pos.roomName);
+                            let structures = pos.lookFor(LOOK_STRUCTURES)
+                            for (let structure of structures) {
+                                if (structure.structureType != STRUCTURE_ROAD && structure.structureType != STRUCTURE_CONTAINER) {
+                                    hostile= /**@type {AnyStructure}*/(structure);
+                                    break;
+                                }
+                                if (hostile) break;
+                            }
+                        }
+                    }
                     if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.hits > 0 }})
                     if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
                     if (hostile) {
