@@ -43,8 +43,8 @@ module.exports = class AttackOp extends ShardChildOp {
         let safeModeNow = (scoutInfo.safeMode||0 - Game.time + scoutInfo.lastSeen) <= 0;
         
         // check for attack level 1
-        // no defense, but there are still ramparts
-        if (scoutInfo.hasRamparts
+        // no defense, but there are still structures
+        if (scoutInfo.hasStructures
             && !safeModeNow
             && scoutInfo.activeTowers <=0
             && scoutInfo.lastSeenAttacker < Game.time - 1500) {

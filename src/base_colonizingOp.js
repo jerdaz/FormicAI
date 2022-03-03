@@ -70,8 +70,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 if (colRoom && colRoom.controller) {
                     let creep = colRoom.find(FIND_MY_CREEPS)[0];
                     if (creep) {
-                        let path = creep.pos.findPathTo(colRoom.controller.pos, {range:1})
-                        if (path.length >1) {
+                        let controller = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => o.structureType == STRUCTURE_CONTROLLER})
+                        if (controller) {
                             this.removeChildOp(this.attackOp, true)
                         }
                     }
@@ -115,8 +115,8 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (colRoom && colRoom.controller) {
                 let creep = colRoom.find(FIND_MY_CREEPS)[0];
                 if (creep) {
-                    let path = creep.pos.findPathTo(colRoom.controller.pos, {range:1})
-                    if (path.length == 0) {
+                    let controller = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => o.structureType == STRUCTURE_CONTROLLER})
+                    if (!controller) {
                         this.addChildOp(new AttackOp(this._colRoomName, this, this._shardOp, this._baseOp))
                     }
                 }
