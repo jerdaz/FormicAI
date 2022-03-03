@@ -11,7 +11,7 @@ const ShardChildOp = require('./shard_childOp');
 const { stubString } = require('lodash');
 const { OPERATION_SHARDCOLONIZING } = require('./constants');
 
-const CONSTRUCTION_SITE_CLEAN_INTERVAL = 4000000 // +-half a year
+const CONSTRUCTION_SITE_CLEAN_INTERVAL = 100000 // +-half a year
 
 
 module.exports = class ShardOp extends ChildOp {
@@ -220,6 +220,7 @@ module.exports = class ShardOp extends ChildOp {
         let baseOp = this.getBaseOp(baseName);
         baseOp.unclaim();
         this._baseOpsMap.delete(baseName);
+        this._maxShardBases = this._maxShardBases - 1;
     }
 
     initTick(){
@@ -359,12 +360,12 @@ module.exports = class ShardOp extends ChildOp {
         
         let iterator = this._baseOpsMap.keys();
         
-        //periodically remove all constructionsites
+        //periodically remove all constructionsites in unseenrooms
         let lastConstructionSiteCleanTick = /**@type {number}*/ ( Memory.lastConstructionSiteCleanTick || 0);
         if (Game.time - lastConstructionSiteCleanTick > CONSTRUCTION_SITE_CLEAN_INTERVAL) {
             for (let siteId in Game.constructionSites) {
                 let site =  /**@type {ConstructionSite} */ (Game.getObjectById(siteId));
-                site.remove();
+                if (!site.room) site.remove();
             }
             Memory.lastConstructionSiteCleanTick = Game.time;
         }
