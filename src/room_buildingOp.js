@@ -99,7 +99,7 @@ module.exports = class BuildingOp extends RoomChildOp {
                 creepOp.newParent(this._baseOp.buildingOp); //reassign to base building op if current subroom doesn't have build work
                 this._strategy(); // update number of requested creeps;            }
             }
-            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && constructionSites.length>0) { //stop upgrading if there are construction sites
+            else if (creepOp.instruction != c.COMMAND_BUILD && creepOp.pos.roomName == this._roomOp.roomName && constructionSites.length>0 && creepOp.creep.store.energy == 0) { //stop upgrading if there are construction sites
                 creepOp.instructBuild()
             }
             else if (creepOp.instruction == c.COMMAND_NONE && this._buildWork) creepOp.instructBuild(); //start building / repairing if there is buildwork

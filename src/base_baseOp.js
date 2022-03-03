@@ -153,6 +153,7 @@ module.exports = class BaseOp extends ShardChildOp{
     unclaim(){
         let base = this.base;
         for(let structure of base.find(FIND_MY_STRUCTURES)) structure.destroy()
+        for(let csite of base.find(FIND_MY_CONSTRUCTION_SITES)) csite.remove();
         base.controller.unclaim();
         this.base.memory.unclaimTimer = 0;
     }
