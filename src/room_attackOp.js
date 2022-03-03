@@ -31,7 +31,9 @@ module.exports = class AttackOp extends ShardChildOp {
         if (this._baseOp && this.roomName == this._baseOp.name) return;
 
         let attackLevel = 0;
-        let lastAttackTicks = Game.time - ( Memory.rooms[this.roomName].attackStartTime||0);
+        let attackStartTime =0;
+        if (Memory.rooms[this.roomName]) attackStartTime = Memory.rooms[this.roomName].attackStartTime||0
+        let lastAttackTicks = Game.time - attackStartTime;
         let scoutInfo = this._map.getRoomInfo(this.roomName);
         if (!scoutInfo) {
             //this._baseOp.spawningOp.ltRequestSpawn(this, {body:[MOVE], maxLength:1},1)
