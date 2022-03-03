@@ -30,7 +30,10 @@ module.exports = class ColonizingOp extends BaseChildOp {
     
     get type() {return c.OPERATION_COLONIZING}
 
-    get attackOp() {return this._childOps[OPERATION_ATTACK][0]}
+    get attackOp() {
+        if (this._childOps[OPERATION_ATTACK]) return this._childOps[OPERATION_ATTACK][0];
+        else return undefined;
+    }
 
     _firstRun() {
         //this._strategy();
@@ -51,13 +54,13 @@ module.exports = class ColonizingOp extends BaseChildOp {
             if (this._colRoomName && this._colStart + timeout < Game.time) {
                 Memory.colonizations[this._colRoomName] = Game.time; // mark colonization attempt
                 this._colRoomName = null;
-                this.removeChildOp(this.attackOp,true)
+                if (this.attackOp) this.removeChildOp(this.attackOp,true)
             }
             //find new room if necessary
             if (this._colRoomName == null || this._colStart + timeout < Game.time) {
                 this._colRoomName = this._findColRoom();
                 this._colStart = Game.time;
-                this.removeChildOp(this.attackOp, true)
+                if (this.attackOp) this.removeChildOp(this.attackOp, true)
             }
 
 
@@ -88,7 +91,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
         let colRoomName = this._colRoomName;
         if (!colRoomName) return;
 
-        
+
         let room = Game.rooms[colRoomName];
         if (room && room.controller && room.controller.my) {
             this._colRoomName = null;
