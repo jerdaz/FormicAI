@@ -858,11 +858,38 @@ module.exports = class CreepOp extends ChildOp {
             let sourceDist = []
             for (let i=0;i<sources.length;i++) {
                 let distance = 0;
-                let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps : false})
-                if (path.length) distance = path.length;
+                let path = PathFinder.search (this._creep.pos,{pos:sources[i].pos, range:1},
+                    {roomCallback: function(roomName) {
+                        let room = Game.rooms[roomName];
+
+                        let costs = new PathFinder.CostMatrix;
+                        if (!room) return costs;
+                        
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                          if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                     (struct.structureType !== STRUCTURE_RAMPART ||
+                                      !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                          }
+                        });
+                
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                
+                        return costs;
+                    }
+                 })
+                //let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps : false})
+                if (!path.incomplete) distance = path.path.length;
                 else distance = 99999;
                 sourceDist.push( {source: sources[i], distance:distance})
-                }
+            }
             sourceDist.sort((a,b) => {
                 if (a.distance == 99999 && b.distance != 99999) return 1;
                 if (b.distance == 99999 && a.distance != 99999) return -1
