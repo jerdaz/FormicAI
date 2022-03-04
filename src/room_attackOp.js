@@ -1,6 +1,5 @@
 const U = require('./util');
 const c = require('./constants');
-const RoomChildOp = require('./room_childOp');
 const ShardChildOp = require('./shard_childOp');
 
 const MAX_ATTACK_LENGTH = 500000
@@ -17,7 +16,7 @@ module.exports = class AttackOp extends ShardChildOp {
     constructor(roomName, parent, shardOp, baseOp) {
         super(parent, shardOp, baseOp);
         this._baseOp = baseOp;
-        this._roomName = roomName
+        this._roomName = roomName;
     }
     get type() {return c.OPERATION_ATTACK}
     get roomName() {return this._roomName}
@@ -109,7 +108,8 @@ module.exports = class AttackOp extends ShardChildOp {
             if (scoutInfo &&
                 scoutInfo.lastSeen - scoutInfo.lastSeenAttacker > 1500 && 
                 scoutInfo.invasion == false &&
-                scoutInfo.hostileOwner == false
+                scoutInfo.hostileOwner == false &&
+                scoutInfo.hasStructures == false
                 )
                 {
                     creepOp.instructRecycle();
