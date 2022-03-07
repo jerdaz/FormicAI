@@ -20,7 +20,7 @@ module.exports = class RoomOp extends BaseChildOp {
         this.addChildOp(new RoadOp(this));
         this.addChildOp(new BuildingOp(this));
         this.addChildOp(new ReservationOp(this));
-        this.addChildOp(new AttackOp(roomName, this, baseOp.shardOp, baseOp));
+        this.addChildOp(new AttackOp(roomName, this, baseOp.shardOp, baseOp, this));
 
         this._visualiseRoomInfo = false;
 

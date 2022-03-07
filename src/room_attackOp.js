@@ -12,9 +12,10 @@ module.exports = class AttackOp extends ShardChildOp {
      * @param {ShardOp}  shardOp
      * @param {Operation}  parent
      * @param {BaseOp} baseOp
+     * @param {RoomOp} [roomOp]
      * */
-    constructor(roomName, parent, shardOp, baseOp) {
-        super(parent, shardOp, baseOp);
+    constructor(roomName, parent, shardOp, baseOp, roomOp) {
+        super(parent, shardOp, baseOp, roomOp,0,roomName);
         this._baseOp = baseOp;
         this._roomName = roomName;
     }
