@@ -677,7 +677,6 @@ module.exports = class CreepOp extends ChildOp {
                     let attackResult = -100;
                     let rangedAttackResult = -100
                     let dismantleResult = -100
-                    if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
                     if (!hostile && creep.room.controller) { // carve path to controller
                         let path = creep.pos.findPathTo(creep.room.controller, {ignoreDestructibleStructures:true, range:1, 
                             costCallback: function (roomName, costMatrix) {
@@ -702,6 +701,7 @@ module.exports = class CreepOp extends ChildOp {
                             }
                         }
                     }
+                    if (!hostile || this._hasWorkParts) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.structureType != STRUCTURE_RAMPART}})
                     if (!hostile) hostile = creep.pos.findClosestByPath(FIND_HOSTILE_STRUCTURES, {filter: o => {return o.structureType != STRUCTURE_CONTROLLER && o.hits > 0 }})
                     if (!hostile) hostile = creep.pos.findClosestByPath(FIND_STRUCTURES, {filter: o => {return o.structureType == STRUCTURE_WALL}})
                     if (hostile) {
@@ -858,11 +858,38 @@ module.exports = class CreepOp extends ChildOp {
             let sourceDist = []
             for (let i=0;i<sources.length;i++) {
                 let distance = 0;
-                let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps : false})
-                if (path.length) distance = path.length;
+                let path = PathFinder.search (this._creep.pos,{pos:sources[i].pos, range:1},
+                    {roomCallback: function(roomName) {
+                        let room = Game.rooms[roomName];
+
+                        let costs = new PathFinder.CostMatrix;
+                        if (!room) return costs;
+                        
+                        room.find(FIND_STRUCTURES).forEach(function(struct) {
+                          if (struct.structureType === STRUCTURE_ROAD) {
+                            // Favor roads over plain tiles
+                            costs.set(struct.pos.x, struct.pos.y, 1);
+                          } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                                     (struct.structureType !== STRUCTURE_RAMPART ||
+                                      !struct.my)) {
+                            // Can't walk through non-walkable buildings
+                            costs.set(struct.pos.x, struct.pos.y, 0xff);
+                          }
+                        });
+                
+                        // Avoid creeps in the room
+                        room.find(FIND_CREEPS).forEach(function(creep) {
+                          costs.set(creep.pos.x, creep.pos.y, 0xff);
+                        });
+                
+                        return costs;
+                    }
+                 })
+                //let path = this._creep.pos.findPathTo(sources[i].pos, {range:1, ignoreCreeps : false})
+                if (!path.incomplete) distance = path.path.length;
                 else distance = 99999;
                 sourceDist.push( {source: sources[i], distance:distance})
-                }
+            }
             sourceDist.sort((a,b) => {
                 if (a.distance == 99999 && b.distance != 99999) return 1;
                 if (b.distance == 99999 && a.distance != 99999) return -1

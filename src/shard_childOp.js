@@ -10,8 +10,10 @@ module.exports = class ShardChildOp extends ChildOp {
      * @param {Operation}  parent
      * @param {BaseOp} [baseOp] 
      * @param {RoomOp} [roomOp]
-     * @param {Number} [instance]*/
-    constructor(parent, shardOp, baseOp, roomOp, instance) {
+     * @param {Number} [instance]
+     * @param {string} [targetRoomName]
+     * */
+    constructor(parent, shardOp, baseOp, roomOp, instance, targetRoomName) {
         super(parent);
         this._shardOp = shardOp;
         this._map = shardOp._map;
@@ -23,7 +25,8 @@ module.exports = class ShardChildOp extends ChildOp {
         this._lastIdle = 0;
         this._travelTicks = 0;
         let roomName = '';
-        if (roomOp) roomName = roomOp.roomName
+        if (targetRoomName) roomName = targetRoomName
+        else if (roomOp) roomName = roomOp.roomName
         else if (baseOp) roomName = baseOp.name;
         else roomName = shardOp.name;
         if (roomOp || baseOp) this._ownerRoomName = roomName;

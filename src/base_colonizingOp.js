@@ -31,7 +31,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
     get type() {return c.OPERATION_COLONIZING}
 
     get attackOp() {
-        if (this._childOps[OPERATION_ATTACK]) return this._childOps[OPERATION_ATTACK][0];
+        if (this._childOps[c.OPERATION_ATTACK]) return this._childOps[c.OPERATION_ATTACK][0];
         else return undefined;
     }
 
