@@ -47,7 +47,7 @@ module.exports = class AttackOp extends ShardChildOp {
         if (scoutInfo.hasStructures
             && !safeModeNow
             && scoutInfo.activeTowers <=0
-            && scoutInfo.lastSeenAttacker < Game.time - 1500) {
+            && (scoutInfo.lastSeenAttacker||0) < Game.time - 1500) {
                 attackLevel = 1;
 
         }
