@@ -387,7 +387,7 @@ module.exports = class ShardOp extends ChildOp {
 
         // check if we need to request a colonizer
         if (this._baseOpsMap.size == 0) this._parent.requestCreep(c.SHARDREQUEST_COLONIZER);
-        else if (_.size (Game.spawns) == 0 && _.size(Game.creeps) == 0) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
+        else if (!_.find (Game.spawns, o=>o.isActive())  && _.size(Game.creeps) == 0) this._parent.requestCreep(c.SHARDREQUEST_BUILDER)
         else this._parent.requestCreep(c.SHARDREQUEST_NONE);
 
         //check if we need to unclaim bases
