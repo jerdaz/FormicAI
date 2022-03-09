@@ -204,7 +204,7 @@ module.exports = class MainOp extends Operation {
         let maxGclRate = 0;
         U.l({shard: this._shardNum})
         for (let shardMem of interShardMem.shards) {
-            if (shardMem.avgGclRate > maxGclRate && shardMem.bucket >= c.MAX_BUCKET) maxGclRate = shardMem.avgGclRate;
+            if (shardMem.avgGclRate > maxGclRate && shardMem.bucket >= c.MAX_BUCKET * 0.95) maxGclRate = shardMem.avgGclRate;
             U.l({gclrate:shardMem.avgGclRate})
         }
         U.l({totalBases: totalBases, gcl: Game.gcl.level, maxGclRate: maxGclRate})
