@@ -33,6 +33,7 @@ const ChildOp = require('./meta_childOp');
             }>} RoomPath */
 
 const MIN_ROAD_FATIGUE_COST =   1000 * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME * CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
+const ROOM_INFO_RETENTION = 1000000
 
 
 module.exports = class MapOp extends ChildOp {
@@ -271,6 +272,15 @@ module.exports = class MapOp extends ChildOp {
                     if (terrainArray[x][y].fatigueCost > 0 ) decayFactor = 0.99
                     terrainArray[x][y].fatigueCost = Math.max(-1 * MIN_ROAD_FATIGUE_COST, terrainArray[x][y].fatigueCost * decayFactor - repairCost);
                 }
+            }
+        }
+    }
+
+    _support(){
+        for (let roomName in this._roomInfo) {
+            if (this._roomInfo[roomName].lastSeen < Game.time - ROOM_INFO_RETENTION) {
+                delete this._roomInfo[roomName]
+                if (Memory.rooms[roomName]) delete Memory.rooms[roomName]
             }
         }
     }
