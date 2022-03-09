@@ -97,7 +97,8 @@ module.exports = class MainOp extends Operation {
         let loopCount = 0;
         for (let i = 0; i < shards.length; i++ ) {
             shardBaseCounter[i] = 0;
-            shardCPULimit[i] = 0;
+            shardCPULimit[i] = 5;
+            totalCPU-=5;
         }
         while (totalCPU > 0) {
             if (curShard ==0) skipCount = 0;
