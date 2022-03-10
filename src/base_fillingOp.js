@@ -58,7 +58,7 @@ module.exports = class FillingOp extends BaseChildOp {
             let creepOp = this._creepOps[creepName];
             let creep = creepOp.creep;
             if (creepOp.instruction == c.COMMAND_NONE) {
-                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > 2 && creepOp.state != c.STATE_FINDENERGY) {
+                if (creepOp.idleTime >= c.TACTICS_INTERVAL && this.creepCount > 1 && creepOp.state != c.STATE_FINDENERGY) {
                     if (this._lastTickFull = Game.time - 1) creepOp.newParent(this._baseOp.buildingOp)
                     this._lastTickFull = Game.time;
                 }
