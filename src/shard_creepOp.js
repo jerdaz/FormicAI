@@ -7,7 +7,7 @@ const { COMMAND_NONE, MAX_ROOM_SIZE } = require('./constants');
 
 let version = new Version;
 const SIGN = c.MY_SIGN.replace('[VERSION]', version.version).substr(0,96)
-const MAX_MOVE_OPS = 4000;
+const MAX_MOVE_OPS = 20000;
 
 module.exports = class CreepOp extends ChildOp {
     /**
