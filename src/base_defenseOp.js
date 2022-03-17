@@ -82,6 +82,8 @@ module.exports = class TowerOp extends BaseChildOp {
                         if (object && object instanceof OwnedStructure && object.structureType && object.my) {
                             let structureType = object.structureType;
                             switch (structureType) {
+                                case STRUCTURE_ROAD:
+                                    break;
                                 //case STRUCTURE_RAMPART:
                                 //    break;
                                 default:
