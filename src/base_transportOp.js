@@ -167,7 +167,7 @@ module.exports = class TransportOp extends BaseChildOp {
                         break;
                 }
             }
-            /**@type {Structure |null} */
+            /**@type {Structure |null |Ruin} */
             let sourceStructure = null;
             let creepCapacity = creepOp.creep.body.filter(o => o.type == 'carry').length * CARRY_CAPACITY;
             let linkEquilibrium = creepCapacity / 2; //baseLink equilibrium minimum
@@ -179,6 +179,10 @@ module.exports = class TransportOp extends BaseChildOp {
             if (terminal && terminal.store.getFreeCapacity() <= 0) sourceStructure = terminal;
             if (deathContainer && deathContainer.store.getUsedCapacity(RESOURCE_ENERGY) >= creepCapacity) sourceStructure = deathContainer;
             if (baseLink && baseLink.store.energy > linkEquilibrium + creepCapacity/2) sourceStructure = baseLink;
+            if (!sourceStructure) {
+                let ruins = this._baseOp.centerPos.findInRange(FIND_RUINS,1, {filter: o => o.store.energy > 0});
+                if (ruins.length>0) sourceStructure = ruins[0]
+            }
             if (sourceStructure) {
                 /**@type {Structure |null} */
                 let targetStructure = null;
