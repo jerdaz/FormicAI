@@ -152,7 +152,7 @@ module.exports = class CreepOp extends ChildOp {
     }
 
     /**
-     * @param {Source | Structure | Mineral} source
+     * @param {Source | Structure | Mineral | Ruin} source
      * @param {Structure | ConstructionSite} dest 
      * @param {ResourceConstant | undefined} [resourceType] */
      instructTransfer(source, dest, resourceType) {
