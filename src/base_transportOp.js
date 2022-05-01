@@ -86,7 +86,7 @@ module.exports = class TransportOp extends BaseChildOp {
     _strategy() {
         this.updateLinks();
         let creepCount = 0;
-        if (this._baseOp.storage) creepCount = 1;
+        if (this._baseOp.level>=4) creepCount = 1;
         //if (this.baseOp.labs.length>0) creepCount++;
         this.baseOp.spawningOp.ltRequestSpawn(this, {body:[CARRY], maxLength: 2 }, creepCount)
     }

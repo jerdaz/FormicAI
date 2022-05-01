@@ -63,7 +63,7 @@ module.exports = class SpawningOp extends BaseChildOp {
         if(this._spawnPrio.length == 0) {
             this._spawnPrio[c.OPERATION_FILLING] = 100;
             this._spawnPrio[c.OPERATION_HARVESTING] = 50;
-            this._spawnPrio[c.OPERATION_TRANSPORT] = 40;
+            this._spawnPrio[c.OPERATION_TRANSPORT] = 1000;
             this._spawnPrio[c.OPERATION_BUILDING] = 20;
             this._spawnPrio[c.OPERATION_UPGRADING] = 40;
             this._spawnPrio[c.OPERATION_DEFENSE] = 100
