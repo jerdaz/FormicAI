@@ -201,7 +201,7 @@ module.exports = class MainOp extends Operation {
         
         if (totalBases == 0) totalBases = myBasesCount; // can this be removed...???
 
-        // if there are less total bases then possible allow colonization of new bases on this shard.
+        // if there are less total bases then possible, allow colonization of new bases on this shard.
         let maxGclRate = 0;
         U.l({shard: this._shardNum})
         for (let shardMem of interShardMem.shards) {
@@ -265,7 +265,7 @@ module.exports = class MainOp extends Operation {
                     }
                 }
                 let avgEndLvlTime = totalEndLvlBaseTime / baseCount;
-                this._baseGracePeriod = avgEndLvlTime * 1.1
+                this._baseGracePeriod = avgEndLvlTime * 1.2
                 baseCount = 0 // recount end level bases if they haven't lived long enough
 
 
