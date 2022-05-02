@@ -39,6 +39,7 @@ module.exports = class TowerOp extends BaseChildOp {
         }});
         
         for (let tower of towers) {
+            let hasAttacked=false;
             if (hostiles.length > 0) {
                 let hostile = tower.pos.findClosestByRange(hostiles);
                 if (!hostile) throw Error();
@@ -50,18 +51,19 @@ module.exports = class TowerOp extends BaseChildOp {
 
                 //if (hostile.owner.username == c.INVADER_USERNAME || (pos.x < 49 && pos.x > 0 && pos.y <49 && pos.y > 0)) tower.attack(hostile);
                 tower.attack(hostile);
+                hasAttacked=true;
                 
             }
             if (structuresHit.length>0) {
                 var target = structuresHit[0];
                 for(var i = 1;i<structuresHit.length;i++) if (target.hits > structuresHit[i].hits) target = structuresHit[i];
                 tower.repair(target);
-                continue;
+                hasAttacked = true;
             }   
-            if (creepsHit.length>0) {
+            if (!hasAttacked && creepsHit.length>0) {
                 let creep = tower.pos.findClosestByRange(creepsHit)
                 if (creep) tower.heal(creep);
-                continue;
+                
             }     
         }
 
