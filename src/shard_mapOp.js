@@ -134,24 +134,32 @@ module.exports = class MapOp extends ChildOp {
         //         if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).spawns.length >= 1 )) return base.name;
         //     }
         // } else {
+            U.l('start')
+            U.l(lastSeenAttacker)
             let closestBase = {roomName: '', dist:10000}
             for (let baseInfo of this._parent.getBaseInfo()) {
                 let baseName = baseInfo.name;
+                U.l({l1:baseName})
+                U.l({a:!lastSeenAttacker, b:! this._roomInfo[baseName], c:(Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)})
                 if (!lastSeenAttacker ||
                     ! this._roomInfo[baseName] ||
                     (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)) {
+                        U.l({test:baseName})
                         let route = this.findRoute(roomName, baseName);
                         let baseOp = this._parent.getBaseOp(baseName)
-                        if (route instanceof Array && route.length > 0 && route.length < closestBase.dist 
+                        U.l(route.length)
+                        if (route instanceof Array && route.length>0 && route.length < closestBase.dist 
                             && route.length <= maxDistance 
                             && (hasSpawn == false || baseOp.spawns.length >= 1 )
                             && baseOp.level >= minLevel
                             ) {
                             closestBase.roomName = baseName;
                             closestBase.dist = route.length;
+                            U.l(closestBase);
                     }  
                 }
             }
+            U.l('end')
             return closestBase.roomName;
         // }
         // return undefined;
