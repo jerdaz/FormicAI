@@ -39,7 +39,7 @@ module.exports = class ShardColonizingOp extends ShardChildOp {
                     if (portal) creepOp.instructMoveTo(portal.pos)
                 }
             } else {
-                let lastPart = _.last(creep.body)
+                let lastPart = _.first(creep.body)
                 if (!lastPart) throw Error();
                 if (lastPart.type == WORK) { 
                     // creep is a colonizing builder
@@ -49,6 +49,8 @@ module.exports = class ShardColonizingOp extends ShardChildOp {
                     let targetRoom ;
                     if (dest != undefined && dest.room != undefined) targetRoom = dest.room.name;
                     else targetRoom = this._map.findClosestBaseByPath(room.name,1, false, c.TICKS_HOUR);
+                    U.l('sourceroom: ' + room.name)
+                    U.l('targetroom: ' + targetRoom)
                     if (!targetRoom) continue;
                     let targetBaseOp = this.shardOp.getBaseOp(targetRoom);
                     if (targetBaseOp) {

@@ -141,9 +141,10 @@ module.exports = class MapOp extends ChildOp {
                 let baseName = baseInfo.name;
                 U.l({l1:baseName})
                 U.l({a:!lastSeenAttacker, b:! this._roomInfo[baseName], c:(Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)})
+                U.l(Game.time - this._roomInfo[baseName].lastSeenAttacker)
                 if (!lastSeenAttacker ||
                     ! this._roomInfo[baseName] ||
-                    (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)) {
+                    (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) > (lastSeenAttacker||0)) {
                         U.l({test:baseName})
                         let route = this.findRoute(roomName, baseName);
                         let baseOp = this._parent.getBaseOp(baseName)
@@ -243,8 +244,10 @@ module.exports = class MapOp extends ChildOp {
                 {   let roomInfo = this.getRoomInfo(roomName);
                     //if(roomInfo && roomInfo.hostileOwner) return Infinity; 
                     if (roomInfo && (/**roomInfo.lastSeenHostile  + CREEP_LIFE_TIME >= Game.time  ||*/ roomInfo.activeTowers >= 1)) return Infinity;
+                    else return 1;
                 }
                 })
+                U.l(result2);
             if (result2 == -2) result = [];
             else result = result2;
             if (!this._routeCache[from]) this._routeCache[from] = {};
