@@ -963,7 +963,6 @@ module.exports = class CreepOp extends ChildOp {
                 if (o.structureType != STRUCTURE_ROAD && o.structureType != STRUCTURE_CONTAINER) return false;
                 let needRepair = o.hits < o.hitsMax * c.REPAIR_FACTOR;
                 if (!needRepair) return false;
-                this._verbose=true;
 
                 if (o.structureType == STRUCTURE_ROAD) {
                     this._log({roadrepair: o.pos})

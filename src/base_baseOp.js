@@ -189,7 +189,7 @@ module.exports = class BaseOp extends ShardChildOp{
         if (this.spawns.length == 0 && this.buildingOp.creepCount < 3) {
             let hostileCreeps = this._base.find(FIND_HOSTILE_CREEPS);
             hostileCreeps = _.filter(hostileCreeps, o => {return o.getActiveBodyparts(ATTACK) > 0 || o.getActiveBodyparts(RANGED_ATTACK) > 0 })
-            U.l('requesting builder')
+            U.l('requesting builder ' + this._name)
             U.l({hostiles: hostileCreeps.length, safeMode: this._base.controller.safeMode})
             if (hostileCreeps.length == 0 || this._base.controller.safeMode) {
                 this._shardOp.requestBuilder(this.name);

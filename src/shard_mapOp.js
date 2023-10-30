@@ -142,7 +142,7 @@ module.exports = class MapOp extends ChildOp {
                     (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)) {
                         let route = this.findRoute(roomName, baseName);
                         let baseOp = this._parent.getBaseOp(baseName)
-                        if (route instanceof Array && route.length < closestBase.dist 
+                        if (route instanceof Array && route.length > 0 && route.length < closestBase.dist 
                             && route.length <= maxDistance 
                             && (hasSpawn == false || baseOp.spawns.length >= 1 )
                             && baseOp.level >= minLevel
