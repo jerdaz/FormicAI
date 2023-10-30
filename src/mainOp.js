@@ -115,7 +115,7 @@ module.exports = class MainOp extends Operation {
                 }
                 skipCount = 0;
             }
-            if (loopCount++ > 1000) throw Error('Infinite loop detected')
+            if (loopCount++ > 10000) throw Error('Infinite loop detected')
         }
 
         for(let i = 0; i < shards.length; i++) {
