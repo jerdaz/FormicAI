@@ -268,8 +268,8 @@ module.exports = class MapOp extends ChildOp {
             let roomTerrain = Game.map.getRoomTerrain(roomName);
             let roomInfo = this.getRoomInfo(roomName);
             if (!roomInfo) continue;
-            if (roomInfo.my && Gamepad.time - roomInfo.lastBreadCrumbUpdate < c.STRATEGY_INTERVAL * 2 ) continue; //only update non owned rooms every 200 ticks
-            if (roomInfo.my && Gamepad.time - roomInfo.lastBreadCrumbUpdate < c.TACTICS_INTERVAL * 3 ) continue; // update owned rooms every 30 ticks
+            if (roomInfo.my && Game.time - roomInfo.lastBreadCrumbUpdate < c.STRATEGY_INTERVAL * 2 ) continue; //only update non owned rooms every 200 ticks
+            if (roomInfo.my && Game.time - roomInfo.lastBreadCrumbUpdate < c.TACTICS_INTERVAL * 3 ) continue; // update owned rooms every 30 ticks
             let lastUpdate = roomInfo.lastBreadCrumbUpdate||Game.time;
             for (let x=0;x<50;x++) {
                 for (let y=0;y<50;y++) {
@@ -283,7 +283,7 @@ module.exports = class MapOp extends ChildOp {
                 }
             }
             roomInfo.lastBreadCrumbUpdate = Game.time;
-            if (Gamepad.cpu.time - cpuStart > 50) break;
+            if (Game.cpu.time - cpuStart > 50) break;
         }
     }
 
