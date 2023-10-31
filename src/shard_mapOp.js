@@ -262,7 +262,7 @@ module.exports = class MapOp extends ChildOp {
 
     _updateRoadMatrices() {
         //subtract road cost from road opportunity cost matrixes
-        let cpuStart = Game.cpu.time;
+        let cpuStart = Game.cpu.getUsed();
         for (let roomName in this._breadCrumbs) {
             let terrainArray = this._breadCrumbs[roomName];
             let roomTerrain = Game.map.getRoomTerrain(roomName);
@@ -283,7 +283,7 @@ module.exports = class MapOp extends ChildOp {
                 }
             }
             roomInfo.lastBreadCrumbUpdate = Game.time;
-            if (Game.cpu.time - cpuStart > 50) break;
+            if (Game.cpu.getUsed() - cpuStart > 50) break;
         }
     }
 
