@@ -134,18 +134,12 @@ module.exports = class MapOp extends ChildOp {
         //         if (base.controller.level >= minLevel && (hasSpawn == false || this._parent.getBaseOp(base.name).spawns.length >= 1 )) return base.name;
         //     }
         // } else {
-            U.l('start')
-            U.l(lastSeenAttacker)
             let closestBase = {roomName: '', dist:10000}
             for (let baseInfo of this._parent.getBaseInfo()) {
                 let baseName = baseInfo.name;
-                U.l({l1:baseName})
-                U.l({a:!lastSeenAttacker, b:! this._roomInfo[baseName], c:(Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) < (lastSeenAttacker||0)})
-                U.l(Game.time - this._roomInfo[baseName].lastSeenAttacker)
                 if (!lastSeenAttacker ||
                     ! this._roomInfo[baseName] ||
                     (Game.time - this._roomInfo[baseName].lastSeenAttacker || 0 ) > (lastSeenAttacker||0)) {
-                        U.l({test:baseName})
                         let route = this.findRoute(roomName, baseName);
                         let baseOp = this._parent.getBaseOp(baseName)
                         U.l(route.length)
@@ -160,7 +154,6 @@ module.exports = class MapOp extends ChildOp {
                     }  
                 }
             }
-            U.l('end')
             return closestBase.roomName;
         // }
         // return undefined;
@@ -247,7 +240,6 @@ module.exports = class MapOp extends ChildOp {
                     else return 1;
                 }
                 })
-                U.l(result2);
             if (result2 == -2) result = [];
             else result = result2;
             if (!this._routeCache[from]) this._routeCache[from] = {};
