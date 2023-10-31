@@ -203,16 +203,12 @@ module.exports = class MainOp extends Operation {
 
         // if there are less total bases then possible, allow colonization of new bases on this shard.
         let maxGclRate = 0;
-        U.l({shard: this._shardNum})
         for (let shardMem of interShardMem.shards) {
             if (shardMem.avgGclRate > maxGclRate && shardMem.bucket >= c.MAX_BUCKET * 0.95) maxGclRate = shardMem.avgGclRate;
-            U.l({gclrate:shardMem.avgGclRate})
         }
-        U.l({totalBases: totalBases, gcl: Game.gcl.level, maxGclRate: maxGclRate})
         if ((totalBases + 1 == Game.gcl.level && interShardMem.shards[this._shardNum].avgGclRate == maxGclRate) || (totalBases <= Game.gcl.level - 2) ) {
             Game.notify('doing colonization of shard ' + this._shardNum + ' ' + JSON.stringify({maxGclRate: maxGclRate, myBasesCount:myBasesCount, gcl:Game.gcl.level, totalBases:totalBases, interShardMem:interShardMem}))
             this._shardOp.setDirectiveMaxBases(myBasesCount + Game.gcl.level - totalBases)
-            U.l({maxbases:myBasesCount + Game.gcl.level - totalBases })
         }
         else this._shardOp.setDirectiveMaxBases(myBasesCount);
 
