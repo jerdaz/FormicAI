@@ -18,12 +18,14 @@ const ChildOp = require('./meta_childOp');
  *      sourceCount: number,
  *      level: number
  *      hasStructures: boolean
+ *      lastBreadCrumbUpdate: number
  *   }}} RoomInfo*/
 
 
 /** @typedef {{[roomName:string]: 
- *      {fatigueCost:Number}[][]
- *   }} BreadCrumbs*/
+ *      {fatigueCost:Number}[][]},
+ *      
+ *      } BreadCrumbs*/
 
 /**@typedef {{roomName:string, dist:number}} BaseDist */
 
@@ -260,13 +262,19 @@ module.exports = class MapOp extends ChildOp {
 
     _updateRoadMatrices() {
         //subtract road cost from road opportunity cost matrixes
+        let cpuStart = Game.cpu.time;
         for (let roomName in this._breadCrumbs) {
             let terrainArray = this._breadCrumbs[roomName];
             let roomTerrain = Game.map.getRoomTerrain(roomName);
+            let roomInfo = this.getRoomInfo(roomName);
+            if (!roomInfo) continue;
+            if (roomInfo.my && Gamepad.time - roomInfo.lastBreadCrumbUpdate < c.STRATEGY_INTERVAL * 2 ) continue; //only update non owned rooms every 200 ticks
+            if (roomInfo.my && Gamepad.time - roomInfo.lastBreadCrumbUpdate < c.TACTICS_INTERVAL * 3 ) continue; // update owned rooms every 30 ticks
+            let lastUpdate = roomInfo.lastBreadCrumbUpdate||Gamepad.time;
             for (let x=0;x<50;x++) {
                 for (let y=0;y<50;y++) {
                     let terrain = roomTerrain.get(x,y)
-                    let repairCost = c.TACTICS_INTERVAL * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
+                    let repairCost = (Game.time-lastUpdate) * REPAIR_COST * ROAD_DECAY_AMOUNT / ROAD_DECAY_TIME;
                     if (terrain == TERRAIN_MASK_SWAMP) repairCost *= CONSTRUCTION_COST_ROAD_SWAMP_RATIO;
                     if (terrain == TERRAIN_MASK_WALL) repairCost *= CONSTRUCTION_COST_ROAD_WALL_RATIO;
                     let decayFactor = 1;
@@ -274,6 +282,8 @@ module.exports = class MapOp extends ChildOp {
                     terrainArray[x][y].fatigueCost = Math.max(-1 * MIN_ROAD_FATIGUE_COST, terrainArray[x][y].fatigueCost * decayFactor - repairCost);
                 }
             }
+            roomInfo.lastBreadCrumbUpdate = Game.time;
+            if (Gamepad.cpu.time - cpuStart > 50) break;
         }
     }
 
@@ -294,7 +304,7 @@ module.exports = class MapOp extends ChildOp {
         for(let roomName in Game.rooms) {
             // initialize roominfo en breadcrumb objects for new rooms
             if (this._roomInfo[roomName] == undefined) {
-                this._roomInfo[roomName] = {lastSeenPlayerCreeps: 0, lastSeenAttacker:0, hostileSource: new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasStructures: false}
+                this._roomInfo[roomName] = {lastSeenPlayerCreeps: 0, lastSeenAttacker:0, hostileSource: new RoomPosition(25,25,roomName), lastSeen:0, hostileOwner:false, my:false, hasController:false, level:0, reservation:0, invasion:false, invasionEnd:0, safeMode:undefined, activeTowers:0, sourceCount:0, hasStructures: false, lastBreadCrumbUpdate:0}
             }
             if (this._breadCrumbs[roomName] == undefined) {
                 this._breadCrumbs[roomName] = []
