@@ -315,7 +315,7 @@ module.exports = class ShardOp extends ChildOp {
             if (Game.cpu.bucket < 500 && Game.cpu.getUsed() >= Game.cpu.bucket / maxBasesToRun * (maxBasesToRun-1)  //stop executing if not enough time
                  || (++baseCount > maxBasesToRun)) 
             {
-//                U.l('Warning not enough CPU time. Skipping base: ' + baseOpKey[0])
+                U.l('Warning not enough CPU time. Skipping base: ' + baseOpKey[0])
             } else {
                 let baseOp = baseOpKey[1];
                 baseOp.run();
