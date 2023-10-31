@@ -166,7 +166,6 @@ module.exports = class ColonizingOp extends BaseChildOp {
                     if (!(path instanceof Array)) continue;
                     if (path.length > MAX_PATH_COL_DISTANCE || path.length == 0) continue;
                     let colRoom = {name: roomName, distance: path.length, sources: roomInfo.sourceCount}
-                    U.l(path)
                     colRooms.push(colRoom);
                }
         }
