@@ -9,7 +9,7 @@
     "grunt-screeps": "^1.5.0"
   },
   "devDependencies": {
-    "grunt": "^1.4.1",
+    "grunt": "^1.5.3",
     "grunt-get-branchname": "^0.2.0"
   },
   "scripts": {
