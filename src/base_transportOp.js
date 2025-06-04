@@ -39,15 +39,15 @@ module.exports = class TransportOp extends BaseChildOp {
         let newBaseLink = this._baseOp.centerPos.findInRange(FIND_MY_STRUCTURES, 1, {filter: {structureType: STRUCTURE_LINK}})[0];
         if (newBaseLink) this._baseLinkId = newBaseLink.id;
 
-        if (newControllerLinkIds.length == null) this._controllerLinkId = null
-        else if (newControllerLinkIds.length == 1) this._controllerLinkId = newControllerLinkIds[0]
+        if (newControllerLinkIds.length === 0) this._controllerLinkId = null;
+        else if (newControllerLinkIds.length === 1) this._controllerLinkId = newControllerLinkIds[0];
         else {
             /**@type {Id<Structure>[]} */
             let result = [];
-            if (newBaseLink) _.intersection (newControllerLinkIds, [newBaseLink.id])
-            if (!result)  result = _.intersection(newControllerLinkIds, newSourceLinkIds)
-            if (!result) result = newControllerLinkIds;
-            this._controllerLinkId = result[0]
+            if (newBaseLink) result = _.intersection(newControllerLinkIds, [newBaseLink.id]);
+            if (result.length === 0) result = _.intersection(newControllerLinkIds, newSourceLinkIds);
+            if (result.length === 0) result = newControllerLinkIds;
+            this._controllerLinkId = result[0];
         }
 
         this.initTick();
