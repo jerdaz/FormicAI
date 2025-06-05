@@ -10,8 +10,8 @@ const ROOM_CLAIM_TIMEOUT = 2000
 const COLONIZE_RETRY_TIME = 2000000 //+- 12 weeks
 // Max time we haven't seen a room for it to be a valid colonization target
 const COLONIZE_LASTSEEN_TIME = 20000
-// maximum lineair distance for colonization
-const MAX_LINEAIR_COL_DISTANCE = 13
+// maximum linear distance for colonization
+const MAX_LINEAR_COL_DISTANCE = 13
 const MAX_PATH_COL_DISTANCE = 13
 
 
@@ -160,7 +160,7 @@ module.exports = class ColonizingOp extends BaseChildOp {
                 && roomInfo.level == 0
                 && roomInfo.sourceCount >= minSources
                 && (Memory.colonizations[roomName] || 0) < Game.time - COLONIZE_RETRY_TIME
-                && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAIR_COL_DISTANCE
+                && Game.map.getRoomLinearDistance(roomName,this._baseName) <= MAX_LINEAR_COL_DISTANCE
                ) {
                     let path = this._map.findRoute(this._baseName, roomName);
                     if (!(path instanceof Array)) continue;
