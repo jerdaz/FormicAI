@@ -4,6 +4,11 @@ const MainOp = require('./mainOp');
 const version = require('./version');
 const c = require('./constants');
 
+// Ensure global Memory object exists when running outside the Screeps engine
+if (typeof global.Memory === 'undefined' || global.Memory === null) {
+    global.Memory = {};
+}
+
 
 let debug = new DebugType;
 let mainOp = new MainOp;
