@@ -64,4 +64,4 @@ The commands are smarter then standard creep commands. For example, giving a fil
 * Defense/attack: Only if needed for continued survival or expansion
 
 # About license:
-The license is A-GPU. You may only use modified versions of (pieces of) this source code on public screeps servers if you publish the source code of the modified version with this license.
+The license is AGPL. You may only use modified versions of (pieces of) this source code on public screeps servers if you publish the source code of the modified version with this license.
