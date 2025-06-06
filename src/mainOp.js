@@ -19,7 +19,7 @@ module.exports = class MainOp extends Operation {
         // if it already exists in the environment.
         {
             const desc = Object.getOwnPropertyDescriptor(global, 'Memory');
-            if ((!desc || desc.writable) && (typeof Memory !== 'object' || Memory === null)) {
+            if ((!desc || desc.writable || desc.set) && (typeof Memory !== 'object' || Memory === null)) {
                 global.Memory = {};
             }
         }
