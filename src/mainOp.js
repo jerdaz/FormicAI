@@ -14,6 +14,12 @@ module.exports = class MainOp extends Operation {
         super();
         U.l('INIT MAIN');
 
+        // Ensure Memory object exists; Screeps may return `null` when memory is
+        // wiped or corrupted.
+        if (typeof Memory !== 'object' || Memory === null) {
+            global.Memory = {};
+        }
+
 
         for (let memObj in Memory) {
             switch (memObj) {
