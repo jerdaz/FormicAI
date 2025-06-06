@@ -15,9 +15,13 @@ module.exports = class MainOp extends Operation {
         U.l('INIT MAIN');
 
         // Ensure Memory object exists; Screeps may return `null` when memory is
-        // wiped or corrupted.
-        if (typeof Memory !== 'object' || Memory === null) {
-            global.Memory = {};
+        // wiped or corrupted.  Avoid assigning to a read-only `Memory` property
+        // if it already exists in the environment.
+        {
+            const desc = Object.getOwnPropertyDescriptor(global, 'Memory');
+            if ((!desc || desc.writable) && (typeof Memory !== 'object' || Memory === null)) {
+                global.Memory = {};
+            }
         }
 
 

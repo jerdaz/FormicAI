@@ -5,8 +5,14 @@ const version = require('./version');
 const c = require('./constants');
 
 // Ensure global Memory object exists when running outside the Screeps engine
-if (typeof global.Memory === 'undefined' || global.Memory === null) {
-    global.Memory = {};
+// Some environments expose `Memory` as a read-only property on the global
+// object, which would throw when assigning to `global.Memory`. Guard against
+// this by only assigning when the property is writable or absent.
+{
+    const desc = Object.getOwnPropertyDescriptor(global, 'Memory');
+    if ((!desc || desc.writable) && (typeof global.Memory === 'undefined' || global.Memory === null)) {
+        global.Memory = {};
+    }
 }
 
 
