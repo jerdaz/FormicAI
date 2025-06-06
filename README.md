@@ -51,6 +51,18 @@ Every operation on a shard can have one or multiple creep operations assigned to
 
 The commands are smarter then standard creep commands. For example, giving a fill command on a controller starts upgrading it. A broken structure will be repaired, an empty structure will be filled etc.
 
+## CPU monitoring
+Every operation tracks the CPU time spent in its `run()` call. The data is kept as a moving average and aggregated per operation type.
+
+Enable monitoring by calling the helper functions from the console:
+
+```
+Game.debug.printCpuStats();       // shows the 10 most expensive operation types
+Game.debug.printTopBases('BaseOp'); // shows the 10 bases that use most CPU running BaseOp
+```
+
+`printCpuStats()` outputs the operation class names with their average CPU usage. `printTopBases()` groups the usage per base for a chosen operation type so hotspots can be located quickly.
+
 # Roadmap:
 * Full link operation
 * Harvesting minerals

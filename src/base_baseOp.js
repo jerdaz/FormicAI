@@ -82,6 +82,7 @@ module.exports = class BaseOp extends ShardChildOp{
     get credits() {return this._shardOp.bank.getCredits(this._name)}
     get events() {return this._base.getEventLog()};
     get level() { return this._base.controller.level};
+    get cpuUsage() {return this.getCpuRecursive()};
 
     get stats() {
         let now = Date.now();

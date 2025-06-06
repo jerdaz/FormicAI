@@ -70,4 +70,39 @@ module.exports = class Debug {
     throwErrors() {
         for(let err of this._errors) throw err;
     }
+
+    /** Print top cpu consuming operations */
+    static printCpuStats() {
+        const Operation = require('./meta_operation');
+        /**@type {{name:string,avg:number}[]}*/
+        let arr = [];
+        for (let name in Operation.cpuStats) {
+            let stat = Operation.cpuStats[name];
+            arr.push({name, avg: stat.avg});
+        }
+        arr.sort((a,b)=>b.avg-a.avg);
+        let out = {};
+        let n = Math.min(10, arr.length);
+        for (let i=0;i<n;i++) out[arr[i].name] = arr[i].avg.toFixed(2);
+        U.l(out);
+    }
+
+    /** Print top cpu consuming bases for a specific operation type */
+    static printTopBases(opName) {
+        const Operation = require('./meta_operation');
+        /**@type {{[base:string]:number}}*/
+        let baseCpu = {};
+        for (let op of Operation.allOps) {
+            if (op.constructor.name !== opName) continue;
+            let baseName = op.baseName || op._baseName || (op.name||'');
+            if (!baseName) continue;
+            baseCpu[baseName] = (baseCpu[baseName]||0) + op.getCpuRecursive();
+        }
+        let list = Object.keys(baseCpu).map(b=>({base:b,cpu:baseCpu[b]}));
+        list.sort((a,b)=>b.cpu-a.cpu);
+        let out = {};
+        let n = Math.min(10, list.length);
+        for (let i=0;i<n;i++) out[list[i].base] = list[i].cpu.toFixed(2);
+        U.l(out);
+    }
 }
