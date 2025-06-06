@@ -72,7 +72,7 @@ module.exports = class Debug {
     }
 
     /** Print top cpu consuming operations */
-    static printCpuStats() {
+    printCpuStats() {
         const Operation = require('./meta_operation');
         /**@type {{name:string,avg:number}[]}*/
         let arr = [];
@@ -88,7 +88,7 @@ module.exports = class Debug {
     }
 
     /** Print top cpu consuming bases for a specific operation type */
-    static printTopBases(opName) {
+    printTopBases(opName) {
         const Operation = require('./meta_operation');
         /**@type {{[base:string]:number}}*/
         let baseCpu = {};
