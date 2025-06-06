@@ -78,7 +78,7 @@ module.exports = class FillingOp extends BaseChildOp {
     }
 
     _command() {
-        // check to see if we nee
+        // Check if tactics should run when energy isn't full
         let base = this._baseOp.base;
         if (base.energyAvailable < base.energyCapacityAvailable && this.lastIdle >= Game.time -1) this._tactics();
 
