@@ -8,12 +8,7 @@ const AVG_FACTOR = 0.1;
 //unique id of Operation
 let idIndex = 0;
 
-module.exports = class Operation {
-    /** aggregated cpu statistics */
-    static cpuStats = {};
-    /** set of all instantiated operations */
-    static allOps = new Set();
-
+class Operation {
     /** reset aggregated cpu stats */
     static resetCpuStats() { this.cpuStats = {}; }
     constructor() {
@@ -175,4 +170,7 @@ module.exports = class Operation {
     }
 }
 
+Operation.cpuStats = {};
+Operation.allOps = new Set();
 
+module.exports = Operation;
