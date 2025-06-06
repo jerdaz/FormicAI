@@ -65,3 +65,40 @@ The commands are smarter then standard creep commands. For example, giving a fil
 
 # About license:
 The license is A-GPU. You may only use modified versions of (pieces of) this source code on public screeps servers if you publish the source code of the modified version with this license.
+
+## Installation
+
+1. Install [Node.js](https://nodejs.org/) and run `npm install` to install the dependencies.
+2. Create a `.screeps.json` file in the project root. This file contains the credentials for your Screeps account and is used by the `grunt-screeps` task. The structure looks like:
+
+```json
+{
+  "email": "you@example.com",
+  "password": "secret",
+  "branch": "default",
+  "ptr": false
+}
+```
+
+## Usage
+
+To upload the bot to a Screeps server run:
+
+```bash
+grunt --server=screeps
+```
+
+The `publish.cmd` script contains convenience commands for the different servers that the author uses. You can also run `npm test` but at the moment there are no automated tests and the command will simply exit with an error.
+
+## Project Structure
+
+The code is organised around **operations**. Each operation handles a specific aspect of the game and operations can have child operations. Important classes are:
+
+- `MainOp` &ndash; root of the hierarchy. It creates a `ShardOp` for the current shard.
+- `ShardOp` &ndash; manages all bases on a shard and handles CPU allocation.
+- `BaseOp` &ndash; controls a single base. It spawns creeps and contains sub operations such as `FillingOp`, `UpgradingOp` and `SpawningOp`.
+- `RoomOp` &ndash; handles tasks inside a room (building, harvesting, road maintenance &nbsp;...).
+- `CreepOp` &ndash; wrapper around a single creep implementing high level commands.
+
+For a complete overview of all classes and their role see [docs/DESIGN.md](docs/DESIGN.md).
+The design document includes a short description for every operation class.
